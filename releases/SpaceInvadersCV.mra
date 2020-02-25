@@ -1,5 +1,5 @@
 <misterromdescription>
-        <rbf>Invaders</rbf>
+        <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
 		<part> 0A </part>
 	</rom>
