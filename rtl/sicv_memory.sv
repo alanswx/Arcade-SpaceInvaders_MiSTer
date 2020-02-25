@@ -44,7 +44,7 @@ cpu_prog_rom2(
 
 	.clock_b(Clock),
 	.address_b(Addr[11:0]),
-	.q_b(rom_data)
+	.q_b(rom2_data)
 );
 dpram #(.addr_width_g(11),
 	.data_width_g(8))
