@@ -453,8 +453,8 @@ always @(*) begin
 		  endcase
 end
 
-wire [15:0] color_prom_addr,
-wire [7:0]  color_prom_out,
+wire [15:0] color_prom_addr;
+wire [7:0]  color_prom_out;
 wire [15:0]RAB;
 wire [15:0]AD;
 wire [7:0]RDB;
