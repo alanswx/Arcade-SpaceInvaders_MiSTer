@@ -453,6 +453,8 @@ always @(*) begin
 		  endcase
 end
 
+wire [15:0] color_prom_addr,
+wire [7:0]  color_prom_out,
 wire [15:0]RAB;
 wire [15:0]AD;
 wire [7:0]RDB;
@@ -471,9 +473,9 @@ invaderst invaderst(
         .Clk(clk_sys),
         .ENA(),
 		  
-		  .GDB0(GDB0),
-		  .GDB1(GDB1),
-		  .GDB2(GDB2),
+        .GDB0(GDB0),
+        .GDB1(GDB1),
+        .GDB2(GDB2),
 
         .RDB(RDB),
         .IB(IB),
@@ -495,7 +497,13 @@ invaders_memory invaders_memory (
         .Ram_Addr(RAB),
         .Ram_out(RDB),
         .Ram_in(RWD),
-        .Rom_out(IB)
+        .Rom_out(IB),
+	.color_prom_addr(color_prom_addr),
+	.color_prom_out(color_prom_out),
+
+	.dn_addr(ioctl_addr[15:0]),
+	.dn_data(ioctl_dout),
+	.dn_wr(ioctl_wr&ioctl_index==0)
         );
 
 invaders_audio invaders_audio (
@@ -512,6 +520,8 @@ invaders_video invaders_video (
         .Rst_n_s(Rst_n_s),
         .HSync(HSync),
         .VSync(VSync),
+	.color_prom_addr(color_prom_addr),
+	.color_prom_out(color_prom_out),
         .O_VIDEO_R(r),
         .O_VIDEO_G(g),
         .O_VIDEO_B(b),

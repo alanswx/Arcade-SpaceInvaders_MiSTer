@@ -18,7 +18,9 @@ entity invaders_video is
 		O_HSYNC           : out   std_logic;
 		O_VSYNC           : out   std_logic;
 		O_HBLANK          : out   std_logic;
-		O_VBLANK          : out   std_logic
+		O_VBLANK          : out   std_logic; 
+                color_prom_addr   : out   std_logic_vector(15 downto 0);
+                color_prom_out    : in    std_logic_vector(7 downto 0)
 		);
 end invaders_video;
 
