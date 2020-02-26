@@ -60,9 +60,9 @@ entity invaderst is
 		Clk             : in  std_logic;
 		ENA             : out  std_logic;
 		
-      GDB0         : in std_logic_vector(7 downto 0);
-      GDB1         : in std_logic_vector(7 downto 0);
-      GDB2         : in std_logic_vector(7 downto 0);
+                GDB0            : in std_logic_vector(7 downto 0);
+                GDB1            : in std_logic_vector(7 downto 0);
+                GDB2            : in std_logic_vector(7 downto 0);
 		
 --		Coin            : in  std_logic;
 --		Sel1Player      : in  std_logic;

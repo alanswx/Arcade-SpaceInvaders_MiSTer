@@ -7,13 +7,25 @@ input     [15:0] Ram_Addr,
 output    [7:0]  Ram_out,
 input     [7:0]  Ram_in,
 output    [7:0]  Rom_out,
-input     [15:0] color_prom_addr,
 output    [7:0]  color_prom_out,
+input     [10:0] color_prom_addr,
 input     [15:0] dn_addr,
 input     [7:0]  dn_data,
 input            dn_wr
 
 );
+
+/*
+ reg [10:0] color_prom_addr=0;
+always @(posedge Clock ) begin
+	//0010 0100 0000 0000 // 2400
+	//0011 1111 1111 1111
+	if (Ram_Addr > 16'h2400) begin
+		color_prom_addr<={ Ram_Addr[12:7],Ram_Addr[4:0]};
+	end
+end
+//wire [10:0] color_prom_addr={ Ram_Addr[12:7],Ram_Addr[4:0]};
+*/
 
 wire [7:0]rom_data;
 wire [7:0]rom2_data;

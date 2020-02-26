@@ -8,6 +8,7 @@ entity invaders_video is
 	port(
 		Video             : in    std_logic;
 		Overlay           : in    std_logic;
+		OverlayTest       : in    std_logic;
 		CLK               : in    std_logic;
 		Rst_n_s           : in    std_logic;
 		HSync             : in    std_logic;
@@ -19,8 +20,8 @@ entity invaders_video is
 		O_VSYNC           : out   std_logic;
 		O_HBLANK          : out   std_logic;
 		O_VBLANK          : out   std_logic; 
-                color_prom_addr   : out   std_logic_vector(15 downto 0);
-                color_prom_out    : in    std_logic_vector(7 downto 0)
+                color_prom_out    : in    std_logic_vector(7 downto 0);
+                color_prom_addr    : out    std_logic_vector(10 downto 0)
 		);
 end invaders_video;
 
@@ -117,24 +118,31 @@ begin
 		Overlay_R1 <= false;
 	  end if;
 
+          if (HCnt(2 downto 0) = "000") then
+		  color_prom_addr<=std_logic_vector( '0' & VCnt(7 downto 3) & HCnt(7 downto 3)); -- first 0 needs to be a 1 for cocktail
+	  end if;
+
+
 	end if;
   end process;
 
-  p_video_out_comb : process(Video, Overlay_G1, Overlay_G2, Overlay_R1)
+  p_video_out_comb : process(Video, OverlayTest, Overlay_G1, Overlay_G2, Overlay_R1)
   begin
-	if (Video = '0') then
+	if OverlayTest = '1' then
+	  VideoRGB <= color_prom_out(0) & color_prom_out(2) & color_prom_out(1);
+	elsif (Video = '0') then
 	  VideoRGB  <= "000";
 	else
-	  if Overlay_G1 or Overlay_G2 then
-		VideoRGB  <= "010";
-	  elsif Overlay_R1 then
-		VideoRGB  <= "100";
-	  else
-		VideoRGB  <= "111";
-	  end if;
+	  VideoRGB <= color_prom_out(0) & color_prom_out(2) & color_prom_out(1);
+	  --if Overlay_G1 or Overlay_G2 then
+	--	VideoRGB  <= "010";
+	 -- elsif Overlay_R1 then
+	--	VideoRGB  <= "100";
+	 -- else
+	--	VideoRGB  <= "111";
+	 -- end if;
 	end if;
   end process;
-
 
   O_VIDEO_R <= VideoRGB(2) when (Overlay = '1') else VideoRGB(0) or VideoRGB(1) or VideoRGB(2);
   O_VIDEO_G <= VideoRGB(1) when (Overlay = '1') else VideoRGB(0) or VideoRGB(1) or VideoRGB(2);
