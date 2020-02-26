@@ -1,0 +1,26 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 0A </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="schaser.zip" md5="none">
+<!-- 8k -->
+		<part name="rt13.bin"/> 
+		<part name="rt14.bin"/> 
+		<part name="rt15.bin"/> 
+		<part name="rt16.bin"/> 
+		<part name="rt17.bin"/> 
+		<part name="rt1i.bin"/> 
+		<part name="rt19.bin"/> 
+		<part name="rt20.bin"/> 
+<!-- 8k -->
+		<part name="rt21.bin"/> 
+		<part name="rt22.bin"/> 
+		<part repeat="2048">00</part> 
+		<part repeat="4096">00</part> 
+<!-- 2k -->
+		<part name="rt06.ic2"/> 
+		<part name="rt06.ic2"/> 
+	</rom>
+</misterromdescription>

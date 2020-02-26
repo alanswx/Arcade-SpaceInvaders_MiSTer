@@ -5,16 +5,16 @@
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="sicv.zip" md5="none">
-<!-- 8k -->
 		<part name="cv17.36"/> 
 		<part name="cv18.35"/> 
 		<part name="cv19.34"/> 
 		<part name="cv20.33"/> 
-<!-- 8k -->
-		<part repeat="4096">00</part> 
-		<part repeat="4096">00</part> 
-<!-- 2k -->
-		<part name="cv01.1"/> 
-		<part name="cv02.2"/> 
-	</rom>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+                <part name="cv01.1"/>
+                <part name="cv02.2"/>
+        </rom>
+
 </misterromdescription>

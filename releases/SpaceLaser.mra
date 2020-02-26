@@ -1,16 +1,16 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 07 </part>
+		<part> 08 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="ozmawars.zip" md5="none">
-		<part name="mw01"/> 
-		<part name="mw02"/> 
-		<part name="mw03"/> 
-		<part name="mw04"/> 
-		<part name="mw05"/> 
-		<part name="mw06"/> 
+	<rom index="0" zip="spclaser.zip" md5="none">
+		<part name="la01"/> 
+		<part name="la02"/> 
+		<part name="la03"/> 
+		<part name="la04"/> 
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
 		<part repeat="2048">00</part>
 		<part repeat="2048">00</part>
                 <part name="01.1"/>

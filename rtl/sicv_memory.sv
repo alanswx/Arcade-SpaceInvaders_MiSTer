@@ -31,8 +31,12 @@ wire [7:0]rom_data;
 wire [7:0]rom2_data;
 
 wire rom_cs = dn_wr & dn_addr[15:13]==3'b000;
-wire rom2_cs = dn_wr & dn_addr[15:12]==3'b0010;
-wire vrom_cs = dn_wr & dn_addr[15:11]==3'b00110;
+
+// 0010 0000 0000 0000
+wire rom2_cs = dn_wr & dn_addr[15:13]==3'b001;
+// 0100 0000 0000 0000
+// 0100 0100 0000 0000
+wire vrom_cs = dn_wr & dn_addr[15:11]==5'b01000;
 
 dpram #(.addr_width_g(13),
 	.data_width_g(8))
@@ -46,16 +50,16 @@ cpu_prog_rom(
 	.address_b(Addr[12:0]),
 	.q_b(rom_data)
 );
-dpram #(.addr_width_g(12),
+dpram #(.addr_width_g(13),
 	.data_width_g(8))
 cpu_prog_rom2(
 	.clock_a(Clock),
 	.wren_a(rom2_cs),
-	.address_a(dn_addr[11:0]),
+	.address_a(dn_addr[12:0]),
 	.data_a(dn_data),
 
 	.clock_b(Clock),
-	.address_b(Addr[11:0]),
+	.address_b(Addr[12:0]),
 	.q_b(rom2_data)
 );
 dpram #(.addr_width_g(11),
@@ -82,6 +86,8 @@ always @(Addr, rom_data, rom2_data) begin
 			5'b00010 : Rom_out = rom_data;
 			5'b00011 : Rom_out = rom_data;
 			
+			5'b01000 : Rom_out = rom2_data;
+			5'b01001 : Rom_out = rom2_data;
 			5'b01010 : Rom_out = rom2_data;
 			5'b01011 : Rom_out = rom2_data;
 			default : Rom_out = 8'b00000000;

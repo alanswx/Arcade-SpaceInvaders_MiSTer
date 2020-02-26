@@ -289,7 +289,7 @@ wire [15:0] joy = joy1 | joy2;
 wire hblank, vblank;
 wire hs, vs;
 wire r,g,b;
-wire no_rotate = status[2] | direct_video | landscape;
+wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
 reg ce_pix;
 always @(posedge clk_40) begin
         reg [2:0] div;
@@ -423,8 +423,8 @@ always @(*) begin
           ccw<=1;
           color_rom_enabled<=1;
          // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
-          GDB2 <= sw[2] | ~{ m_start1, m_coin1,m_start2,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
+          GDB2 <= sw[2] | { m_start1, m_coin1,m_start2,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
 
 		  end
 		  mod_spacelaser:

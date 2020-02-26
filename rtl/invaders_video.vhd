@@ -79,10 +79,10 @@ begin
 	  elsif HStart then
 		VCnt <= VCnt + "1";
 	  end if;
-          if (HCnt = 511) then 
+          if (HCnt = 538) then  -- 511
              hblank<='1';
           end if;
-          if (HCnt = 27) then 
+          if (HCnt = 27) then  -- 27?
              hblank<='0';
           end if;
 
@@ -119,14 +119,14 @@ begin
 	  end if;
 
           if (HCnt(2 downto 0) = "000") then
-		  color_prom_addr<=std_logic_vector( '0' & VCnt(7 downto 3) & HCnt(7 downto 3)); -- first 0 needs to be a 1 for cocktail
+		  color_prom_addr<= 27 + unsigned(std_logic_vector( '0' & VCnt(7 downto 3) & HCnt(8 downto 4))); -- first 0 needs to be a 1 for cocktail
 	  end if;
 
 
 	end if;
   end process;
 
-  p_video_out_comb : process(Video, OverlayTest, Overlay_G1, Overlay_G2, Overlay_R1)
+  p_video_out_comb : process(Video, color_prom_out, OverlayTest, Overlay_G1, Overlay_G2, Overlay_R1)
   begin
 	if OverlayTest = '1' then
 	  VideoRGB <= color_prom_out(0) & color_prom_out(2) & color_prom_out(1);

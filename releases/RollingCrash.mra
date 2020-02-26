@@ -1,0 +1,25 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 0A </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="rollingc.zip" md5="none">
+<!-- 8k -->
+		<part name="rc01.bin"/> 
+		<part name="rc02.bin"/> 
+		<part name="rc03.bin"/> 
+		<part name="rc04.bin"/> 
+		<part name="rc05.bin"/> 
+		<part name="rc06.bin"/> 
+		<part name="rc07.bin"/> 
+		<part name="rc08.bin"/> 
+<!-- 8k -->
+		<part name="rc09.bin"/> 
+		<part name="rc10.bin"/> 
+		<part name="rc11.bin"/> 
+		<part name="rc12.bin"/> 
+<!-- 2k -->
+		<part repeat="2048">FF</part>
+	</rom>
+</misterromdescription>
