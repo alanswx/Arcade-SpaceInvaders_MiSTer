@@ -80,7 +80,6 @@ entity mw8080 is
 		Wr              : out std_logic;
 		Video           : out std_logic;
 
-		OverlayTest     : in  std_logic;
                 color_prom_out  : in  std_logic_vector(7 downto 0);
                 color_prom_addr : out std_logic_vector(10 downto 0);
                 O_VIDEO_R       : out std_logic;
