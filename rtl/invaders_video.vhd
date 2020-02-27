@@ -119,7 +119,8 @@ begin
 	  end if;
 
           if (HCnt(2 downto 0) = "000") then
-		  color_prom_addr<= 27 + unsigned(std_logic_vector( '0' & VCnt(7 downto 3) & HCnt(8 downto 4))); -- first 0 needs to be a 1 for cocktail
+		  --color_prom_addr<= std_logic_vector( '0' & VCnt(7 downto 3) & HCnt(8 downto 4)); -- first 0 needs to be a 1 for cocktail
+		  color_prom_addr<= std_logic_vector( '0' & VCnt(7 downto 3) & ( std_logic_vector(unsigned(HCnt(8 downto 4)) + 8))); -- first 0 needs to be a 1 for cocktail
 	  end if;
 
 

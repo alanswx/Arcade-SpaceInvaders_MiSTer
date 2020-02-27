@@ -79,8 +79,22 @@ entity mw8080 is
 		Sample          : out std_logic;
 		Wr              : out std_logic;
 		Video           : out std_logic;
+
+		OverlayTest     : in  std_logic;
+                color_prom_out  : in  std_logic_vector(7 downto 0);
+                color_prom_addr : out std_logic_vector(10 downto 0);
+                O_VIDEO_R       : out std_logic;
+                O_VIDEO_G       : out std_logic;
+                O_VIDEO_B       : out std_logic;
+                Overlay         : in std_logic;
+                OverlayTest     : in std_logic;
+		VBlank          : out std_logic;
+		HBlank          : out std_logic;
+
+
 		HSync           : out std_logic;
 		VSync           : out std_logic);
+
 end mw8080;
 
 architecture struct of mw8080 is
@@ -130,6 +144,7 @@ architecture struct of mw8080 is
 	signal CntE6        : unsigned(3 downto 0); -- Vertical counter / 262
 	signal CntE7        : unsigned(4 downto 0); -- Vertical counter 2
 	signal Shift        : std_logic_vector(7 downto 0);
+
 
 begin
 	ENA <= ClkEnCnt(2);
@@ -301,12 +316,33 @@ begin
 		elsif Clk'event and Clk = '1' then
 			if VidEn = '1' then
 				if CntE7(4) = '0' and CntE5(4) = '0' and CntD5(2 downto 0) = "011" then
+					color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
 					Shift(7 downto 0) <= RDB(7 downto 0);
 				else
 					Shift(6 downto 0) <= Shift(7 downto 1);
 					Shift(7) <= '0';
 				end if;
 				Video <= Shift(0);
+				if OverlayTest = '1' then
+				   O_VIDEO_R <= color_prom_out(0);
+				   O_VIDEO_G <= color_prom_out(2);
+				   O_VIDEO_B <= color_prom_out(1);
+				elsif (Shift(0)='1') then
+				   if (Overlay = '1') then
+				     O_VIDEO_R <= color_prom_out(0);
+				     O_VIDEO_G <= color_prom_out(2);
+				     O_VIDEO_B <= color_prom_out(1);
+			           else
+				     O_VIDEO_R <= '1';
+				     O_VIDEO_G <= '1';
+				     O_VIDEO_B <= '1';
+			           end if;
+				else
+				   O_VIDEO_R <= '0';
+				   O_VIDEO_G <= '0';
+				   O_VIDEO_B <= '0';
+				end if;
+
 			end if;
 		end if;
 	end process;

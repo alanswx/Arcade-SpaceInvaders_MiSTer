@@ -307,8 +307,8 @@ arcade_video #(260,224,6) arcade_video
 	.RGB_in({r,r,g,g,b,b}),
 	.HBlank(hblank),
 	.VBlank(vblank),
-	.HSync(hs),
-	.VSync(vs),
+	.HSync(HSync),
+	.VSync(VSync),
 
 	.rotate_ccw(ccw),
    .fx(status[5:3])
@@ -488,6 +488,15 @@ invaderst invaderst(
         .Rst_n_s(Rst_n_s),
         .RWE_n(RWE_n),
         .Video(Video),
+
+	.color_prom_addr(color_prom_addr),
+	.color_prom_out(color_prom_out),
+        .O_VIDEO_R(r),
+        .O_VIDEO_G(g),
+        .O_VIDEO_B(b),
+        .Overlay(~status[8]),
+	.OverlayTest(status[9]),
+
         .HSync(HSync),
         .VSync(VSync)
         );
@@ -521,12 +530,12 @@ invaders_video invaders_video (
         .Rst_n_s(Rst_n_s),
         .HSync(HSync),
         .VSync(VSync),
-	.color_prom_addr(color_prom_addr),
+	.color_prom_addr(color_prom_addr2),
 	.color_prom_out(color_prom_out),
 	.OverlayTest(status[9]),
-        .O_VIDEO_R(r),
-        .O_VIDEO_G(g),
-        .O_VIDEO_B(b),
+        .O_VIDEO_R(r2),
+        .O_VIDEO_G(g2),
+        .O_VIDEO_B(b2),
         .O_HSYNC(hs),
         .O_VSYNC(vs),
         .O_HBLANK(hblank),

@@ -81,6 +81,17 @@ entity invaderst is
 		Rst_n_s         : out std_logic;
 		RWE_n           : out std_logic;
 		Video           : out std_logic;
+
+                color_prom_out  : in  std_logic_vector(7 downto 0);
+                color_prom_addr : out std_logic_vector(10 downto 0);
+                O_VIDEO_R       : out std_logic;
+                O_VIDEO_G       : out std_logic;
+                O_VIDEO_B       : out std_logic;
+		Overlay         : in std_logic;
+		OverlayTest     : in std_logic;
+		VBlank          : out std_logic;
+		HBlank          : out std_logic;
+
 		HSync           : out std_logic;
 		VSync           : out std_logic
 		);
@@ -113,6 +124,15 @@ architecture rtl of invaderst is
 		Sample          : out std_logic;
 		Wr              : out std_logic;
 		Video           : out std_logic;
+                color_prom_out  : in  std_logic_vector(7 downto 0);
+                color_prom_addr : out std_logic_vector(10 downto 0);
+                O_VIDEO_R       : out std_logic;
+                O_VIDEO_G       : out std_logic;
+                O_VIDEO_B       : out std_logic;
+		Overlay         : in std_logic;
+		OverlayTest     : in std_logic;
+		VBlank          : out std_logic;
+		HBlank          : out std_logic;
 		HSync           : out std_logic;
 		VSync           : out std_logic);
 	end component;
@@ -194,6 +214,15 @@ begin
 			Sample => Sample,
 			Wr => open,
 			Video => Video,
+                color_prom_out  => color_prom_out,
+                color_prom_addr => color_prom_addr,
+                O_VIDEO_R => O_VIDEO_R,
+                O_VIDEO_G => O_VIDEO_G,
+                O_VIDEO_B => O_VIDEO_B,
+		Overlay => Overlay,
+		OverlayTest => OverlayTest,
+		VBlank => HBlank,
+		HBlank => VBlank,
 			HSync => HSync,
 			VSync => VSync);
 
