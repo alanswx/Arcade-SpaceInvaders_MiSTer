@@ -286,7 +286,8 @@ wire [15:0] joy = joy1 | joy2;
 ///////////////////////////////////////////////////////////////////
 
 
-wire hblank, vblank;
+wire hblank;
+wire vblank;
 wire hs, vs;
 wire r,g,b;
 wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
@@ -362,10 +363,10 @@ always @(*) begin
         GDB2 <= 8'hFF;
 
         case (mod) 
-		  mod_spaceinvaders:
-		  begin
-			 landscape<=0;
-          ccw<=1;
+            mod_spaceinvaders:
+            begin
+	     landscape<=0;
+             ccw<=1;
 
 
           GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
@@ -380,42 +381,43 @@ always @(*) begin
           GDB1 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b0, 1'b0 };
         end
-		  mod_vortex:
-		  begin
+        mod_vortex:
+        begin
 			//GDB0 -- all FF
-			 GDB1 <= sw[1] | ~{ 1'b0, m_right1,m_left1,m_fire1a,1'b0,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | ~{ 1'b1, m_right2,m_left2,m_fire2a,1'b1,1'b1, 1'b1, 1'b1 };
+			//
+          GDB1 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
+          GDB2 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
 	
-		  end
-		  mod_280zap:
-		  begin
- 			 landscape<=1;
+        end
+	mod_280zap:
+	begin
+ 	landscape<=1;
          // ccw<=1;
-		     GDB0 <= sw[0] | ~{ m_start1, m_coin1,1'b0,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
-           GDB1 <= sw[1] | ~{ 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-           GDB2 <= sw[2] | ~{ 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b1 };
+           GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
+           GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+           GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b1 };
 
-		  end
+	end
 		  mod_blueshark:
 		  begin
-		     GDB0 <= sw[0] | ~{ 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
-		     GDB1 <= sw[1] | ~{ 1'b1, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
-		     GDB2 <= sw[2] | ~{ 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0,m_coin1 ,m_fire_a};
+		     GDB0 <= sw[0] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
+		     GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
+		     GDB2 <= sw[2] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1,m_coin1 ,m_fire_a};
 		  end
 		  mod_boothill:
 		  begin
-          GDB0 <= sw[0] | ~{ m_fire1a, 1'b1,1'b0,1'b1,m_right1,m_left1,m_down1,m_up1};
-          GDB1 <= sw[1] | ~{ m_fire2a, 1'b1,1'b0,1'b1,m_right2,m_left2,m_down2,m_up2};
-          GDB2 <= sw[2] | ~{ m_start1, m_coin1,m_start1,1'b1,1'b0,1'b0, 1'b1, 1'b0 };
+          GDB0 <= sw[0] | { m_fire1a, 1'b0,1'b1,1'b0,m_right1,m_left1,m_down1,m_up1};
+          GDB1 <= sw[1] | { m_fire2a, 1'b0,1'b1,1'b0,m_right2,m_left2,m_down2,m_up2};
+          GDB2 <= sw[2] | { m_start1, m_coin1,m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
 		  end
 		  mod_lunarrescue:
 		  begin
 		  	 landscape<=0;
           color_rom_enabled<=1;
           ccw<=1;
-          GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b0, 1'b0 };
+          GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
+          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
 		  end
         mod_ozmawars:
 		  begin
@@ -433,13 +435,13 @@ always @(*) begin
           ccw<=1;
           color_rom_enabled<=1;
         // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1, 1'b1 };
+          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
 		  end
 		  mod_spacewalk:
 		  begin
 			GDB0 <= 8'b0;
-         GDB1 <= sw[1] | ~{ 1'b0, 1'b0,1'b0,1'b0,m_start1, m_start2, m_coin1 , 1'b0};
+         GDB1 <= sw[1] | { 1'b1, 1'b1,1'b1,1'b1,m_start1, m_start2, m_coin1 , 1'b1};
 			GDB2 <= 8'b0;
 		  end
 		  mod_spaceinvaderscv:
@@ -495,7 +497,7 @@ invaderst invaderst(
         .O_VIDEO_G(g),
         .O_VIDEO_B(b),
         //.HBLANK(hblank),
-        .VBLANK(vblank),
+        //.VBLANK(vblank),
         .Overlay(~status[8]),
 	.OverlayTest(status[9]),
 
@@ -531,7 +533,7 @@ invaders_blank invaders_blank (
         .HSync(HSync),
         .VSync(VSync),
         .O_HBLANK(hblank),
-        //.O_VBLANK(vblank)
+        .O_VBLANK(vblank)
 	);
 /*
 invaders_video invaders_video (

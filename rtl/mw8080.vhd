@@ -90,8 +90,6 @@ entity mw8080 is
                 OverlayTest     : in std_logic;
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
-
-
 		HSync           : out std_logic;
 		VSync           : out std_logic);
 
@@ -414,18 +412,19 @@ begin
 				--if (std_logic_vector( CntE5(4 downto 0) & CntD5(3 downto 0)) = 511) then
 				--if CntE5(4 downto 0) = "11111" and CntD5(3 downto 0) = "1111" then
 				--if CntE5(4 downto 0) = "00100" and CntD5(3 downto 0) = "1100" then
+				--if CntE5(3 downto 0) = "0000"  and CntD5(3) = "0"
 				if CntE5(4 downto 0) = "11110" and CntD5(3 downto 0) = "0101" then
 					HBlank<='0';
 				end if;
 				--if (std_logic_vector( CntE5(4 downto 0) & CntD5(3 downto 0)) = 0) then
 				--if CntE5(4 downto 0) = "00000" and CntD5(3 downto 0) = "0000" then
-				if CntE5(4 downto 0) = "000000" and CntD5(3 downto 0) = "1100" then
+				if CntE5(4 downto 0) = "11110" and CntD5(3 downto 0) = "0101" then
 					HBlank<='1';
 				end if;
 				--	color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
 
                                 -- V:000011010 blank 0 
-
+				-- 111111111
 				--if CntE7(4) = '0' and CntE7(0) = '0' and CntE6(3 downto 2) = "11" then
 				if CntE7(4 downto 0) = "00001" and CntE6(3 downto 0) = "1010" then
 				--if (std_logic_vector( CntE7(3 downto 0) & CntE6(3 downto 0)) = 224) then

@@ -54,10 +54,11 @@ begin
              hblank<='0';
           end if;
 
-	  if (Vcnt = 32) then
+	  if (Vcnt = 16) then
 		  vblank<='0';
 	  end if;
-	  if (Vcnt = 255) then
+	  --if (Vcnt = 238) then
+	  if (Vcnt = 240) then
 		  vblank<='1';
 	  end if;
 
