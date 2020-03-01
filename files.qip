@@ -18,3 +18,4 @@ set_global_assignment -name VHDL_FILE rtl/T80/T80_MCode.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80_ALU.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80.vhd
 set_global_assignment -name VHDL_FILE rtl/invaders_video.vhd
+set_global_assignment -name VHDL_FILE rtl/invaders_blank.vhd

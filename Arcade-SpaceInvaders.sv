@@ -494,6 +494,8 @@ invaderst invaderst(
         .O_VIDEO_R(r),
         .O_VIDEO_G(g),
         .O_VIDEO_B(b),
+        //.HBLANK(hblank),
+        .VBLANK(vblank),
         .Overlay(~status[8]),
 	.OverlayTest(status[9]),
 
@@ -523,6 +525,15 @@ invaders_audio invaders_audio (
         .Aud(audio)
         );
 
+invaders_blank invaders_blank (
+        .CLK(clk_sys),
+        .Rst_n_s(Rst_n_s),
+        .HSync(HSync),
+        .VSync(VSync),
+        .O_HBLANK(hblank),
+        //.O_VBLANK(vblank)
+	);
+/*
 invaders_video invaders_video (
         .Video(Video),
         .Overlay(~status[8]),
@@ -539,10 +550,13 @@ invaders_video invaders_video (
         .O_HSYNC(hs),
         .O_VSYNC(vs),
         .O_HBLANK(hblank),
-        .O_VBLANK(vblank)
+        //.O_VBLANK(vblank)
 	
         );
-	/*
+	
+*/
+
+/*
 invaders_top invaders_top
 (
 
@@ -565,7 +579,7 @@ invaders_top invaders_top
 	.r(r),
 	.g(g),
 	.b(b),
-	.hblnk(hblank),
+	//.hblnk(hblank),
 	.vblnk(vblank),
 	.hs(hs),
 	.vs(vs),
