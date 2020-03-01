@@ -87,6 +87,7 @@ entity invaderst is
                 O_VIDEO_R       : out std_logic;
                 O_VIDEO_G       : out std_logic;
                 O_VIDEO_B       : out std_logic;
+		WD_Enabled      : in std_logic;
 		Overlay         : in std_logic;
 		OverlayTest     : in std_logic;
 		VBlank          : out std_logic;
@@ -165,7 +166,7 @@ begin
 			Rst_n_s_i <= '0';
 		elsif Clk'event and Clk = '1' then
 			Rst_n_s_i <= Rst_n_r;
-			if WD_Cnt = 255 then
+			if WD_Cnt = 255 and WD_Enabled='1' then
 				Rst_n_s_i <= '0';
 			end if;
 			Rst_n_r := '1';

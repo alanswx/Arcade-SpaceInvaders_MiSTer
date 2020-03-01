@@ -9,9 +9,11 @@
 		<part name="lrescue.2"/> 
 		<part name="lrescue.3"/> 
 		<part name="lrescue.4"/> 
+<!-- 8k -->
 		<part name="lrescue.5"/> 
 		<part name="lrescue.6"/> 
 		<part repeat="4096">00<part>
+<!-- 2k -->
                 <part name="7643-1.cpu"/>
                 <part name="7643-1.cpu"/>
         </rom>

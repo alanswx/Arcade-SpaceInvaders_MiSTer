@@ -9,5 +9,12 @@
 		<part name="dplay619.g"/> 
 		<part name="dplay619.f"/> 
 		<part name="dplay619.e"/> 
+
+<!-- 8k -->
+                <part repeat="4096">00</part>
+                <part repeat="4096">00</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

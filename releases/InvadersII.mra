@@ -13,5 +13,8 @@
 		<part repeat="2048">00</part>
 		<part name="invad2ct.b"/> 
 		<part name="invad2ct.a"/> 
+<!-- 2k -->
+                <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

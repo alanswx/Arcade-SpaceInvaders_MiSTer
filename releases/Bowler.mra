@@ -9,6 +9,11 @@
 		<part name="g.cpu"/> 
 		<part name="f.cpu"/> 
 		<part name="e.cpu"/> 
+<!-- 8k -->
 		<part name="d.cpu"/> 
+                <part repeat="4096">00</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

@@ -11,5 +11,13 @@
 		<part name="zzzape"/>
 		<part name="zzzapd"/>
 		<part name="zzzapc"/>
+                <part repeat="2048">00</part>
+
+<!-- 8k -->
+                <part repeat="4096">00</part>
+                <part repeat="4096">00</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

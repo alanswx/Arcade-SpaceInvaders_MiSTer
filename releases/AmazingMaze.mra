@@ -7,5 +7,13 @@
 	<rom index="0" zip="maze.zip" md5="none">
 		<part name="maze.h"/> 
 		<part name="maze.g"/> 
+                <part repeat="4096">00</part>
+
+<!-- 8k -->
+                <part repeat="4096">00</part>
+                <part repeat="4096">00</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

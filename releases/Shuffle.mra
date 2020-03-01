@@ -10,5 +10,11 @@
 		<part name="shuffle.g"/>
 		<part name="shuffle.f"/>
 		<part name="shuffle.e"/>
+<!-- 8k -->
+                <part repeat="4096">00</part>
+                <part repeat="4096">00</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

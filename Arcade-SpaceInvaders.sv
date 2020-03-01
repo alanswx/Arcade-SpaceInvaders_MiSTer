@@ -290,7 +290,8 @@ wire hblank;
 wire vblank;
 wire hs, vs;
 wire r,g,b;
-wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
+//wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
+wire no_rotate = status[2] | direct_video | landscape;
 reg ce_pix;
 always @(posedge clk_40) begin
         reg [2:0] div;
@@ -358,6 +359,7 @@ always @(*) begin
         landscape <= 1;
         ccw<=0;
         color_rom_enabled<=0;
+	WDEnabled <= 1'b1;
         GDB0 <= 8'hFF;
         GDB1 <= 8'hFF;
         GDB2 <= 8'hFF;
@@ -377,6 +379,7 @@ always @(*) begin
 		  begin
  			 landscape<=0;
           ccw<=0;
+	  WDEnabled <= 1'b0;
           GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0,1'b0};
           GDB1 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b0, 1'b0 };
@@ -406,6 +409,7 @@ always @(*) begin
 		  end
 		  mod_boothill:
 		  begin
+	  WDEnabled <= 1'b0;
           GDB0 <= sw[0] | { m_fire1a, 1'b0,1'b1,1'b0,m_right1,m_left1,m_down1,m_up1};
           GDB1 <= sw[1] | { m_fire2a, 1'b0,1'b1,1'b0,m_right2,m_left2,m_down2,m_up2};
           GDB2 <= sw[2] | { m_start1, m_coin1,m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
@@ -479,6 +483,8 @@ invaderst invaderst(
         .GDB0(GDB0),
         .GDB1(GDB1),
         .GDB2(GDB2),
+
+	.WD_Enabled(WDEnabled),
 
         .RDB(RDB),
         .IB(IB),
