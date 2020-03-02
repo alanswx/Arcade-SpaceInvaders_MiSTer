@@ -9,5 +9,9 @@
 		<part name="earthinv.g"/> 
 		<part name="earthinv.f"/> 
 		<part name="earthinv.e"/> 
+     <part repeat="4096">00</part>
+                <part repeat="4096">00</part>
+     <part repeat="2048">FF</part>
+
 	</rom>
 </misterromdescription>

@@ -341,6 +341,8 @@ localparam mod_ozmawars      = 7;
 localparam mod_spacelaser    = 8;
 localparam mod_spacewalk     = 9;
 localparam mod_spaceinvaderscv = 10;
+localparam mod_unknown1 = 11;
+localparam mod_unknown2 = 12;
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
@@ -388,6 +390,7 @@ always @(*) begin
         begin
 			//GDB0 -- all FF
 			//
+	  WDEnabled <= 1'b0;
           GDB1 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
 	
@@ -396,6 +399,7 @@ always @(*) begin
 	begin
  	landscape<=1;
          // ccw<=1;
+	  WDEnabled <= 1'b0;
            GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
            GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
            GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b1 };
@@ -444,6 +448,7 @@ always @(*) begin
 		  end
 		  mod_spacewalk:
 		  begin
+	  WDEnabled <= 1'b0;
 			GDB0 <= 8'b0;
          GDB1 <= sw[1] | { 1'b1, 1'b1,1'b1,1'b1,m_start1, m_start2, m_coin1 , 1'b1};
 			GDB2 <= 8'b0;
@@ -457,6 +462,18 @@ always @(*) begin
           GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
         end
+		  mod_unknown1:
+		  begin
+        GDB0 <= 8'hFF;
+        GDB1 <= 8'hFF;
+        GDB2 <= 8'hFF;
+		  end
+		  mod_unknown2:
+		  begin
+        GDB0 <= 8'h00;
+        GDB1 <= 8'h00;
+        GDB2 <= 8'h00;
+		  end
 		  endcase
 end
 

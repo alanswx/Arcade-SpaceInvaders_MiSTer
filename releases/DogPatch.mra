@@ -1,7 +1,7 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 03 </part>
+		<part> 01 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="dogpatch.zip" md5="none">

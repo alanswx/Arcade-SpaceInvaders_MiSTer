@@ -1,17 +1,20 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 0C </part>
+		<part> 01 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="tornbase.zip" md5="none">
-		<part name="tb.h"/> 
-		<part name="tb.g"/> 
-		<part name="tb.f"/> 
-     <part repeat="2048">00</part>
+	<rom index="0" zip="m4.zip" md5="none">
+		<part name="m4.h"/> 
+		<part name="m4.g"/> 
+		<part name="m4.f"/> 
+		<part name="m4.e"/> 
+
+<!-- 8k -->
                 <part repeat="4096">00</part>
                 <part repeat="4096">00</part>
-     <part repeat="2048">FF</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
 
 	</rom>
 </misterromdescription>

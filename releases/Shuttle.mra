@@ -1,0 +1,24 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+        <rom index="1" >
+                <part  > 01 </part>
+        </rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+
+  <rom index="0" zip="shuttlei.zip" md5="none">
+		<part name="1.13c"/> 
+		<part name="2.11c"/> 
+		<part name="3.13d"/> 
+		<part name="4.11d"/> 
+		<part name="5.13e"/> 
+		<part name="8.11f"/> 
+                <part repeat="2048">00</part>
+<!-- 8k -->
+                <part repeat="4096">00</part>
+                <part repeat="4096">00</part>
+<!-- 2k -->
+		<part name="82s129.2b"/>
+		<part name="82s129.2b"/>
+
+	</rom>
+</misterromdescription>

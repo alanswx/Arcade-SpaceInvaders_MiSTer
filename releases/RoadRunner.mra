@@ -4,14 +4,17 @@
 		<part> 0C </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="tornbase.zip" md5="none">
-		<part name="tb.h"/> 
-		<part name="tb.g"/> 
-		<part name="tb.f"/> 
-     <part repeat="2048">00</part>
+	<rom index="0" zip="roadrunm.zip" md5="none">
+		<part name="9316.1h"/> 
+		<part name="9316.1g"/> 
+		<part name="9316.1f"/> 
+		<part name="9316.1e"/> 
+
+<!-- 8k -->
                 <part repeat="4096">00</part>
                 <part repeat="4096">00</part>
-     <part repeat="2048">FF</part>
+<!-- 2k -->
+                <part repeat="2048">FF</part>
 
 	</rom>
 </misterromdescription>

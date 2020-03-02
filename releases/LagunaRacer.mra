@@ -1,0 +1,22 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 03 </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="lagunar.zip" md5="none">
+<!-- 8k -->
+		<part name="lagunar.h"/> 
+		<part name="lagunar.g"/> 
+		<part name="lagunar.f"/> 
+		<part name="lagunar.e"/> 
+<!-- 8k -->
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+<!-- 2k -->
+<part repeat="1024">FF</part>
+<part repeat="1024">FF</part>
+	</rom>
+</misterromdescription>

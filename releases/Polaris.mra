@@ -1,0 +1,22 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 06 </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="polaris.zip" md5="none">
+<!-- 8k -->
+		<part name="ps01-1.30"/>
+		<part name="ps09.36"/>
+		<part name="ps03-1.31"/>
+		<part name="ps04.37"/>
+<!-- 8k -->
+		<part name="ps05.32"/>
+		<part name="ps10.38"/>
+		<part name="ps26"/>
+		<part repeat="2048">00</part>
+<!-- 2k -->
+		<part name="ps08.1b"/> 
+		<part name="ps08.1b"/> 
+	</rom>
+</misterromdescription>

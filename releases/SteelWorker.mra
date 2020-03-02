@@ -1,0 +1,24 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 03 </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="steelwkr.zip" md5="none">
+<!-- 8k -->
+		<part name="1.36"/>
+		<part name="2.35"/>
+		<part name="3.34"/>
+		<part name="4.33"/>
+		<part name="5.32"/>
+		<part name="6.31"/>
+		<part name="7.42"/>
+		<part name="8.41"/>
+<!-- 8k -->
+		<part repeat="4096">00</part> 
+		<part repeat="4096">00</part> 
+<!-- 2k -->
+		<part name="la05.1"/> 
+		<part name="la06.2"/> 
+	</rom>
+</misterromdescription>

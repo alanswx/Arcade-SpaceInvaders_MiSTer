@@ -1,0 +1,20 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 0A </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="invrvnge.zip" md5="none">
+<!-- 8k -->
+		<part name="h.ic36"/> 
+		<part name="g.ic35"/> 
+		<part name="f.ic34"/> 
+		<part name="e.ic33"/> 
+<!-- 8k -->
+		<part repeat="4096">00</part> 
+		<part repeat="4096">00</part> 
+<!-- 2k -->
+		<part name="colour.bin"/> 
+		<part name="colour.bin"/> 
+	</rom>
+</misterromdescription>

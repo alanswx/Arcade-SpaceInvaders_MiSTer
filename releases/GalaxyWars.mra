@@ -1,0 +1,23 @@
+<misterromdescription>
+        <rbf>SpaceInvaders</rbf>
+	<rom index="1" >
+		<part> 0A </part>
+	</rom>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="galxwars.zip" md5="none">
+<!-- 8k -->
+		<part name="univgw3.0"/> 
+		<part name="univgw4.1"/> 
+		<part name="univgw5.2"/> 
+		<part name="univgw6.3"/> 
+		<part repeat="4096">00</part> 
+<!-- 8k -->
+		<part name="univgw1.4"/> 
+		<part name="univgw2.5"/> 
+		<part repeat="2048">00</part> 
+		<part repeat="4096">00</part> 
+<!-- 2k -->
+		<part name="01.1"/> 
+		<part name="02.2"/> 
+	</rom>
+</misterromdescription>

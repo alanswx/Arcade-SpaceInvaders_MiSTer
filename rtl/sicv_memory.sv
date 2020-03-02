@@ -30,7 +30,7 @@ end
 wire [7:0]rom_data;
 wire [7:0]rom2_data;
 
-wire rom_cs = dn_wr & dn_addr[15:13]==3'b000;
+wire rom_cs  = dn_wr & dn_addr[15:13]==3'b000;
 
 // 0010 0000 0000 0000
 wire rom2_cs = dn_wr & dn_addr[15:13]==3'b001;

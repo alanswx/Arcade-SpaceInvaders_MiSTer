@@ -1,14 +1,15 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
+		<part> 05 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="dplay.zip" md5="none">
-		<part name="dplay619.h"/> 
-		<part name="dplay619.g"/> 
-		<part name="dplay619.f"/> 
-		<part name="dplay619.e"/> 
+	<rom index="0" zip="checkmat.zip" md5="none">
+		<part name="checkmat.h"/> 
+		<part name="checkmat.g"/> 
+		<part name="checkmat.f"/> 
+		<part name="checkmat.e"/> 
+                <part repeat="4096">00</part>
 
 <!-- 8k -->
                 <part repeat="4096">00</part>

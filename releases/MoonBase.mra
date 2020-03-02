@@ -1,7 +1,7 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 07 </part>
+		<part> 03 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="moonbase.zip" md5="none">
@@ -15,6 +15,7 @@
 		<part name="ze3-8.c5"/> 
 		<part name="ze3-9.e5"/> 
 		<part name="ze3-10.f5"/> 
+		<part repeat="2048">00</part>
 		<part repeat="2048">00</part>
 		<part repeat="2048">00</part>
                 <part name="cv02.h7"/>
