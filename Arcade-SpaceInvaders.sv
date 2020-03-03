@@ -343,6 +343,7 @@ localparam mod_spacewalk     = 9;
 localparam mod_spaceinvaderscv = 10;
 localparam mod_unknown1 = 11;
 localparam mod_unknown2 = 12;
+localparam mod_spaceinvadersii = 13;
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
@@ -390,6 +391,7 @@ always @(*) begin
         begin
 			//GDB0 -- all FF
 			//
+	     landscape<=0;
 	  WDEnabled <= 1'b0;
           GDB1 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
@@ -474,6 +476,15 @@ always @(*) begin
         GDB1 <= 8'h00;
         GDB2 <= 8'h00;
 		  end
+		  mod_spaceinvadersii:
+		  begin
+	 landscape<=0;
+          ccw<=1;
+          color_rom_enabled<=1;
+          GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
+          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, ~m_coin1 };
+          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+        end
 		  endcase
 end
 
@@ -525,7 +536,8 @@ invaderst invaderst(
 	.OverlayTest(status[9]),
 
         .HSync(HSync),
-        .VSync(VSync)
+        .VSync(VSync),
+	.mod_vortex(mod==mod_vortex)
         );
 invaders_memory invaders_memory (
         .Clock(clk_sys),
@@ -540,7 +552,8 @@ invaders_memory invaders_memory (
 
 	.dn_addr(ioctl_addr[15:0]),
 	.dn_data(ioctl_dout),
-	.dn_wr(ioctl_wr&ioctl_index==0)
+	.dn_wr(ioctl_wr&ioctl_index==0),
+	.mod_vortex(mod==mod_vortex)
         );
 
 invaders_audio invaders_audio (

@@ -11,7 +11,8 @@ output    [7:0]  color_prom_out,
 input     [10:0] color_prom_addr,
 input     [15:0] dn_addr,
 input     [7:0]  dn_data,
-input            dn_wr
+input            dn_wr,
+input            mod_vortex
 
 );
 
@@ -30,6 +31,10 @@ end
 wire [7:0]rom_data;
 wire [7:0]rom2_data;
 
+wire [15:0]rom_addr_vortex = {Addr[15:10],~Addr[9],Addr[8:4],~Addr[3],Addr[2:1],~Addr[0]};
+wire [15:0] rom_addr = mod_vortex? rom_addr_vortex : Addr;
+
+
 wire rom_cs  = dn_wr & dn_addr[15:13]==3'b000;
 
 // 0010 0000 0000 0000
@@ -47,7 +52,7 @@ cpu_prog_rom(
 	.data_a(dn_data),
 
 	.clock_b(Clock),
-	.address_b(Addr[12:0]),
+	.address_b(rom_addr[12:0]),
 	.q_b(rom_data)
 );
 dpram #(.addr_width_g(13),
@@ -59,7 +64,7 @@ cpu_prog_rom2(
 	.data_a(dn_data),
 
 	.clock_b(Clock),
-	.address_b(Addr[12:0]),
+	.address_b(rom_addr[12:0]),
 	.q_b(rom2_data)
 );
 dpram #(.addr_width_g(11),

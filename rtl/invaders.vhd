@@ -94,7 +94,9 @@ entity invaderst is
 		HBlank          : out std_logic;
 
 		HSync           : out std_logic;
-		VSync           : out std_logic
+		VSync           : out std_logic;
+
+	        mod_vortex      : in std_logic
 		);
 end invaderst;
 
@@ -152,6 +154,7 @@ architecture rtl of invaderst is
 	signal WD_Cnt       : unsigned(7 downto 0);
 	signal Sample       : std_logic;
 	signal Rst_n_s_i    : std_logic;
+	signal GDB_A        : unsigned(1 downto 0);
 begin
 
 	Rst_n_s <= Rst_n_s_i;
@@ -227,7 +230,14 @@ begin
 			HSync => HSync,
 			VSync => VSync);
 
-	with AD_i(9 downto 8) select
+
+        with (mod_vortex) select
+                GDB_A <= 
+			  not AD_i(9) & AD_i(8) when '1',
+			   AD_i(9) & AD_i(8) when '0';
+
+	--with AD_i(9 downto 8) select
+	with GDB_A select
 		GDB <= GDB0 when "00",
 				GDB1 when "01",
 				GDB2 when "10",
