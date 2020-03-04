@@ -251,7 +251,7 @@ begin
 				S when others;
 
 	with (mod_blueshark) select
-		GDB0_pick  <= S when '1', GDB0 when others;
+		GDB0_pick  <= SR when '1', GDB0 when others;
 
 --	GDB0(0) <= '1';--DIP(8);  -- Unused ?
 --	GDB0(1) <= '1';--DIP(7);
