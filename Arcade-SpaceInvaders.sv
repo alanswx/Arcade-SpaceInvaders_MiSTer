@@ -392,6 +392,7 @@ always @(*) begin
 			//GDB0 -- all FF
 			//
 	     landscape<=0;
+          ccw<=2;
 	  WDEnabled <= 1'b0;
           GDB1 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
@@ -409,9 +410,10 @@ always @(*) begin
 	end
 		  mod_blueshark:
 		  begin
-		     GDB0 <= sw[0] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
-		     GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
-		     GDB2 <= sw[2] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1,m_coin1 ,m_fire_a};
+         WDEnabled <= 1'b0;
+         GDB0 <= sw[0] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
+         GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
+         GDB2 <= sw[2] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1,m_coin1 ,m_fire_a};
 		  end
 		  mod_boothill:
 		  begin
