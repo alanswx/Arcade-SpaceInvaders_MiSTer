@@ -97,7 +97,8 @@ entity invaderst is
 		VSync           : out std_logic;
 
 	        mod_vortex      : in std_logic;
-	        mod_280zap    : in std_logic
+	        mod_280zap    : in std_logic;
+	        mod_blueshark    : in std_logic
 		);
 end invaderst;
 
@@ -141,16 +142,19 @@ architecture rtl of invaderst is
 		VSync           : out std_logic);
 	end component;
 
---	signal GDB0         : std_logic_vector(7 downto 0);
+	signal GDB0_pick    : std_logic_vector(7 downto 0);
 --	signal GDB1         : std_logic_vector(7 downto 0);
 --	signal GDB2         : std_logic_vector(7 downto 0);
 	signal S            : std_logic_vector(7 downto 0);
+	signal SR           : std_logic_vector(7 downto 0);
 	signal GDB          : std_logic_vector(7 downto 0);
 	signal DB           : std_logic_vector(7 downto 0);
 	signal Sounds       : std_logic_vector(7 downto 0);
 	signal AD_i         : std_logic_vector(15 downto 0);
 	signal PortWr_Inv   : std_logic_vector(6 downto 2);
 	signal PortWr_280   : std_logic_vector(6 downto 2);
+	signal PortWr_Blue  : std_logic_vector(6 downto 2);
+	signal mod_mod      : std_logic_vector(1 downto 0);
 	signal PortWr       : std_logic_vector(6 downto 2);
 	signal EA           : std_logic_vector(2 downto 0);
 	signal D5           : std_logic_vector(15 downto 0);
@@ -241,10 +245,13 @@ begin
 
 	--with AD_i(9 downto 8) select
 	with GDB_A select
-		GDB <= GDB0 when "00",
+		GDB <= GDB0_pick when "00",
 				GDB1 when "01",
 				GDB2 when "10",
 				S when others;
+
+	with (mod_blueshark) select
+		GDB0_pick  <= S when '1', GDB0 when others;
 
 --	GDB0(0) <= '1';--DIP(8);  -- Unused ?
 --	GDB0(1) <= '1';--DIP(7);
@@ -273,8 +280,9 @@ begin
 --	GDB2(6) <= not MoveRight;
 --	GDB2(7) <= '1';--DIP(1);  -- Coin info
 
-        with (mod_280zap) select
-		PortWr <= PortWr_Inv when '0' , PortWr_280 when '1';
+	mod_mod <= mod_280zap & mod_blueshark;
+        with mod_mod select
+		PortWr <= PortWr_Inv when "00" , PortWr_280 when "10", PortWr_Blue when "01", PortWr_Inv when "11";
 
 	PortWr_Inv(2) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0';
 	PortWr_Inv(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0';
@@ -287,6 +295,12 @@ begin
 	PortWr_280(4) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0'; -- dataw
 	PortWr_280(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0'; -- audio p2
 	PortWr_280(6) <= '1' when AD_i(10 downto 8) = "111" and Sample = '1' else '0'; -- watchdog
+
+	PortWr_Blue(2) <= '1' when AD_i(10 downto 8) = "001" and Sample = '1' else '0'; -- countw
+	PortWr_Blue(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0'; -- audio p1
+	PortWr_Blue(4) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0'; -- dataw
+	PortWr_Blue(5) <= '1' when AD_i(10 downto 8) = "000" and Sample = '1' else '0'; -- audio p2
+	PortWr_Blue(6) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0'; -- watchdog
 
 	process (Rst_n_s_i, Clk)
 		variable OldSample : std_logic;
@@ -314,6 +328,9 @@ begin
 			OldSample := Sample;
 		end if;
 	end process;
+
+	-- build a reverse of the sprite for blueshrk
+	SR <= S(0) & S(1) & S(2) & S(3) & S(4) & S(5) & S(6) & S(7);
 
 	with EA select
 		S <= D5(15 downto 8) when "000",

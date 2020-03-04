@@ -540,7 +540,8 @@ invaderst invaderst(
         .HSync(HSync),
         .VSync(VSync),
 	.mod_vortex(mod==mod_vortex),
-	.mod_280zap(mod==mod_280zap)
+	.mod_280zap(mod==mod_280zap),
+	.mod_blueshark(mod==mod_blueshark)
         );
 invaders_memory invaders_memory (
         .Clock(clk_sys),
