@@ -96,7 +96,8 @@ entity invaderst is
 		HSync           : out std_logic;
 		VSync           : out std_logic;
 
-	        mod_vortex      : in std_logic
+	        mod_vortex      : in std_logic;
+	        mod_280zap    : in std_logic
 		);
 end invaderst;
 
@@ -148,6 +149,8 @@ architecture rtl of invaderst is
 	signal DB           : std_logic_vector(7 downto 0);
 	signal Sounds       : std_logic_vector(7 downto 0);
 	signal AD_i         : std_logic_vector(15 downto 0);
+	signal PortWr_Inv   : std_logic_vector(6 downto 2);
+	signal PortWr_280   : std_logic_vector(6 downto 2);
 	signal PortWr       : std_logic_vector(6 downto 2);
 	signal EA           : std_logic_vector(2 downto 0);
 	signal D5           : std_logic_vector(15 downto 0);
@@ -270,11 +273,20 @@ begin
 --	GDB2(6) <= not MoveRight;
 --	GDB2(7) <= '1';--DIP(1);  -- Coin info
 
-	PortWr(2) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0';
-	PortWr(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0';
-	PortWr(4) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0';
-	PortWr(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0';
-	PortWr(6) <= '1' when AD_i(10 downto 8) = "110" and Sample = '1' else '0';
+        with (mod_280zap) select
+		PortWr <= PortWr_Inv when '0' , PortWr_280 when '1';
+
+	PortWr_Inv(2) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0';
+	PortWr_Inv(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0';
+	PortWr_Inv(4) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0';
+	PortWr_Inv(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0';
+	PortWr_Inv(6) <= '1' when AD_i(10 downto 8) = "110" and Sample = '1' else '0';
+
+	PortWr_280(2) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0'; -- countw
+	PortWr_280(3) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0'; -- audio p1
+	PortWr_280(4) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0'; -- dataw
+	PortWr_280(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0'; -- audio p2
+	PortWr_280(6) <= '1' when AD_i(10 downto 8) = "111" and Sample = '1' else '0'; -- watchdog
 
 	process (Rst_n_s_i, Clk)
 		variable OldSample : std_logic;
