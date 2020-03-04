@@ -328,6 +328,7 @@ assign reset = (RESET | status[0] | buttons[1] | ioctl_download);
 wire [7:0] GDB0;
 wire [7:0] GDB1;
 wire [7:0] GDB2;
+wire [7:0] GDB3;
 
 
 localparam mod_spaceinvaders = 0;
@@ -357,6 +358,15 @@ reg landscape;
 reg ccw;
 reg color_rom_enabled;
 
+wire Trigger_ShiftCount;
+wire Trigger_ShiftData;
+wire Trigger_AudioDeviceP1;
+wire Trigger_AudioDeviceP2;
+wire Trigger_WatchDogReset;
+wire [7:0] PortWr;
+wire [7:0] S;
+wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
+
 always @(*) begin
 
         landscape <= 1;
@@ -366,6 +376,15 @@ always @(*) begin
         GDB0 <= 8'hFF;
         GDB1 <= 8'hFF;
         GDB2 <= 8'hFF;
+        GDB3 <= S;
+
+        // space invaders default PortWr mapping
+        Trigger_ShiftCount     <= PortWr[2];
+        Trigger_AudioDeviceP1  <= PortWr[3];
+        Trigger_ShiftData      <= PortWr[4];
+        Trigger_AudioDeviceP2  <= PortWr[5];
+        Trigger_WatchDogReset  <= PortWr[6];
+
 
         case (mod) 
             mod_spaceinvaders:
@@ -379,112 +398,161 @@ always @(*) begin
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
         end
         mod_shuffleboard:
-		  begin
- 			 landscape<=0;
+        begin
+          landscape<=0;
           ccw<=0;
-	  WDEnabled <= 1'b0;
-          GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0,1'b0};
-          GDB1 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b0, 1'b0 };
+          GDB1 <= S;
+	  // IN0
+          GDB2 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
+          GDB3 <= SR;
+	  // IN1
+	  // GB4 <=
+	  // IN2 // trackball Y
+	  // GB5 <=
+	  // IN3 // trackball X
+	  // GB6 <=
+	  // 4,5,6 ???
+          Trigger_ShiftCount     <= PortWr[1];
+          Trigger_AudioDeviceP1  <= PortWr[5];
+          Trigger_ShiftData      <= PortWr[2];
+          Trigger_AudioDeviceP2  <= PortWr[6];
+          Trigger_WatchDogReset  <= PortWr[4];
         end
         mod_vortex:
         begin
-			//GDB0 -- all FF
-			//
-	     landscape<=0;
-          ccw<=2;
-	  WDEnabled <= 1'b0;
-          GDB1 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
-	
+          //GDB0 -- all FF
+          //
+          landscape<=0;
+          ccw<=1;
+	  // IN2
+          GDB0 <= 8'hFF;
+          GDB1 <= S;
+	  // IN0
+	  GDB2 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
+	  // IN1
+          GDB3 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
+	  
+          Trigger_ShiftCount     <= PortWr[0];
+          Trigger_AudioDeviceP1  <= PortWr[1];
+          Trigger_ShiftData      <= PortWr[6];
+          Trigger_AudioDeviceP2  <= PortWr[7];
+          Trigger_WatchDogReset  <= PortWr[4];
         end
 	mod_280zap:
 	begin
  	landscape<=1;
-         // ccw<=1;
-	  WDEnabled <= 1'b0;
-           GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
-           GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-           GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b1 };
+	  // IN0
+          GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
+	  // IN1
+          GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+	  // IN2
+          GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+          Trigger_ShiftCount     <= PortWr[4];
+          Trigger_AudioDeviceP1  <= PortWr[2];
+          Trigger_ShiftData      <= PortWr[3];
+          Trigger_AudioDeviceP2  <= PortWr[5];
+          Trigger_WatchDogReset  <= PortWr[7];
 
 	end
-		  mod_blueshark:
-		  begin
-         WDEnabled <= 1'b0;
-         GDB0 <= sw[0] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
-         GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
-         GDB2 <= sw[2] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1,m_coin1 ,m_fire_a};
-		  end
-		  mod_boothill:
-		  begin
-	  WDEnabled <= 1'b0;
+        mod_blueshark:
+        begin
+          GDB0 <= SR;
+	  // IN0
+          GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
+	  // IN1
+          GDB2 <= sw[2] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1,m_coin1 ,m_fire_a};
+          Trigger_ShiftCount     <= PortWr[1];
+          Trigger_AudioDeviceP1  <= PortWr[3];
+          Trigger_ShiftData      <= PortWr[2];
+          Trigger_WatchDogReset  <= PortWr[4];
+        end
+        mod_boothill:
+        begin 
+          // IN0
           GDB0 <= sw[0] | { m_fire1a, 1'b0,1'b1,1'b0,m_right1,m_left1,m_down1,m_up1};
+          // IN1
           GDB1 <= sw[1] | { m_fire2a, 1'b0,1'b1,1'b0,m_right2,m_left2,m_down2,m_up2};
+          // IN2
           GDB2 <= sw[2] | { m_start1, m_coin1,m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
-		  end
-		  mod_lunarrescue:
-		  begin
-		  	 landscape<=0;
+          Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
+          Trigger_AudioDeviceP1  <= PortWr[3];
+          Trigger_ShiftData      <= PortWr[2];
+          Trigger_WatchDogReset  <= PortWr[4];
+          //<= PortWr[5]; // tone_generator_low_w
+          //<= PortWr[6]; // tone_generator_hi_w
+
+        end
+        mod_lunarrescue:
+        begin
+          landscape<=0;
           color_rom_enabled<=1;
           ccw<=1;
+	  WDEnabled <= 1'b1;
           GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
           GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
-		  end
-        mod_ozmawars:
-		  begin
- 		  	 landscape<=0;
-          ccw<=1;
-          color_rom_enabled<=1;
-         // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
-          GDB2 <= sw[2] | { m_start1, m_coin1,m_start2,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
-
-		  end
-		  mod_spacelaser:
-		  begin
-  		  	 landscape<=0;
-          ccw<=1;
-          color_rom_enabled<=1;
-        // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
-		  end
-		  mod_spacewalk:
-		  begin
-	  WDEnabled <= 1'b0;
-			GDB0 <= 8'b0;
-         GDB1 <= sw[1] | { 1'b1, 1'b1,1'b1,1'b1,m_start1, m_start2, m_coin1 , 1'b1};
-			GDB2 <= 8'b0;
-		  end
-		  mod_spaceinvaderscv:
-		  begin
-	 landscape<=0;
-          ccw<=1;
-          color_rom_enabled<=1;
-	GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
-          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
         end
-		  mod_unknown1:
-		  begin
+        mod_ozmawars:
+        begin
+            landscape<=0;
+            ccw<=1;
+            color_rom_enabled<=1;
+         // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
+            GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
+            GDB2 <= sw[2] | { m_start1, m_coin1,m_start2,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+          end
+        mod_spacelaser:
+        begin
+            landscape<=0;
+            ccw<=1;
+            color_rom_enabled<=1;
+        // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
+            GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+            GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+		  end
+        mod_spacewalk:
+        begin
+	     WDEnabled <= 1'b0;
+             GDB0 <= 8'b0;
+             GDB1 <= sw[1] | { 1'b1, 1'b1,1'b1,1'b1,m_start1, m_start2, m_coin1 , 1'b1};
+             GDB2 <= 8'b0;
+             Trigger_ShiftCount     <= PortWr[1];
+             Trigger_AudioDeviceP1  <= PortWr[3];
+             Trigger_ShiftData      <= PortWr[2];
+             Trigger_AudioDeviceP2  <= PortWr[6];
+             Trigger_WatchDogReset  <= PortWr[7];
+             //<= PortWr[5]; // tone_generator_low_w
+             //<= PortWr[6]; // tone_generator_hi_w
+        end
+        mod_spaceinvaderscv:
+        begin
+            landscape<=0;
+            ccw<=1;
+            color_rom_enabled<=1;
+            GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+            GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+            GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+        end
+        mod_unknown1:
+        begin
         GDB0 <= 8'hFF;
         GDB1 <= 8'hFF;
         GDB2 <= 8'hFF;
-		  end
-		  mod_unknown2:
-		  begin
+        end
+        mod_unknown2:
+        begin
         GDB0 <= 8'h00;
         GDB1 <= 8'h00;
         GDB2 <= 8'h00;
-		  end
-		  mod_spaceinvadersii:
-		  begin
+        end
+        mod_spaceinvadersii:
+        begin
 	 landscape<=0;
           ccw<=1;
           color_rom_enabled<=1;
-          GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, ~m_coin1 };
+          GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+          //GDB0 <= sw[0] | { 1'b0, 1'b0, 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
+          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
         end
 		  endcase
@@ -539,6 +607,18 @@ invaderst invaderst(
 
         .HSync(HSync),
         .VSync(VSync),
+
+
+.Trigger_ShiftCount(Trigger_ShiftCount),
+.Trigger_ShiftData(Trigger_ShiftData),
+.Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
+.Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
+.Trigger_WatchDogReset(Trigger_WatchDogReset),
+
+                .PortWr(PortWr),
+    		.S(S),
+
+
 	.mod_vortex(mod==mod_vortex),
 	.mod_280zap(mod==mod_280zap),
 	.mod_blueshark(mod==mod_blueshark)

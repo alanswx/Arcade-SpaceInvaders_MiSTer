@@ -63,6 +63,7 @@ entity invaderst is
                 GDB0            : in std_logic_vector(7 downto 0);
                 GDB1            : in std_logic_vector(7 downto 0);
                 GDB2            : in std_logic_vector(7 downto 0);
+                GDB3            : in std_logic_vector(7 downto 0);
 		
 --		Coin            : in  std_logic;
 --		Sel1Player      : in  std_logic;
@@ -95,6 +96,18 @@ entity invaderst is
 
 		HSync           : out std_logic;
 		VSync           : out std_logic;
+
+	        -- PortWR triggers
+	        Trigger_ShiftCount    : in std_logic;
+	        Trigger_ShiftData     : in std_logic;
+	        Trigger_AudioDeviceP1 : in std_logic;
+	        Trigger_AudioDeviceP2 : in std_logic;
+	        Trigger_WatchDogReset : in std_logic;
+
+	        PortWr       : out std_logic_vector(7 downto 0);
+
+	        -- output of shifter
+		S            : out std_logic_vector(7 downto 0);
 
 	        mod_vortex      : in std_logic;
 	        mod_280zap    : in std_logic;
@@ -142,20 +155,11 @@ architecture rtl of invaderst is
 		VSync           : out std_logic);
 	end component;
 
-	signal GDB0_pick    : std_logic_vector(7 downto 0);
---	signal GDB1         : std_logic_vector(7 downto 0);
---	signal GDB2         : std_logic_vector(7 downto 0);
-	signal S            : std_logic_vector(7 downto 0);
-	signal SR           : std_logic_vector(7 downto 0);
 	signal GDB          : std_logic_vector(7 downto 0);
 	signal DB           : std_logic_vector(7 downto 0);
 	signal Sounds       : std_logic_vector(7 downto 0);
 	signal AD_i         : std_logic_vector(15 downto 0);
-	signal PortWr_Inv   : std_logic_vector(6 downto 2);
-	signal PortWr_280   : std_logic_vector(6 downto 2);
-	signal PortWr_Blue  : std_logic_vector(6 downto 2);
-	signal mod_mod      : std_logic_vector(1 downto 0);
-	signal PortWr       : std_logic_vector(6 downto 2);
+
 	signal EA           : std_logic_vector(2 downto 0);
 	signal D5           : std_logic_vector(15 downto 0);
 	signal WD_Cnt       : unsigned(7 downto 0);
@@ -193,7 +197,7 @@ begin
 			if Sounds(0) = '1' and Old_S0 = '0' then
 				WD_Cnt <= WD_Cnt + 1;
 			end if;
-			if PortWr(6) = '1' then
+			if Trigger_WatchDogReset = '1' then
 				WD_Cnt <= (others => '0');
 			end if;
 			Old_S0 := Sounds(0);
@@ -202,29 +206,29 @@ begin
 
 	u_mw8080: mw8080
 		port map(
-			Rst_n => Rst_n_s_i,
-			Clk => Clk,
-			ENA => ENA,
-			RWE_n => RWE_n,
-			RDB => RDB,
-			IB => IB,
-			RAB => RAB,
-			Sounds => Sounds,
-			Ready => open,
-			GDB => GDB,
-			DB => DB,
-			AD => AD_i,
-			Status => open,
-			Systb => open,
-			Int => open,
-			Hold_n => '1',
-			IntE => open,
-			DBin_n => open,
-			Vait => open,
-			HldA => open,
-			Sample => Sample,
-			Wr => open,
-			Video => Video,
+                Rst_n => Rst_n_s_i,
+                Clk => Clk,
+                ENA => ENA,
+                RWE_n => RWE_n,
+                RDB => RDB,
+                IB => IB,
+                RAB => RAB,
+                Sounds => Sounds,
+                Ready => open,
+                GDB => GDB,
+                DB => DB,
+                AD => AD_i,
+                Status => open,
+                Systb => open,
+                Int => open,
+                Hold_n => '1',
+                IntE => open,
+                DBin_n => open,
+                Vait => open,
+                HldA => open,
+                Sample => Sample,
+                Wr => open,
+                Video => Video,
                 color_prom_out  => color_prom_out,
                 color_prom_addr => color_prom_addr,
                 O_VIDEO_R => O_VIDEO_R,
@@ -234,8 +238,8 @@ begin
 		OverlayTest => OverlayTest,
 		VBlank => HBlank,
 		HBlank => VBlank,
-			HSync => HSync,
-			VSync => VSync);
+                HSync => HSync,
+                VSync => VSync);
 
 
         with (mod_vortex) select
@@ -245,62 +249,20 @@ begin
 
 	--with AD_i(9 downto 8) select
 	with GDB_A select
-		GDB <= GDB0_pick when "00",
+		GDB <= GDB0 when "00",
 				GDB1 when "01",
 				GDB2 when "10",
-				S when others;
+				GDB3  when others;
 
-	with (mod_blueshark) select
-		GDB0_pick  <= SR when '1', GDB0 when others;
+	PortWr(0) <= '1' when AD_i(10 downto 8) = "000" and Sample = '1' else '0';
+	PortWr(1) <= '1' when AD_i(10 downto 8) = "001" and Sample = '1' else '0';
+	PortWr(2) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0';
+	PortWr(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0';
+	PortWr(4) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0';
+	PortWr(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0';
+	PortWr(6) <= '1' when AD_i(10 downto 8) = "110" and Sample = '1' else '0';
+	PortWr(7) <= '1' when AD_i(10 downto 8) = "111" and Sample = '1' else '0';
 
---	GDB0(0) <= '1';--DIP(8);  -- Unused ?
---	GDB0(1) <= '1';--DIP(7);
---	GDB0(2) <= '1';--DIP(6);  -- Unused ?
---	GDB0(3) <= '1';             -- Unused ?
---	GDB0(4) <= not Fire;
---	GDB0(5) <= not MoveLeft;
---	GDB0(6) <= not MoveRight;
---	GDB0(7) <= '1';--DIP(5);  -- Unused ?
---
---	GDB1(0) <= not Coin;-- Active High !
---	GDB1(1) <= not Sel2Player;
---	GDB1(2) <= not Sel1Player;
---	GDB1(3) <= '1';-- Unused ?
---	GDB1(4) <= not Fire;
---	GDB1(5) <= not MoveLeft;
---	GDB1(6) <= not MoveRight;
---	GDB1(7) <= '1';-- Unused ?
---
---	GDB2(0) <= '1';--DIP(4);  -- LSB Lives 3-6
---	GDB2(1) <= '1';--DIP(3);  -- MSB Lives 3-6
---	GDB2(2) <= '0';-- Tilt ?
---	GDB2(3) <= '0';--DIP(2);  -- Bonus life at 1000 or 1500
---	GDB2(4) <= not Fire;
---	GDB2(5) <= not MoveLeft;
---	GDB2(6) <= not MoveRight;
---	GDB2(7) <= '1';--DIP(1);  -- Coin info
-
-	mod_mod <= mod_280zap & mod_blueshark;
-        with mod_mod select
-		PortWr <= PortWr_Inv when "00" , PortWr_280 when "10", PortWr_Blue when "01", PortWr_Inv when "11";
-
-	PortWr_Inv(2) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0';
-	PortWr_Inv(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0';
-	PortWr_Inv(4) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0';
-	PortWr_Inv(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0';
-	PortWr_Inv(6) <= '1' when AD_i(10 downto 8) = "110" and Sample = '1' else '0';
-
-	PortWr_280(2) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0'; -- countw
-	PortWr_280(3) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0'; -- audio p1
-	PortWr_280(4) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0'; -- dataw
-	PortWr_280(5) <= '1' when AD_i(10 downto 8) = "101" and Sample = '1' else '0'; -- audio p2
-	PortWr_280(6) <= '1' when AD_i(10 downto 8) = "111" and Sample = '1' else '0'; -- watchdog
-
-	PortWr_Blue(2) <= '1' when AD_i(10 downto 8) = "001" and Sample = '1' else '0'; -- countw
-	PortWr_Blue(3) <= '1' when AD_i(10 downto 8) = "011" and Sample = '1' else '0'; -- audio p1
-	PortWr_Blue(4) <= '1' when AD_i(10 downto 8) = "010" and Sample = '1' else '0'; -- dataw
-	PortWr_Blue(5) <= '1' when AD_i(10 downto 8) = "000" and Sample = '1' else '0'; -- audio p2
-	PortWr_Blue(6) <= '1' when AD_i(10 downto 8) = "100" and Sample = '1' else '0'; -- watchdog
 
 	process (Rst_n_s_i, Clk)
 		variable OldSample : std_logic;
@@ -312,25 +274,23 @@ begin
 			SoundCtrl5 <= (others => '0');
 			OldSample := '0';
 		elsif Clk'event and Clk = '1' then
-			if PortWr(2) = '1' then
+			if Trigger_ShiftCount = '1' then
 				EA <= DB(2 downto 0);
 			end if;
-			if PortWr(3) = '1' then
+			if Trigger_AudioDeviceP1 = '1' then
 				SoundCtrl3 <= DB(5 downto 0);
 			end if;
-			if PortWr(4) = '1' and OldSample = '0' then
+			if Trigger_ShiftData = '1' and OldSample = '0' then
 				D5(15 downto 8) <= DB;
 				D5(7 downto 0) <= D5(15 downto 8);
 			end if;
-			if PortWr(5) = '1' then
+			if Trigger_AudioDeviceP2 = '1' then
 				SoundCtrl5 <= DB(5 downto 0);
 			end if;
 			OldSample := Sample;
 		end if;
 	end process;
 
-	-- build a reverse of the sprite for blueshrk
-	SR <= S(0) & S(1) & S(2) & S(3) & S(4) & S(5) & S(6) & S(7);
 
 	with EA select
 		S <= D5(15 downto 8) when "000",
