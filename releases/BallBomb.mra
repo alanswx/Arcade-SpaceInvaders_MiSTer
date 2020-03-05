@@ -1,7 +1,7 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 07 </part>
+		<part> 10 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="ballbomb.zip" md5="none">

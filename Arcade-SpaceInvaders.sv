@@ -342,9 +342,17 @@ localparam mod_ozmawars      = 7;
 localparam mod_spacelaser    = 8;
 localparam mod_spacewalk     = 9;
 localparam mod_spaceinvaderscv = 10;
-localparam mod_unknown1 = 11;
-localparam mod_unknown2 = 12;
+localparam mod_unknown1      = 11;
+localparam mod_unknown2      = 12;
 localparam mod_spaceinvadersii = 13;
+localparam mod_amazingmaze   = 14;
+localparam mod_attackforce   = 15;
+localparam mod_ballbomb      = 16;
+localparam mod_bowler        = 17;
+localparam mod_checkmate     = 18;
+localparam mod_clowns        = 19;
+localparam mod_cosmo         = 20;
+
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
@@ -440,7 +448,7 @@ always @(*) begin
         end
 	mod_280zap:
 	begin
- 	landscape<=1;
+ 	  landscape<=1;
 	  // IN0
           GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
 	  // IN1
@@ -555,6 +563,102 @@ always @(*) begin
           GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
         end
+        mod_amazingmaze:
+        begin
+	     WDEnabled <= 1'b0;
+             GDB0 <= sw[0] | { m_up2, m_down2, m_right2, m_left2, m_up1, m_down1, m_right1, m_left1} ;
+             GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,m_coin1, 1'b0, m_start2, m_start1};
+             GDB2 <= 8'b0;
+        end
+        mod_attackforce:
+	begin
+            landscape<=0;
+	    //WDEnabled <= 1'b0;
+            ccw<=1;
+            GDB0 <= sw[0] | { ~m_coin1, 1'b1,1'b1,1'b1,1'b1,~m_fire_a, ~m_left,~m_right};
+            GDB1 <= 8'b0;
+            GDB1 <= 8'b0;
+            Trigger_ShiftCount     <= PortWr[7];
+            Trigger_AudioDeviceP1  <= PortWr[4];
+            Trigger_ShiftData      <= PortWr[3];
+            Trigger_AudioDeviceP2  <= PortWr[6];
+            Trigger_WatchDogReset  <= PortWr[5];
+
+	end
+        mod_ballbomb:
+	begin
+            landscape<=0;
+	    WDEnabled <= 1'b0;
+            ccw<=1;
+            color_rom_enabled<=1;
+            GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+            GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+            GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+	end
+        mod_bowler:
+	begin
+	// 0 - dips
+	// 1 - controls
+            GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0,m_fire_b,m_start1, m_fire_a, m_coin1 };
+    	// 2, 3 trackball
+             Trigger_ShiftCount     <= PortWr[1];
+             //Trigger_AudioDeviceP1  <= PortWr[3];
+             Trigger_ShiftData      <= PortWr[2];
+             //Trigger_AudioDeviceP2  <= PortWr[6];
+             Trigger_WatchDogReset  <= PortWr[4];
+             //<= PortWr[5]; // bowler_audio_1_w 
+             //<= PortWr[6]; // bowler_audio_2_w
+             //<= PortWr[7]; // bowler_lights_1_w
+             //<= PortWr[8]; //
+             //<= PortWr[9]; //
+             //<= PortWr[A]; //
+             //<= PortWr[E]; //
+             //<= PortWr[F]; //
+	end
+        mod_checkmate:
+	begin
+	  WDEnabled <= 1'b0;
+          // IN0
+          GDB0 <= sw[0] | { m_right2,m_left2,m_down2,m_up2,m_right1,m_left1,m_down1,m_up1};
+          //GDB1 <= sw[1] | { m_right4,m_left4,m_down4,m_up4,m_right3,m_left3,m_down3,m_up3};
+          GDB1 <= sw[1] ;
+          GDB2 <= sw[2]; // dips
+          //GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,m_start4,m_start3,m_start2,m_start1};
+          GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,1'b0,1'b0,m_start2,m_start1};
+          //<= PortWr[3]; //  checkmat_io_w
+	end
+        mod_clowns:
+	begin
+          //GDB0 -- all FF
+          //
+          landscape<=0;
+	  // IN0
+          GDB0 <= sw[0] | 8'b0;
+          GDB1 <= sw[1] | { 1'b1,m_coin1,m_start1,m_start2,1'b1,1'b1,1'b1,1'b1};
+          GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+	  
+          Trigger_ShiftCount     <= PortWr[1];
+          Trigger_AudioDeviceP1  <= PortWr[3];
+          Trigger_ShiftData      <= PortWr[2];
+          Trigger_AudioDeviceP2  <= PortWr[7];
+          Trigger_WatchDogReset  <= PortWr[4];
+             //<= PortWr[5]; // tone_generator_low_w
+             //<= PortWr[6]; // tone_generator_hi_w
+	end
+        mod_cosmo:
+	begin
+            landscape<=0;
+            ccw<=0;
+            color_rom_enabled<=1;
+            GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+            GDB1 <= sw[1] | { 1'b0, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+            GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+        Trigger_ShiftCount     <= 1'b0;
+        Trigger_AudioDeviceP1  <= PortWr[3];
+        Trigger_ShiftData      <= 1'b0;
+        Trigger_AudioDeviceP2  <= PortWr[5];
+        Trigger_WatchDogReset  <= PortWr[6];
+	end
 		  endcase
 end
 
@@ -609,15 +713,14 @@ invaderst invaderst(
         .VSync(VSync),
 
 
-.Trigger_ShiftCount(Trigger_ShiftCount),
-.Trigger_ShiftData(Trigger_ShiftData),
-.Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
-.Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
-.Trigger_WatchDogReset(Trigger_WatchDogReset),
+        .Trigger_ShiftCount(Trigger_ShiftCount),
+        .Trigger_ShiftData(Trigger_ShiftData),
+        .Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
+        .Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
+        .Trigger_WatchDogReset(Trigger_WatchDogReset),
 
-                .PortWr(PortWr),
-    		.S(S),
-
+        .PortWr(PortWr),
+        .S(S),
 
 	.mod_vortex(mod==mod_vortex),
 	.mod_280zap(mod==mod_280zap),
