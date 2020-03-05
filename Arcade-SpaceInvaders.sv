@@ -451,12 +451,15 @@ always @(*) begin
 	mod_280zap:
 	begin
  	  landscape<=1;
+	   GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
+           GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+           GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b1 };
 	  // IN0
-          GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
+          //GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
 	  // IN1
-          GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+          //GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
 	  // IN2
-          GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+          //GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
           Trigger_ShiftCount     <= PortWr[4];
           Trigger_AudioDeviceP1  <= PortWr[2];
           Trigger_ShiftData      <= PortWr[3];
@@ -731,6 +734,7 @@ invaderst invaderst(
         .GDB0(GDB0),
         .GDB1(GDB1),
         .GDB2(GDB2),
+        .GDB3(GDB3),
 
 	.WD_Enabled(WDEnabled),
 
