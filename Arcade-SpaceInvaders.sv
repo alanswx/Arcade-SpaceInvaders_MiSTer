@@ -471,9 +471,10 @@ always @(*) begin
         begin
           GDB0 <= SR;
 	  // IN0
-          GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1,1'b1};
+          //GDB1 <= 8'd127-joya[7:0];
+          GDB1 <= { 8'b10000010};
 	  // IN1
-          GDB2 <= sw[2] | { 1'b1, 1'b1,1'b1,1'b1,1'b1,1'b1,m_coin1 ,m_fire_a};
+          GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b1,1'b1,1'b1,m_coin1 ,~m_fire_a};
           Trigger_ShiftCount     <= PortWr[1];
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];

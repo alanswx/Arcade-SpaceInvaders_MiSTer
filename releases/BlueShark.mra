@@ -3,6 +3,14 @@
 	<rom index="1" >
 		<part> 04 </part>
 	</rom>
+
+        <switches default="00,00,00">
+                <dip bits="21,22"   name="Replay" ids="None,14k,18k,22k"/>
+                <dip bits="23"   name="Service" ids="Off,On" values="1,0"/>
+        </switches>
+        <setname>blueshrk</setname>
+
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="blueshrk.zip" md5="none">
 		<part name="blueshrk.h"/> 
