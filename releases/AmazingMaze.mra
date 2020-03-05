@@ -3,6 +3,11 @@
 	<rom index="1" >
 		<part> 0E </part>
 	</rom>
+        <switches default="00,00">
+		<dip bits="5,6"     name="Coinage" ids="1C_1C,2C_1C,1C_2C,2C_3C"/>
+		<dip bits="7"     name="2P Game Time" ids="4,6"/>
+		<dip bits="8"      name="Service" ids="Off,On"/>
+	</switches>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="maze.zip" md5="none">
 		<part name="maze.h"/> 

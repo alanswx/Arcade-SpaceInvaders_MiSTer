@@ -3,6 +3,15 @@
 	<rom index="1" >
 		<part> 11 </part>
 	</rom>
+        <switches default="00,00">
+                <dip bits="0,1"     name="Language" ids="English,French,German,German"/>
+                <dip bits="2"     name="Demo Sounds" ids="Off,On"/>
+                <dip bits="3"      name="Game Time" ids="No Limit,5 Minutes"/>
+                <dip bits="4"      name="Coinage" ids="1C_1C,2C_1C"/>
+                <dip bits="5"      name="Difficulty" ids="Hard,Easy"/>
+                <dip bits="6"      name="Cabinet" ids="Upright,Cocktail(not working)"/>
+        </switches>
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="bowler.zip" md5="none">
 		<part name="h.cpu"/> 
