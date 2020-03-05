@@ -353,6 +353,7 @@ localparam mod_checkmate     = 18;
 localparam mod_clowns        = 19;
 localparam mod_cosmo         = 20;
 localparam mod_dogpatch      = 21;
+localparam mod_doubleplay    = 22;
 
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
