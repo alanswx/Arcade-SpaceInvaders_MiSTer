@@ -6,10 +6,9 @@
 
         <switches default="00,00,00">
                 <dip bits="16,17"   name="Coinage" ids="1C_1C,2C_1C,1C_2C,2C_3C"/>
-                <dip bits="18,19"   name="Game Time" ids="60+30,80+40,99+50"/>
-                <dip bits="20"      name="Test Mode" ids="Off,On"/>
-                <dip bits="21,22"   name="Extended Time At" ids="2.0,2.5,None,None"/>
-                <dip bits="23,24"   name="Language" ids="English,German,French,Spanish"/>
+                <dip bits="18,19"   name="Game Time" ids="60+30,80+40,99+50,Test" values="3,0,2,1"/>
+                <dip bits="20,21"   name="Extended Time At" ids="2.5,2.0,None,None"/>
+                <dip bits="22,23"   name="Language" ids="English,German,French,Spanish"/>
         </switches>
 
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
