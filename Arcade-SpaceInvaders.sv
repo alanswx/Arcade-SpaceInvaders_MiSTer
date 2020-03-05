@@ -451,9 +451,9 @@ always @(*) begin
 	mod_280zap:
 	begin
  	  landscape<=1;
-	   GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
-           GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-           GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b1, 1'b1 };
+	   GDB0 <= sw[0] | { m_start1, m_coin1, 1'b1, m_fire_a, 1'b1, 1'b0, 1'b0, 1'b0};
+           GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+           GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
 	  // IN0
           //GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
 	  // IN1
@@ -605,10 +605,11 @@ always @(*) begin
 	// 0 - dips
             GDB0 <= sw[0];
 	// 1 - controls
-            GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0,m_fire_b,m_start1, m_fire_a, m_coin1 };
+	   GDB1 <= ~S;
+            //GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0,m_fire_b,m_start1, m_fire_a, m_coin1 };
     	// 2, 3 trackball
             GDB2 <= sw[2];
-            GDB3 <= sw[3];
+            GDB3 <= ~SR;
              Trigger_ShiftCount     <= PortWr[1];
              //Trigger_AudioDeviceP1  <= PortWr[3];
              Trigger_ShiftData      <= PortWr[2];
