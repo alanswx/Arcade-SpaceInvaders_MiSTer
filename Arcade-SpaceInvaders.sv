@@ -159,10 +159,10 @@ wire [21:0] gamma_bus;
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
-	.clk_sys(clk_sys),
-	.HPS_BUS(HPS_BUS),
+   .clk_sys(clk_sys),
+   .HPS_BUS(HPS_BUS),
 
-	.conf_str(CONF_STR),
+   .conf_str(CONF_STR),
 
    .buttons(buttons),
    .status(status),
@@ -171,16 +171,16 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
    .gamma_bus(gamma_bus),
    .direct_video(direct_video),
 
-	.ioctl_download(ioctl_download),
-	.ioctl_wr(ioctl_wr),
-	.ioctl_addr(ioctl_addr),
-	.ioctl_dout(ioctl_dout),
-	.ioctl_index(ioctl_index),
+   .ioctl_download(ioctl_download),
+   .ioctl_wr(ioctl_wr),
+   .ioctl_addr(ioctl_addr),
+   .ioctl_dout(ioctl_dout),
+   .ioctl_index(ioctl_index),
 	
-	.joystick_0(joy1),
-	.joystick_1(joy2),
-	.joystick_analog_0(joya),
-	.ps2_key(ps2_key)
+   .joystick_0(joy1),
+   .joystick_1(joy2),
+   .joystick_analog_0(joya),
+   .ps2_key(ps2_key)
 );
 
 wire       pressed = ps2_key[9];
@@ -302,17 +302,17 @@ end
 
 arcade_video #(260,224,6) arcade_video
 (
-	.*,
+   .*,
 
-	.clk_video(clk_40),
+   .clk_video(clk_40),
 
-	.RGB_in({r,r,g,g,b,b}),
-	.HBlank(hblank),
-	.VBlank(vblank),
-	.HSync(HSync),
-	.VSync(VSync),
+   .RGB_in({r,r,g,g,b,b}),
+   .HBlank(hblank),
+   .VBlank(vblank),
+   .HSync(HSync),
+   .VSync(VSync),
 
-	.rotate_ccw(ccw),
+   .rotate_ccw(ccw),
    .fx(status[5:3])
 
 );
@@ -397,11 +397,10 @@ always @(*) begin
 
 
         case (mod) 
-            mod_spaceinvaders:
-            begin
-	     landscape<=0;
-             ccw<=1;
-
+        mod_spaceinvaders:
+        begin
+          landscape<=0;
+          ccw<=1;
 
           GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
           GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
@@ -451,8 +450,9 @@ always @(*) begin
 	mod_280zap:
 	begin
  	  landscape<=1;
-	   GDB0 <= sw[0] | { m_start1, m_coin1, 1'b1, m_fire_a, 1'b1, 1'b0, 1'b0, 1'b0};
-           GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, m_fire_a, m_fire_b,1'b0,1'b0,1'b0/*(joya[11:8]*/};
+           //GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
+           GDB1 <= 8'd127-joya[7:0];
            GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
 	  // IN0
           //GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
@@ -602,6 +602,7 @@ always @(*) begin
 	end
         mod_bowler:
 	begin
+            landscape<=0;
 	// 0 - dips
             GDB0 <= sw[0];
 	// 1 - controls
@@ -623,12 +624,6 @@ always @(*) begin
              //<= PortWr[A]; //
              //<= PortWr[E]; //
              //<= PortWr[F]; //
-        //Trigger_ShiftCount     <= PortWr[2];
-        //Trigger_AudioDeviceP1  <= PortWr[3];
-        //Trigger_ShiftData      <= PortWr[4];
-        //Trigger_AudioDeviceP2  <= PortWr[5];
-        //Trigger_WatchDogReset  <= PortWr[6];
-
 	end
         mod_checkmate:
 	begin
