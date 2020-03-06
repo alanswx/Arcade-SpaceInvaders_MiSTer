@@ -765,6 +765,7 @@ always @(*) begin
         mod_lupin:
         begin
           landscape<=0;
+	  ccw <= 1;
           GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b1};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
