@@ -363,6 +363,8 @@ localparam mod_m4            = 28;
 localparam mod_phantom       = 29;
 localparam mod_polaris       = 30;
 localparam mod_desertgun     = 31;
+localparam mod_lagunaracer   = 32;
+localparam mod_seawolf       = 33;
 
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -457,6 +459,7 @@ always @(*) begin
           Trigger_AudioDeviceP2  <= PortWr[7];
           Trigger_WatchDogReset  <= PortWr[4];
         end
+        mod_lagunaracer:
 	mod_280zap:
 	begin
  	  landscape<=1;
@@ -482,7 +485,8 @@ always @(*) begin
           GDB0 <= SR;
 	  // IN0
           //GDB1 <= 8'd127-joya[7:0];
-          GDB1 <= { 8'b10000010};
+          //GDB1 <= { 8'b01000010};
+          GDB1 <= { 8'd63 + joya[7:1]};
 	  // IN1
           GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b1,1'b1,1'b1,m_coin1 ,~m_fire_a};
           Trigger_ShiftCount     <= PortWr[1];
@@ -722,8 +726,8 @@ always @(*) begin
         mod_guidedmissle:
         begin 
           // IN0
-          GDB0 <= sw[0] | { m_fire2a, m_start1,1'b1,1'b1,m_right2,m_left2,1'b1,1'b1};
-          GDB1 <= sw[1] | { m_fire1a, m_start2,1'b1,1'b1,m_right1,m_left1,~m_coin1,1'b1};
+          GDB0 <= sw[0] | {~m_fire2a,~m_start1,1'b1,1'b1,~m_right2,~m_left2,1'b1,1'b1};
+          GDB1 <= sw[1] | {~m_fire1a,~m_start2,1'b1,1'b1,~m_right1,~m_left1,~m_coin1,1'b1};
           // IN2
           GDB2 <= sw[2];
           Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
@@ -760,6 +764,7 @@ always @(*) begin
 //        mod_indianbattle:
         mod_lupin:
         begin
+          landscape<=0;
           GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b1};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
@@ -771,7 +776,8 @@ always @(*) begin
         end
         mod_m4:
         begin 
-            landscape<=0;
+          landscape<=1;
+	  WDEnabled <= 1'b0;
           // IN0
           GDB0 <= sw[0] | { 1'b1,~m_fire1a,~m_fire1b,~m_down1,1'b1,~m_up1,1'b1};
           GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire2a,~m_fire2b,~m_down2,~m_start1,~m_up1,~m_coin1};
@@ -799,6 +805,7 @@ always @(*) begin
         mod_polaris:
 	begin
           landscape<=0;
+	  ccw<=1;
           GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
@@ -827,8 +834,24 @@ always @(*) begin
           Trigger_AudioDeviceP2  <= PortWr[7];
 
 	end
-
+	mod_seawolf:
+	begin
+          landscape<=0;
+          ccw<=0;
+          GDB0 <= SR;
+	  // IN0
+          GDB1 <= 
+          GDB2 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
+          Trigger_ShiftData      <= PortWr[3];
+          Trigger_ShiftCount     <= PortWr[4];
+          //<= PortWr[5];
+          //<= PortWr[6];
+          //<= PortWr[4];
+       end
       endcase
+      if (mod==mod_lagunaracer) begin
+ 	  landscape<=1;
+      end
 end
 
 wire [15:0] color_prom_addr;
