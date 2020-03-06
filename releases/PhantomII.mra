@@ -1,9 +1,18 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
+		<part> 1D </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+
+      <switches default="00,00,20">
+                <dip bits="16"   name="Coinage" ids="1C_1C,2C_1C"/>
+                <dip bits="17,18"   name="Game Time" ids="45+20,60+25,75+30,90+35"/>
+                <dip bits="21"   name="Service" ids="On,Off"/>
+        </switches>
+        <setname>phantomii</setname>
+
+
 	<rom index="0" zip="phantom2.zip" md5="none">
 		<part name="phantom2.h"/> 
 		<part name="phantom2.g"/> 

@@ -360,6 +360,9 @@ localparam mod_gunfight      = 25;
 localparam mod_indianbattle  = 26;
 localparam mod_lupin         = 27;
 localparam mod_m4            = 28;
+localparam mod_phantom       = 29;
+localparam mod_polaris       = 30;
+localparam mod_desertgun     = 31;
 
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -781,6 +784,49 @@ always @(*) begin
 	  GDB3 <= ShiftReverse ? SR: S;
 
         end
+        mod_phantom:
+        begin
+          landscape<=1;
+	  GDB0 <= SR;
+          GDB1 <= sw[1] | { 1'b1,1'b1,~m_coin1,~m_fire1a,~m_right1,~m_left1,~m_down1,~m_up1};
+          GDB2 <= sw[2];
+          Trigger_ShiftCount     <= PortWr[1];
+          Trigger_ShiftData      <= PortWr[2];
+          Trigger_WatchDogReset  <= PortWr[4];
+          Trigger_AudioDeviceP1  <= PortWr[5];
+          Trigger_AudioDeviceP2  <= PortWr[6];
+        end
+        mod_polaris:
+	begin
+          landscape<=0;
+          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
+          GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
+          GDB2 <= sw[2];
+
+          Trigger_ShiftCount     <= PortWr[1];
+          Trigger_ShiftData      <= PortWr[3];
+          Trigger_WatchDogReset  <= PortWr[5];
+          Trigger_AudioDeviceP1  <= PortWr[2];
+          Trigger_AudioDeviceP2  <= PortWr[4];
+          //<= PortWr[6];
+
+	end
+        mod_desertgun:
+	begin
+          landscape<=1;
+          GDB0 <= SR;
+          GDB1 <= joya[7:0];
+          GDB2 <= sw[2] | { ~m_fire1a,m_coin1, 2'b0, 2'b0, 2'b0};
+
+          Trigger_ShiftCount     <= PortWr[1];
+          Trigger_ShiftData      <= PortWr[2];
+          Trigger_WatchDogReset  <= PortWr[4];
+          Trigger_AudioDeviceP1  <= PortWr[3];
+          //<= PortWr[5]; // tone_generator_low_w
+          //<= PortWr[6]; // tone_generator_hi_w
+          Trigger_AudioDeviceP2  <= PortWr[7];
+
+	end
 
       endcase
 end
