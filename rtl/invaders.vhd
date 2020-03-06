@@ -65,13 +65,6 @@ entity invaderst is
                 GDB2            : in std_logic_vector(7 downto 0);
                 GDB3            : in std_logic_vector(7 downto 0);
 		
---		Coin            : in  std_logic;
---		Sel1Player      : in  std_logic;
---		Sel2Player      : in  std_logic;
---		Fire            : in  std_logic;
---		MoveLeft        : in  std_logic;
---		MoveRight       : in  std_logic;
---		DIP             : in  std_logic_vector(8 downto 1);
 		RDB             : in  std_logic_vector(7 downto 0);
 		IB              : in  std_logic_vector(7 downto 0);
 		RWD             : out std_logic_vector(7 downto 0);
@@ -108,6 +101,7 @@ entity invaderst is
 
 	        -- output of shifter
 		S            : out std_logic_vector(7 downto 0);
+                ShiftReverse : out std_logic;
 
 	        mod_vortex      : in std_logic;
 	        mod_280zap    : in std_logic;
@@ -161,6 +155,7 @@ architecture rtl of invaderst is
 	signal AD_i         : std_logic_vector(15 downto 0);
 
 	signal EA           : std_logic_vector(2 downto 0);
+	signal A           : std_logic_vector(2 downto 0);
 	signal D5           : std_logic_vector(15 downto 0);
 	signal WD_Cnt       : unsigned(7 downto 0);
 	signal Sample       : std_logic;
@@ -273,9 +268,11 @@ begin
 			SoundCtrl3 <= (others => '0');
 			SoundCtrl5 <= (others => '0');
 			OldSample := '0';
+			ShiftReverse <= '0';
 		elsif Clk'event and Clk = '1' then
 			if Trigger_ShiftCount = '1' then
 				EA <= DB(2 downto 0);
+				ShiftReverse <= DB(3);
 			end if;
 			if Trigger_AudioDeviceP1 = '1' then
 				SoundCtrl3 <= DB(5 downto 0);

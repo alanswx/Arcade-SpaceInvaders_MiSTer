@@ -1,9 +1,22 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
+		<part> 27 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+
+
+        <switches default="00,00,00">
+                <dip bits="16,17"   name="Coinage" ids="1C_1C,1C_2C,2C_2C,2C_1C" />
+                <dip bits="18,19"   name="Bonus Game" ids="No Bonus,9k,11k,13k" />
+                <dip bits="20"   name="Balloon Resets" ids="Each Row, All Rows" />
+                <dip bits="21"   name="Bonus Life" ids="3k,4k" />
+                <dip bits="22"   name="Lives" ids="3,4" />
+                <dip bits="23"   name="Service" ids="Off,On" values="0,1"/>
+        </switches>
+        <setname>m4</setname>
+
+
 	<rom index="0" zip="m4.zip" md5="none">
 		<part name="m4.h"/> 
 		<part name="m4.g"/> 

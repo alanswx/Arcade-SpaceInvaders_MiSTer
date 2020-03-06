@@ -1,8 +1,18 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
+		<part> 15 </part>
 	</rom>
+
+        <switches default="00,00,20">
+                <dip bits="16,17"   name="Number of Cans" ids="25,20,15,10"/>
+                <dip bits="18,19"   name="Coinage" ids="2C,2C/1 or 2,1C,1C/1 or 2"/>
+                <dip bits="20"   name="Game Time" ids="2 extra cans, 5 extra cans" />
+                <dip bits="21"   name="Service" ids="Off,On" values="1,0"/>
+                <dip bits="22,23"   name="Extended Time at" ids="150,175,225,275"/>
+        </switches>
+        <setname>dogpatch</setname>
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="dogpatch.zip" md5="none">
 		<part name="dogpatch.h"/> 

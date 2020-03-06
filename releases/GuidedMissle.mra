@@ -1,8 +1,20 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
+		<part> 17 </part>
 	</rom>
+
+
+        <switches default="00,00,80">
+                <dip bits="16,17"   name="Coinage" ids="2C,2C/1or2,1C,1C/1or2" values="1,0,3,2"/>
+                <dip bits="18,19"   name="Game Time" ids="60+30,80+40,70+35,90+45" />
+                <dip bits="20,21"   name="Extended Time At" ids="500,1000,700,1300" />
+                <dip bits="22"   name="Unused" ids="Off,On" values="1,0"/>
+                <dip bits="23"   name="Service" ids="Off,On" values="1,0"/>
+        </switches>
+        <setname>gmissile</setname>
+
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="gmissile.zip" md5="none">
 		<part name="gm_623.h"/> 

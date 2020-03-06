@@ -1,8 +1,16 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
+		<part> 16 </part>
 	</rom>
+
+        <switches default="00,00,40">
+                <dip bits="16,17,18"   name="Coinage" ids="2C,1C,2C,2C,1C,1C,1C"/>
+                <dip bits="22"   name="Service" ids="Off,On" values="1,0"/>
+        </switches>
+        <setname>doubleplay</setname>
+
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="dplay.zip" md5="none">
 		<part name="dplay619.h"/> 

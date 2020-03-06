@@ -2,9 +2,10 @@
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
 		<part> 01 </part>
+		<parta> 20 </parta>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="indianbt.zip" md5="none">
+	<rom index="0" zip="indianbtbr.zip" md5="none">
 <!-- 8k -->
 		<part name="1.36"/>
 		<part name="2.35"/>
