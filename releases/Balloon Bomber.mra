@@ -1,0 +1,28 @@
+<misterromdescription>
+	<name>Balloon Bomber</name>
+	<mameversion>0219</mameversion>
+	<setname>ballbomb</setname>
+	<mratimestamp>20200308234519</mratimestamp>
+	<year>1980</year>
+	<manufacturer>Taito</manufacturer>
+	<category>Army / Antiaircraft</category>
+	<category>Maze / Balloons</category>
+	<category>Sports / Shooting</category>
+	<rbf>spaceinvaders</rbf>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="1">
+		<part>10</part>
+	</rom>
+	<rom index="0" zip="ballbomb.zip" md5="beac40af696fe59551f759d46278ea68">
+		<part crc="551585b5" name="tn01"/>
+		<part crc="7e1f734f" name="tn02"/>
+		<part crc="d93e20bc" name="tn03"/>
+		<part crc="d0689a22" name="tn04"/>
+		<part crc="5d5e94f1" name="tn05-1"/>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+		<part repeat="2048">00</part>
+		<part crc="7ec554c4" name="tn06"/>
+		<part crc="deb0ac82" name="tn07"/>
+	</rom>
+</misterromdescription>
