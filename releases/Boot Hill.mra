@@ -1,0 +1,23 @@
+<misterromdescription>
+	<name>Boot Hill</name>
+	<mameversion>0219</mameversion>
+	<setname>boothill</setname>
+	<mratimestamp>20200308235849</mratimestamp>
+	<year>1977</year>
+	<manufacturer>Dave Nutting Associates / Midway</manufacturer>
+	<category>Platform / Water Diving</category>
+	<rbf>spaceinvaders</rbf>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="1">
+		<part>05</part>
+	</rom>
+	<rom index="0" zip="boothill.zip" md5="d9171b9f504a37be94d605a65ec3fa9c">
+		<part crc="1615d077" name="romh.cpu"/>
+		<part crc="65a90420" name="romg.cpu"/>
+		<part crc="3fdafd79" name="romf.cpu"/>
+		<part crc="374529f4" name="rome.cpu"/>
+		<part repeat="4096">00</part>
+		<part repeat="4096">00</part>
+		<part repeat="2048">FF</part>
+	</rom>
+</misterromdescription>
