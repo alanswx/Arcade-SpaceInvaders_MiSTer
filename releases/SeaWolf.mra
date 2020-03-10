@@ -1,7 +1,7 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 02 </part>
+		<part> 21 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="seawolf.zip" md5="none">

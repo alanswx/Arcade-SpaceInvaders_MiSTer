@@ -1,0 +1,27 @@
+<misterromdescription>
+	<name>Blue Shark</name>
+	<mameversion>0219</mameversion>
+	<setname>blueshrk</setname>
+	<mratimestamp>20200308234912</mratimestamp>
+	<year>1978</year>
+	<manufacturer>Midway</manufacturer>
+	<category>Platform / Water Diving</category>
+	<rbf>spaceinvaders</rbf>
+	<switches default="00,00,80">
+		<dip bits="21,22" name="Replay" ids="None,14k,18k,22k"/>
+		<dip bits="23"    name="Service" ids="Off,On" values="1,0"/>
+	</switches>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="1">
+		<part>04</part>
+	</rom>
+	<rom index="0" zip="blueshrk.zip" md5="none">
+		<part crc="4ff94187" name="blueshrk.h"/>
+		<part crc="e49368fd" name="blueshrk.g"/>
+		<part crc="86cca79d" name="blueshrk.f"/>
+		<part repeat="2048">00</part>
+		<part repeat="4096">00</part>
+		<part repeat="4096">00</part>
+		<part repeat="2048">FF</part>
+	</rom>
+</misterromdescription>

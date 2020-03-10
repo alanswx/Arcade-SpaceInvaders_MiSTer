@@ -365,11 +365,15 @@ localparam mod_polaris       = 30;
 localparam mod_desertgun     = 31;
 localparam mod_lagunaracer   = 32;
 localparam mod_seawolf       = 33;
+localparam mod_yosakdon      = 34;
 
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
 
+//wire [4:0] seawolf_position =  8'd16 + joya[7:3]; // not quite correct
+wire [7:0] center_joystick   =  8'd127 + joya;
+wire [4:0] seawolf_position  =  center_joystick[7:3]; 
 
 
 reg [7:0] sw[8];
@@ -445,13 +449,15 @@ always @(*) begin
           //
           landscape<=0;
           ccw<=1;
-	  // IN2
-          GDB0 <= 8'hFF;
+	  // IN2 -- settings
+          GDB0 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0};
           GDB1 <= S;
 	  // IN0
-	  GDB2 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
+	  //GDB2 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, ~m_coin1 };
+	  //GDB2 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, ~m_coin1 };
+          GDB2 <= 8'h00;
 	  // IN1
-          GDB3 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
+          GDB3 <= sw[1] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,m_start1, m_start2, ~m_coin1 };
 	  
           Trigger_ShiftCount     <= PortWr[0];
           Trigger_AudioDeviceP1  <= PortWr[1];
@@ -855,17 +861,30 @@ always @(*) begin
 	end
 	mod_seawolf:
 	begin
-          landscape<=0;
+          landscape<=1;
+	  WDEnabled <= 1'b0;
           ccw<=0;
           GDB0 <= SR;
 	  // IN0
-          GDB1 <= 
-          GDB2 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
+          GDB1 <= sw[0] | { 2'b0, m_fire_a, seawolf_position};
+          GDB2 <= sw[1] | { 3'b0,1'b0 /*erase?*/, 2'b0,m_start1,m_coin1};
           Trigger_ShiftData      <= PortWr[3];
           Trigger_ShiftCount     <= PortWr[4];
           //<= PortWr[5];
           //<= PortWr[6];
           //<= PortWr[4];
+       end
+        mod_yosakdon:
+	begin
+	  WDEnabled <= 1'b0;
+          landscape<=1;
+          //GDB0 <= SR;
+	  // IN0
+          GDB1 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
+	  // IN1
+          GDB2 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0,1'b0,1'b0};
+	  Trigger_AudioDeviceP1  <= PortWr[3];
+          Trigger_AudioDeviceP2  <= PortWr[5];
        end
       endcase
 end
@@ -950,7 +969,8 @@ invaders_memory invaders_memory (
 	.dn_addr(ioctl_addr[15:0]),
 	.dn_data(ioctl_dout),
 	.dn_wr(ioctl_wr&ioctl_index==0),
-	.mod_vortex(mod==mod_vortex)
+	.mod_vortex(mod==mod_vortex),
+	.mod_attackforce(mod==mod_attackforce)
         );
 
 invaders_audio invaders_audio (
