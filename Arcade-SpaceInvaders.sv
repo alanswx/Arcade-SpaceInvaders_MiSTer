@@ -372,9 +372,15 @@ always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
 
 //wire [4:0] seawolf_position =  8'd16 + joya[7:3]; // not quite correct
-wire [7:0] center_joystick   =  8'd127 + joya;
-wire [4:0] seawolf_position  =  center_joystick[7:3]; 
+wire [9:0] center_joystick_x   =  8'd127 + joya[7:0];
+wire [4:0] seawolf_position  =  center_joystick_x[7:3]; 
+wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
+//wire [9:0] positive_joystick_y   =  joya[15] ? 8'd128+ $signed(joya[15:8]) : 10'b0;
+wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
+wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
 
+reg fire_toggle = 0;
+always @(posedge m_fire_a) fire_toggle <= ~fire_toggle;
 
 reg [7:0] sw[8];
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
@@ -487,7 +493,8 @@ always @(*) begin
 	mod_280zap:
 	begin
  	  landscape<=1;
-	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, m_fire_a, m_fire_b,1'b0,1'b0,1'b0/*(joya[11:8]*/};
+	   //GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, m_fire_a, m_fire_b,1'b0,1'b0,1'b0/*(joya[11:8]*/};
+	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, fire_toggle, zap_throttle};
            //GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
            GDB1 <= 8'd127-joya[7:0];
            GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
@@ -504,6 +511,7 @@ always @(*) begin
           Trigger_WatchDogReset  <= PortWr[7];
 
 	end
+
         mod_blueshark:
         begin
           GDB0 <= SR;
