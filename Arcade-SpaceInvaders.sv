@@ -417,6 +417,27 @@ wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
 wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
 wire   [2:0] dogpatch_y_2 = positive_joystick_y_2[6:4] ;
 
+
+
+reg [7:0] clown_y = 128;
+reg [5:0] clown_timer= 0;
+reg vsync_r;
+//always @(posedge m_right or posedge m_left ) begin
+always @(posedge clk_sys) begin
+    vsync_r          <= VSync;
+    if (vsync_r ==0 && VSync== 1) begin
+       if (clown_timer > 5) begin
+        if (m_right && clown_y < 255)
+            clown_y <= clown_y +1;
+        else if (m_left && clown_y > 0)
+            clown_y <= clown_y -1;
+       clown_timer <= clown_timer +1;
+       end
+       else
+	     clown_timer <= clown_timer +1;
+    end
+end
+
 reg fire_toggle = 0;
 always @(posedge m_fire_a) fire_toggle <= ~fire_toggle;
 
@@ -735,7 +756,8 @@ always @(*) begin
           landscape<=1;
 	  // IN0
           //GDB0 <= sw[0] | 8'b0;
-          GDB0 <= 8'd127-joya[7:0];
+          //GDB0 <= 8'd127-joya[7:0];
+          GDB0 <= clown_y;
           GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
           GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
 	  
@@ -852,8 +874,8 @@ always @(*) begin
           landscape<=1;
 	  WDEnabled <= 1'b0;
           // IN0
-          GDB0 <= sw[0] | { 1'b1,~m_fire1a,~m_fire1b,~m_down1,1'b1,~m_up1,1'b1};
-          GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire2a,~m_fire2b,~m_down2,~m_start1,~m_up1,~m_coin1};
+          GDB0 <= sw[0] | { 1'b1,~m_fire2a,~m_fire2b,~m_down2,1'b1,~m_up2,1'b1};
+          GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire1a,~m_fire1b,~m_down1,~m_start1,~m_up1,~m_coin1};
           GDB2 <= sw[2];
           Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
           Trigger_AudioDeviceP1  <= PortWr[3];
