@@ -150,8 +150,8 @@ reg	[7:0] machine_info;
 
 wire [10:0] ps2_key;
 
-wire [15:0] joy1, joy2;
-wire [15:0] joya;
+wire [15:0] joy1, joy2, joy3, joy4;
+wire [15:0] joya, joya2;
 
 wire [21:0] gamma_bus;
 
@@ -179,7 +179,10 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 	
    .joystick_0(joy1),
    .joystick_1(joy2),
+   .joystick_2(joy3),
+   .joystick_3(joy4),
    .joystick_analog_0(joya),
+   .joystick_analog_1(joya2),
    .ps2_key(ps2_key)
 );
 
@@ -206,6 +209,9 @@ always @(posedge clk_sys) begin
 			// JPAC/IPAC/MAME Style Codes
 			'h16: btn_start1        <= pressed; // 1
 			'h1E: btn_start2        <= pressed; // 2
+                        'h26: btn_start3        <= pressed; // 3
+			'h25: btn_start4        <= pressed; // 4
+
 			'h2E: btn_coin1         <= pressed; // 5
 			'h36: btn_coin2         <= pressed; // 6
 			'h2D: btn_up2           <= pressed; // R
@@ -233,6 +239,8 @@ reg btn_coin1  = 0;
 reg btn_coin2  = 0;
 reg btn_start1 = 0;
 reg btn_start2 = 0;
+reg btn_start3 = 0;
+reg btn_start4 = 0;
 reg btn_up2    = 0;
 reg btn_down2  = 0;
 reg btn_left2  = 0;
@@ -272,6 +280,33 @@ wire m_fire_a  = m_fire1a | m_fire2a;
 wire m_fire_b  = m_fire1b | m_fire2b;
 wire m_fire_c  = m_fire1c | m_fire2c;
 wire m_fire_d  = m_fire1d | m_fire2d;
+
+wire m_coin3   = joy3[10];
+wire m_start3  = joy3[8] | btn_start3;
+wire m_left3   = joy3[1];
+wire m_right3  = joy3[0];
+wire m_up3     = joy3[3];
+wire m_down3   = joy3[2];
+/*
+wire m_fire3a  = joy3[4];
+wire m_fire3b  = joy3[5];
+wire m_fire3c  = joy3[6];
+wire m_fire3d  = joy3[7];
+*/
+
+wire m_coin4   = joy4[10];
+wire m_start4  = joy4[8] | btn_start4;
+wire m_left4   = joy4[1];
+wire m_right4  = joy4[0];
+wire m_up4     = joy4[3];
+wire m_down4   = joy4[2];
+/*
+wire m_fire4a  = joy4[4];
+wire m_fire4b  = joy4[5];
+wire m_fire4c  = joy4[6];
+wire m_fire4d  = joy4[7];
+*/
+
 
 wire [2:0] ms_col;
 wire [2:0] bs_col;
@@ -377,7 +412,10 @@ wire [4:0] seawolf_position  =  center_joystick_x[7:3];
 wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
 //wire [9:0] positive_joystick_y   =  joya[15] ? 8'd128+ $signed(joya[15:8]) : 10'b0;
 wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
+wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 10'b0;
 wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
+wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
+wire   [2:0] dogpatch_y_2 = positive_joystick_y_2[6:4] ;
 
 reg fire_toggle = 0;
 always @(posedge m_fire_a) fire_toggle <= ~fire_toggle;
@@ -518,7 +556,8 @@ always @(*) begin
 	  // IN0
           //GDB1 <= 8'd127-joya[7:0];
           //GDB1 <= { 8'b01000010};
-          GDB1 <= { 8'd63 + joya[7:1]};
+        //  GDB1 <= { 8'd63 + joya[7:1]};
+          GDB1 <= (8'd127+joya[7:0]) & 8'hFE;
 	  // IN1
           GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b1,1'b1,1'b1,m_coin1 ,~m_fire_a};
           Trigger_ShiftCount     <= PortWr[1];
@@ -682,11 +721,11 @@ always @(*) begin
 	  WDEnabled <= 1'b0;
           // IN0
           GDB0 <= sw[0] | { m_right2,m_left2,m_down2,m_up2,m_right1,m_left1,m_down1,m_up1};
-          //GDB1 <= sw[1] | { m_right4,m_left4,m_down4,m_up4,m_right3,m_left3,m_down3,m_up3};
+          GDB1 <= sw[1] | { m_right4,m_left4,m_down4,m_up4,m_right3,m_left3,m_down3,m_up3};
           GDB1 <= sw[1] ;
           GDB2 <= sw[2]; // dips
-          //GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,m_start4,m_start3,m_start2,m_start1};
-          GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,1'b0,1'b0,m_start2,m_start1};
+          GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,m_start4,m_start3,m_start2,m_start1};
+          //GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,1'b0,1'b0,m_start2,m_start1};
           //<= PortWr[3]; //  checkmat_io_w
 	end
         mod_clowns:
@@ -695,7 +734,8 @@ always @(*) begin
           //
           landscape<=1;
 	  // IN0
-          GDB0 <= sw[0] | 8'b0;
+          //GDB0 <= sw[0] | 8'b0;
+          GDB0 <= 8'd127-joya[7:0];
           GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
           GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
 	  
@@ -726,8 +766,8 @@ always @(*) begin
             landscape<=1;
             ccw<=0;
             color_rom_enabled<=1;
-            GDB0 <= sw[0] | { ~m_fire_b, 3'b111, 1'b1, ~m_start2, ~m_start1, ~m_coin1 };
-            GDB1 <= sw[1] | { ~m_fire_a, 3'b111, 1'b1, 1'b1, 1'b1 , 1'b1};
+            GDB0 <= sw[0] | { ~m_fire_b, dogpatch_y_2, 1'b1, ~m_start2, ~m_start1, ~m_coin1 };
+            GDB1 <= sw[1] | { ~m_fire_a, dogpatch_y, 1'b1, 1'b1, 1'b1 , 1'b1};
             GDB2 <= sw[2];
           Trigger_ShiftCount     <= PortWr[1];
           Trigger_AudioDeviceP1  <= PortWr[3];

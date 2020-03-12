@@ -7,7 +7,7 @@
 	<manufacturer>Dave Nutting Associates / Midway</manufacturer>
 	<category>Maze / Tron</category>
 	<rbf>spaceinvaders</rbf>
-	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<buttons names="-,-,-,-,Start 1P,Start 2P,Coin" default="Start,Select,R"/>
 	<rom index="1">
 		<part>12</part>
 	</rom>
