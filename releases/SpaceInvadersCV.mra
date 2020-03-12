@@ -3,6 +3,14 @@
 	<rom index="1" >
 		<part> 0A </part>
 	</rom>
+
+        <switches default="00,00,00">
+                <dip bits="16,17"   name="Lives" ids="3,4,5,6"/>
+                <dip bits="18"      name="Tilt" ids="Off,On"/>
+                <dip bits="19"      name="Bonus Life" ids="1500,1000"/>
+                <dip bits="23"   name="Coin Info" ids="Off,On"/>
+        </switches>
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="sicv.zip" md5="none">
 <!-- 8k -->

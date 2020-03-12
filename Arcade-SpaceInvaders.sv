@@ -414,7 +414,8 @@ wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
 wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
 wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 10'b0;
 wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
-wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
+//wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
+wire   [2:0] dogpatch_y = center_joystick_y[7:3] ;
 wire   [2:0] dogpatch_y_2 = positive_joystick_y_2[6:4] ;
 
 
