@@ -423,18 +423,20 @@ reg [7:0] clown_y = 128;
 reg [5:0] clown_timer= 0;
 reg vsync_r;
 //always @(posedge m_right or posedge m_left ) begin
-always @(posedge clk_sys) begin
+always @(posedge clk_sys) 
+begin
     vsync_r          <= VSync;
-    if (vsync_r ==0 && VSync== 1) begin
-       if (clown_timer > 5) begin
+    if (vsync_r ==0 && VSync== 1) 
+    begin
+       //if (clown_timer > 1) begin
         if (m_right && clown_y < 255)
             clown_y <= clown_y +1;
         else if (m_left && clown_y > 0)
             clown_y <= clown_y -1;
        clown_timer <= clown_timer +1;
-       end
-       else
-	     clown_timer <= clown_timer +1;
+       //end
+       //else
+	//     clown_timer <= clown_timer +1;
     end
 end
 
@@ -874,8 +876,8 @@ always @(*) begin
           landscape<=1;
 	  WDEnabled <= 1'b0;
           // IN0
-          GDB0 <= sw[0] | { 1'b1,~m_fire2a,~m_fire2b,~m_down2,1'b1,~m_up2,1'b1};
-          GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire1a,~m_fire1b,~m_down1,~m_start1,~m_up1,~m_coin1};
+          GDB0 <= sw[0] | { 1'b1, 1'b1,~m_fire2b,~m_fire2a,~m_down2,1'b1,~m_up2,1'b1};
+          GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire1b,~m_fire1a,~m_down1,~m_start1,~m_up1,~m_coin1};
           GDB2 <= sw[2];
           Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
           Trigger_AudioDeviceP1  <= PortWr[3];
