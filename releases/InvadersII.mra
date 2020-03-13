@@ -3,6 +3,17 @@
 	<rom index="1" >
 		<part> 00 </part>
 	</rom>
+
+
+        <switches default="00,00,00">
+                <dip bits="16,17"   name="Coinage" ids="1C_1C,1C_2C,2C_1C,2C_2C"/>
+                <dip bits="18"      name="Tilt" ids="Off,On"/>
+                <dip bits="19"      name="Cabinet" ids="Cocktail,Upright"/>
+                <dip bits="23"      name="Bonus Life" ids="2000,1500"/>
+        </switches>
+
+
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="invad2ct.zip" md5="none">
 		<part name="invad2ct.h"/> 

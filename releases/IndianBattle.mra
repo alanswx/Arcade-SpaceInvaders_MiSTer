@@ -1,11 +1,19 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 01 </part>
-		<parta> 20 </parta>
+		<part> 1A </part>
 	</rom>
+
+        <switches default="00,00,00">
+                <dip bits="16,17"   name="Lives" ids="3,4,5,6"/>
+                <dip bits="18"      name="Tilt" ids="Off,On"/>
+                <dip bits="19"      name="Num Catch Animals" ids="6,3"/>
+                <dip bits="23"   name="Invulner (cheat)" ids="Off,On"/>
+        </switches>
+
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="indianbtbr.zip" md5="none">
+	<rom index="0" zip="indianbt.zip" md5="none">
 <!-- 8k -->
 		<part name="1.36"/>
 		<part name="2.35"/>

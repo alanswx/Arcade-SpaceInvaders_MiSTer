@@ -3,6 +3,13 @@
 	<rom index="1" >
 		<part> 1B </part>
 	</rom>
+    <switches default="00,00,00">
+                <dip bits="16,17"   name="Lives" ids="3,4,5,6"/>
+                <dip bits="18"   name="Cabinet" ids="Upright,Cocktail"/>
+                <dip bits="19"   name="Bags to Collect" ids="8,2" />
+                <dip bits="23"   name="Invuln  (cheat)" ids="Off,On" />
+        </switches>
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="lupin3.zip" md5="none">
 <!-- 8k -->

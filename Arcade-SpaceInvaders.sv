@@ -536,7 +536,7 @@ always @(*) begin
         mod_lagunaracer:
 	begin
  	  landscape<=0;
-	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, m_fire_a, m_fire_b,1'b0,1'b0,1'b0/*(joya[11:8]*/};
+	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, fire_toggle, zap_throttle};
            //GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
            GDB1 <= 8'd127-joya[7:0];
            GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
@@ -858,7 +858,20 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[4];
           //Trigger_WatchDogReset  <= PortWr[4];
 	end
-//        mod_indianbattle:
+        mod_indianbattle:
+        begin
+          landscape<=0;
+	  ccw <= 1;
+          color_rom_enabled<=1;
+          GDB0 <= sw[0];
+          GDB1 <= sw[1] | { 1'b1,m_right1,m_left1,m_fire1a, 1'b0,  m_start1,m_start2,~m_coin1};
+          GDB2 <= sw[2];
+          Trigger_ShiftCount     <= PortWr[2];
+          Trigger_AudioDeviceP1  <= PortWr[3];
+          Trigger_ShiftData      <= PortWr[4];
+          Trigger_AudioDeviceP2  <= PortWr[5];
+          Trigger_WatchDogReset  <= PortWr[6];
+        end
         mod_lupin:
         begin
           landscape<=0;
