@@ -3,6 +3,14 @@
 	<rom index="1" >
 		<part> 0A </part>
 	</rom>
+
+        <switches default="40,80,00">
+                <dip bits="16,17"   name="Lives" ids="2,3,4,5"/>
+                <dip bits="18"      name="Unknown" ids="Off,On"/>
+                <dip bits="19"      name="Bonus Life" ids="3k,5k"/>
+                <dip bits="23"   name="Coinage" ids="1C_1C,2C_1C"/>
+        </switches>
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="galxwars.zip" md5="none">
 <!-- 8k -->
