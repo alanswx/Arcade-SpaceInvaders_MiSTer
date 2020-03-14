@@ -417,8 +417,23 @@ wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
 //wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
 wire   [2:0] dogpatch_y = center_joystick_y[7:3] ;
 wire   [2:0] dogpatch_y_2 = positive_joystick_y_2[6:4] ;
+/*
+wire [7:0] blue_shark_x;
+wire [8:0] joya255 = 9'd127+joya[7:0];
+wire [8:0] bluerange = joya255[8:1]+8'd8;
+*/
+wire [7:0] joya255 = 8'd128+joya[7:0];
+wire [7:0] bluerange = { 1'b0, joya255[7:1]+8'd8 };
+reg [7:0] blue_shark_x;
 
 
+always @(posedge clk_sys) 
+begin
+   if (bluerange > 9'h082)
+	   blue_shark_x=8'h82;
+   else
+	   blue_shark_x=bluerange[7:0];
+end
 
 reg [7:0] clown_y = 128;
 reg [5:0] clown_timer= 0;
@@ -581,7 +596,9 @@ always @(*) begin
           //GDB1 <= 8'd127-joya[7:0];
           //GDB1 <= { 8'b01000010};
         //  GDB1 <= { 8'd63 + joya[7:1]};
-          GDB1 <= (8'd127+joya[7:0]) & 8'hFE;
+
+          //GDB1 <= (blue_control[8:1]+8'd8) ;
+          GDB1 <= blue_shark_x;
 	  // IN1
           GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b1,1'b1,1'b1,m_coin1 ,~m_fire_a};
           Trigger_ShiftCount     <= PortWr[1];
