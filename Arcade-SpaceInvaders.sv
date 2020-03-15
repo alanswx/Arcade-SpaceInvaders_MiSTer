@@ -456,8 +456,12 @@ end
 /* controls for dogpatch */
 /* dogpatch has some weird non incremental thing going on*/
 /*0x07, 0x06, 0x04, 0x05, 0x01, 0x00, 0x02*/
+/* gunfight */
+/*0x06, 0x02, 0x00, 0x04, 0x05, 0x01, 0x03*/
 reg [2:0] dogpatch_y_count= 0;
+reg [2:0] gunfight_y_count= 0;
 wire [2:0] dogpatch_y;
+wire [2:0] gunfight_y;
 reg [5:0] dogpatch_timer= 0;
 always @(posedge clk_sys) 
 begin
@@ -469,6 +473,13 @@ begin
             dogpatch_y_count<= dogpatch_y_count+1;
           else if (m_down&& dogpatch_y_count > 0)
             dogpatch_y_count<= dogpatch_y_count-1;
+
+          if (m_fire1b&& gunfight_y_count< 7)
+            gunfight_y_count<= gunfight_y_count+1;
+          else if (m_fire1c&& gunfight_y_count > 0)
+            gunfight_y_count<= gunfight_y_count-1;
+
+
           dogpatch_timer <= 0;
         end
 	else 
@@ -482,7 +493,18 @@ begin
 		3'b011: dogpatch_y <= 3'h5;
 		3'b100: dogpatch_y <= 3'h1;
 		3'b101: dogpatch_y <= 3'h0;
-		3'b111: dogpatch_y <= 3'h2;
+		3'b110: dogpatch_y <= 3'h2;
+		3'b111: dogpatch_y <= 3'h2; // ?
+	endcase
+        case (gunfight_y_count) 
+		3'b000: gunfight_y <= 3'h6;
+		3'b001: gunfight_y <= 3'h2;
+		3'b010: gunfight_y <= 3'h0;
+		3'b011: gunfight_y <= 3'h4;
+		3'b100: gunfight_y <= 3'h5;
+		3'b101: gunfight_y <= 3'h1;
+		3'b110: gunfight_y <= 3'h3;
+		3'b111: gunfight_y <= 3'h3; //?
 	endcase
     end
 end
@@ -899,7 +921,7 @@ always @(*) begin
 	begin
 	  WDEnabled <= 1'b0;
           // IN0
-          GDB0 <= sw[0] | { m_fire1a,1'b0,1'b0,1'b0,m_right1,m_left1,m_down1,m_up1};
+          GDB0 <= sw[0] | { m_fire1a,gunfight_y, m_right1,m_left1,m_down1,m_up1};
           GDB1 <= sw[1] | { m_fire2a,1'b0,1'b0,1'b0,m_right2,m_left2,m_down2,m_up2};
           GDB2 <= sw[2] | { m_start1,m_coin1, 6'b0};
           Trigger_ShiftCount     <= PortWr[2];

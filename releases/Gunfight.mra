@@ -3,7 +3,7 @@
 	<rom index="1" >
 		<part> 19 </part> 
 	</rom>
-	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<buttons names="Fire,GunUp,GunDown,-,Start 1P,Start 2P,Coin" default="A,X,Y,Start,Select,R"/>
 
         <switches default="00,00,00">
                 <dip bits="20,21"   name="Game Time" ids="60,70,80,90" />
