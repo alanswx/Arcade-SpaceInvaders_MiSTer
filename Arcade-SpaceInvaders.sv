@@ -415,17 +415,13 @@ wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
 wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 10'b0;
 wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
 //wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
-wire   [2:0] dogpatch_y = center_joystick_y[7:3] ;
+//wire   [2:0] dogpatch_y = center_joystick_y[7:3] ;
 wire   [2:0] dogpatch_y_2 = positive_joystick_y_2[6:4] ;
-/*
-wire [7:0] blue_shark_x;
-wire [8:0] joya255 = 9'd127+joya[7:0];
-wire [8:0] bluerange = joya255[8:1]+8'd8;
-*/
+
+/* controls for blue shark */
 wire [7:0] joya255 = 8'd128+joya[7:0];
 wire [7:0] bluerange = { 1'b0, joya255[7:1]+8'd8 };
 reg [7:0] blue_shark_x;
-
 
 always @(posedge clk_sys) 
 begin
@@ -435,6 +431,7 @@ begin
 	   blue_shark_x=bluerange[7:0];
 end
 
+/* controls for clown */
 reg [7:0] clown_y = 128;
 reg [5:0] clown_timer= 0;
 reg vsync_r;
@@ -455,6 +452,41 @@ begin
 	//     clown_timer <= clown_timer +1;
     end
 end
+
+/* controls for dogpatch */
+/* dogpatch has some weird non incremental thing going on*/
+/*0x07, 0x06, 0x04, 0x05, 0x01, 0x00, 0x02*/
+reg [2:0] dogpatch_y_count= 0;
+wire [2:0] dogpatch_y;
+reg [5:0] dogpatch_timer= 0;
+always @(posedge clk_sys) 
+begin
+    if (vsync_r ==0 && VSync== 1) 
+    begin
+	if (dogpatch_timer == 8'd5) 
+	begin
+          if (m_up&& dogpatch_y_count< 7)
+            dogpatch_y_count<= dogpatch_y_count+1;
+          else if (m_down&& dogpatch_y_count > 0)
+            dogpatch_y_count<= dogpatch_y_count-1;
+          dogpatch_timer <= 0;
+        end
+	else 
+	begin
+          dogpatch_timer <= dogpatch_timer +1;
+	end
+        case (dogpatch_y_count) 
+		3'b000: dogpatch_y <= 3'h7;
+		3'b001: dogpatch_y <= 3'h6;
+		3'b010: dogpatch_y <= 3'h4;
+		3'b011: dogpatch_y <= 3'h5;
+		3'b100: dogpatch_y <= 3'h1;
+		3'b101: dogpatch_y <= 3'h0;
+		3'b111: dogpatch_y <= 3'h2;
+	endcase
+    end
+end
+
 
 reg fire_toggle = 0;
 always @(posedge m_fire_a) fire_toggle <= ~fire_toggle;
@@ -1091,67 +1123,4 @@ invaders_blank invaders_blank (
         .O_HBLANK(hblank),
         .O_VBLANK(vblank)
 	);
-/*
-invaders_video invaders_video (
-        .Video(Video),
-        .Overlay(~status[8]),
-        .CLK(clk_sys),
-        .Rst_n_s(Rst_n_s),
-        .HSync(HSync),
-        .VSync(VSync),
-	.color_prom_addr(color_prom_addr2),
-	.color_prom_out(color_prom_out),
-	.OverlayTest(status[9]),
-        .O_VIDEO_R(r2),
-        .O_VIDEO_G(g2),
-        .O_VIDEO_B(b2),
-        .O_HSYNC(hs),
-        .O_VSYNC(vs),
-        .O_HBLANK(hblank),
-        //.O_VBLANK(vblank)
-	
-        );
-	
-*/
-
-/*
-invaders_top invaders_top
-(
-
-	.Clk(clk_10),
-	.Clk_mem(clk_sys),
-	.clk_vid(clk_6),
-
-	.I_RESET(reset),
-
-	.GDB0(GDB0),
-	.GDB1(GDB1),
-	.GDB2(GDB2),
-	
-
-	.dn_addr(ioctl_addr[15:0]),
-	.dn_data(ioctl_dout),
-	.dn_wr(ioctl_wr&(ioctl_index==0 || ioctl_index==2)),
-	.dn_index(ioctl_index),
-
-	.r(r),
-	.g(g),
-	.b(b),
-	//.hblnk(hblank),
-	.vblnk(vblank),
-	.hs(hs),
-	.vs(vs),
-	
-	.audio_out(audio),
-	.ms_col(ms_col),
-	.bs_col(bs_col),
-	.sh_col(sh_col),
-	.sc1_col(sc1_col),
-	.sc2_col(sc2_col),
-	.mn_col(mn_col),
-	.color_rom_enabled(color_rom_enabled)
-	
-
-);
-*/
 endmodule
