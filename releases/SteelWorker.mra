@@ -1,9 +1,18 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 03 </part>
+		<part> 24 </part>
 	</rom>
-	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+
+
+        <setname>steelworker</setname>
+        <switches default="00,00,00">
+                <dip bits="16,17"   name="Lives" ids="1,2,3,4"/>
+        </switches>
+
+
+
+	<buttons names="Confirm,Reverse,-,-,Start 1P,Start 2P,Coin" default="A,B,Start,Select,R"/>
 	<rom index="0" zip="steelwkr.zip" md5="none">
 <!-- 8k -->
 		<part name="1.36"/>

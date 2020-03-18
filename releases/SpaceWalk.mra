@@ -3,6 +3,17 @@
 	<rom index="1" >
 		<part> 09 </part>
 	</rom>
+
+        <setname>spacewalk</setname>
+        <switches default="00,00,00">
+                <dip bits="16,17"   name="Game Time" ids="40+20,50+25,60+30,70+35"/>
+                <dip bits="18,19"   name="Coinage" ids="1C_1C,1C_1or2,2C_1C,2C_1or2"/>
+                <dip bits="20,21"      name="Extended" ids="None,5k,6k,7k"/>
+                <dip bits="22"   name="Alignment Test" ids="Off,On"/>
+                <dip bits="23"   name="Test" ids="Off,On"/>
+        </switches>
+
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="spacwalk.zip" md5="none">
 		<part name="sw.h"/> 
