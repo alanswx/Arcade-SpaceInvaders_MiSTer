@@ -414,9 +414,6 @@ wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
 wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
 wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 10'b0;
 wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
-//wire   [2:0] dogpatch_y = positive_joystick_y[6:4] ;
-//wire   [2:0] dogpatch_y = center_joystick_y[7:3] ;
-wire   [2:0] dogpatch_y_2 = positive_joystick_y_2[6:4] ;
 
 /* controls for blue shark */
 wire [7:0] joya255 = 8'd128+joya[7:0];
@@ -459,9 +456,11 @@ end
 /* gunfight */
 /*0x06, 0x02, 0x00, 0x04, 0x05, 0x01, 0x03*/
 reg [2:0] dogpatch_y_count= 0;
+reg [2:0] dogpatch_y_2_count= 0;
 reg [2:0] gunfight_y_count= 0;
 reg [2:0] gunfight_y_count_2= 0;
 wire [2:0] dogpatch_y;
+wire [2:0] dogpatch_y_2;
 wire [2:0] gunfight_y;
 wire [2:0] gunfight_y_2;
 reg [5:0] dogpatch_timer= 0;
@@ -475,6 +474,11 @@ begin
             dogpatch_y_count<= dogpatch_y_count+1;
           else if (m_down&& dogpatch_y_count > 0)
             dogpatch_y_count<= dogpatch_y_count-1;
+
+          if (m_up2&& dogpatch_y_2_count< 7)
+            dogpatch_y_2_count<= dogpatch_y_2_count+1;
+          else if (m_down2&& dogpatch_y_2_count > 0)
+            dogpatch_y_2_count<= dogpatch_y_2_count-1;
 
           if (m_fire1b&& gunfight_y_count< 7)
             gunfight_y_count<= gunfight_y_count+1;
@@ -502,6 +506,16 @@ begin
 		3'b101: dogpatch_y <= 3'h0;
 		3'b110: dogpatch_y <= 3'h2;
 		3'b111: dogpatch_y <= 3'h2; // ?
+	endcase
+        case (dogpatch_y_2_count) 
+		3'b000: dogpatch_y_2 <= 3'h7;
+		3'b001: dogpatch_y_2 <= 3'h6;
+		3'b010: dogpatch_y_2 <= 3'h4;
+		3'b011: dogpatch_y_2 <= 3'h5;
+		3'b100: dogpatch_y_2 <= 3'h1;
+		3'b101: dogpatch_y_2 <= 3'h0;
+		3'b110: dogpatch_y_2 <= 3'h2;
+		3'b111: dogpatch_y_2 <= 3'h2; // ?
 	endcase
         case (gunfight_y_count) 
 		3'b000: gunfight_y <= 3'h6;
