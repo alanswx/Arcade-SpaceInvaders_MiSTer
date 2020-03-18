@@ -401,6 +401,7 @@ localparam mod_desertgun     = 31;
 localparam mod_lagunaracer   = 32;
 localparam mod_seawolf       = 33;
 localparam mod_yosakdon      = 34;
+localparam mod_spacechaser   = 35;
 
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -1073,6 +1074,15 @@ always @(*) begin
           GDB2 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0,1'b0,1'b0};
 	  Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_AudioDeviceP2  <= PortWr[5];
+       end
+       mod_spacechaser:
+       begin
+            landscape<=0;
+            ccw<=1;
+            color_rom_enabled<=1;
+            GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,  m_fire2a,  m_right2,m_down2,m_left2,m_up2};
+            GDB1 <= sw[1] | { m_coin1,m_start1,m_start2,m_fire_a,m_right,m_down,m_left,m_up};
+            GDB2 <= sw[2];
        end
       endcase
 end

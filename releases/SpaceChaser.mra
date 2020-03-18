@@ -1,9 +1,20 @@
 <misterromdescription>
         <rbf>SpaceInvaders</rbf>
 	<rom index="1" >
-		<part> 0A </part>
+		<part> 23 </part>
 	</rom>
-	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+
+        <setname>spacechaser</setname>
+        <switches default="00,00,00">
+                <dip bits="5,6"   name="Hard Start Lvl" ids="3,4,5,6"/>
+                <dip bits="16,17"   name="Lives" ids="3,4,5,6"/>
+                <dip bits="19"   name="Difficulty" ids="Easy,Hard"/>
+                <dip bits="20"      name="HS Reset" ids="Off,On"/>
+                <dip bits="22"   name="Cabinet" ids="Upright,Cocktail"/>
+        </switches>
+
+
+	<buttons names="Thrust,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="schaser.zip" md5="none">
 <!-- 8k -->
 		<part name="rt13.bin"/> 
