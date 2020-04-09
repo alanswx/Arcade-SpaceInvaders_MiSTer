@@ -75,6 +75,19 @@ module emu
 	output [15:0] AUDIO_L,
 	output [15:0] AUDIO_R,
 	output        AUDIO_S,    // 1 - signed audio samples, 0 - unsigned
+
+	//SDRAM interface with lower latency
+	output        SDRAM_CLK,
+	output        SDRAM_CKE,
+	output [12:0] SDRAM_A,
+	output  [1:0] SDRAM_BA,
+	inout  [15:0] SDRAM_DQ,
+	output        SDRAM_DQML,
+	output        SDRAM_DQMH,
+	output        SDRAM_nCS,
+	output        SDRAM_nCAS,
+	output        SDRAM_nRAS,
+	output        SDRAM_nWE,  
 	
 	
 		// Open-drain User port.
@@ -110,6 +123,7 @@ localparam CONF_STR = {
 	"-;",
 	"O8,Overlay,On,Off;",
 	"O9,Overlay Test,Off,On;",
+	"OA,Graphic,Off,On;",
 	"-;",
 	"R0,Reset;",
 	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin;",
@@ -118,16 +132,20 @@ localparam CONF_STR = {
 
 ////////////////////   CLOCKS   ///////////////////
 
-wire clk_40, clk_10;
-
+wire clk_80,clk_40, clk_10;
+wire clk_mem = clk_80;
 wire clk_sys = clk_10;
+wire pll_locked;
 
 pll pll
 (
 	.refclk(CLK_50M),
 	.rst(0),
 	.outclk_0(clk_40),
-	.outclk_1(clk_10)
+	.outclk_1(clk_10),
+	.outclk_2(clk_80),
+	.locked(pll_locked)
+
 );
 
 
@@ -155,6 +173,7 @@ wire [15:0] joya, joya2;
 
 wire [21:0] gamma_bus;
 
+wire [15:0] sdram_sz;
 
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
@@ -176,6 +195,9 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
    .ioctl_addr(ioctl_addr),
    .ioctl_dout(ioctl_dout),
    .ioctl_index(ioctl_index),
+
+   .sdram_sz(sdram_sz),
+
 	
    .joystick_0(joy1),
    .joystick_1(joy2),
@@ -323,7 +345,7 @@ wire [15:0] joy = joy1 | joy2;
 
 wire hblank;
 wire vblank;
-wire hs, vs;
+//wire hs, vs;
 wire r,g,b;
 //wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
 wire no_rotate = status[2] | direct_video | landscape;
@@ -335,13 +357,24 @@ always @(posedge clk_40) begin
         ce_pix <= !div;
 end
 
-arcade_video #(260,224,6) arcade_video
+wire fg = |{rr,gg,bb};
+
+wire [7:0]rr = {8{r}};
+wire [7:0]gg = {8{g}};
+wire [7:0]bb = {8{b}};
+
+//arcade_video #(260,224,6) arcade_video
+arcade_video #(260,224,24) arcade_video
 (
    .*,
 
    .clk_video(clk_40),
 
-   .RGB_in({r,r,g,g,b,b}),
+  // .RGB_in({r,r,g,g,b,b}),
+  // .RGB_in((fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
+   //.RGB_in({bg_r,bg_g,bg_b}),
+   .RGB_in(status[10]?  {bg_r,bg_g,bg_b}:{rr,gg,bb}  ),
+
    .HBlank(hblank),
    .VBlank(vblank),
    .HSync(HSync),
@@ -354,7 +387,12 @@ arcade_video #(260,224,6) arcade_video
 
 
 wire [7:0] audio;
-assign AUDIO_L = {audio, audio};
+wire [7:0] inv_audio_data;
+wire [7:0] zap_audio_data;
+
+assign AUDIO_L = (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
+
+//assign AUDIO_L = {audio, audio};
 assign AUDIO_R = AUDIO_L;
 assign AUDIO_S = 0;
 wire reset;
@@ -554,6 +592,7 @@ reg landscape;
 reg ccw;
 reg color_rom_enabled;
 
+wire WDEnabled;
 wire Trigger_ShiftCount;
 wire Trigger_ShiftData;
 wire Trigger_AudioDeviceP1;
@@ -1189,7 +1228,14 @@ invaders_audio invaders_audio (
         .Clk(clk_sys),
         .S1(SoundCtrl3),
         .S2(SoundCtrl5),
-        .Aud(audio)
+        .Aud(inv_audio_data)
+        );
+
+zap_audio zap_audio (
+        .Clk(clk_sys),
+        .S1(SoundCtrl3),
+        .S2(SoundCtrl5),
+        .Aud(zap_audio_data)
         );
 
 invaders_blank invaders_blank (
@@ -1200,4 +1246,58 @@ invaders_blank invaders_blank (
         .O_HBLANK(hblank),
         .O_VBLANK(vblank)
 	);
+
+
+
+
+wire bg_download = ioctl_download && (ioctl_index == 2);
+
+reg [7:0] ioctl_dout_r;
+always @(posedge clk_sys) if(ioctl_wr & ~ioctl_addr[0]) ioctl_dout_r <= ioctl_dout;
+
+wire [31:0] pic_data;
+sdram sdram
+(
+	.*,
+
+	.init(~pll_locked),
+	.clk(clk_mem),
+	.ch1_addr(bg_download ? ioctl_addr[24:1] : pic_addr),
+	.ch1_dout(pic_data),
+	.ch1_din({ioctl_dout, ioctl_dout_r}),
+	.ch1_req(bg_download ? (ioctl_wr & ioctl_addr[0]) : pic_req),
+	.ch1_rnw(~bg_download)
+);
+
+reg        pic_req;
+reg [24:1] pic_addr;
+reg  [7:0] bg_r,bg_g,bg_b,bg_a;
+always @(posedge clk_sys) begin
+	reg old_vs;
+	reg use_bg = 0;
+	
+	if(bg_download && sdram_sz[2:0]) use_bg <= 1;
+
+	pic_req <= 0;
+
+	if(use_bg) begin
+		if(ce_pix) begin
+			old_vs <= VSync;
+			{bg_a,bg_b,bg_g,bg_r} <= pic_data;
+			if(~(hblank|vblank)) begin
+				pic_addr <= pic_addr + 2'd2;
+				pic_req <= 1;
+			end
+			
+			if(~old_vs & VSync) begin
+				pic_addr <= 0;
+				pic_req <= 1;
+			end
+		end
+	end
+	else begin
+		{bg_a,bg_b,bg_g,bg_r} <= 0;
+	end
+end
+
 endmodule
