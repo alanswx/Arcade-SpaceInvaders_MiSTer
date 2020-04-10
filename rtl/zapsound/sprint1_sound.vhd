@@ -22,7 +22,7 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 entity audio is 
 port(		
-			Clk_10			: in  std_logic;
+			Clk_5			: in  std_logic;
 			Reset_n			: in	std_logic;
 			Motor1_n		: in	std_logic;
 			Skid1			: in  std_logic;
@@ -74,9 +74,9 @@ begin
 
 hcount <= h_counter(9 downto 1);
 
-H_count: process(Clk_10)
+H_count: process(Clk_5)
 begin
-        if rising_edge(Clk_10) then
+        if rising_edge(Clk_5) then
                 if h_counter = "1111111111" then
                         h_counter <= "0100000000";
                 else
@@ -97,21 +97,33 @@ end process;
 -- (7) 128H 23 kHz
 -- (8) 256H 12 kHz
 
+-- HCount
+-- (0) 1H 	2.5 MHz
+-- (1) 2H       1.25MHz
+-- (2) 4H	625  kHz
+-- (3) 8H	312 kHz
+-- (4) 16H	156  kHz
+-- (5) 32H	78 kHz
+-- (6) 64H	39 kHz
+-- (7) 128H 19 kHz
+-- (8) 256H 9 kHz
 reset <= (not reset_n);
 
 --H4 <= HCount(2);
 --V2 <= HCount(3); -- not correct
-H4 <= HCount(4);
+H4 <= HCount(2); -- 750kHz??
 V2 <= HCount(5); -- not correct
 
 -- Generate the 3kHz clock enable used by the filter
-Enable: process(clk_10)
+Enable: process(Clk_5)
 begin
-	if rising_edge(CLK_10) then
+	if rising_edge(Clk_5) then
 		ena_count <= ena_count + "1";
 		ena_3k <= '0';
-		if (ena_count(11 downto 0) = "000000000000") then
+		--if (ena_count(11 downto 0) = "000000000000") then
+		if (ena_count(11 downto 0) = "110101010101") then
 			ena_3k <= '1';
+			ena_count<="000000000000";
 		end if;
 	end if;
 end process;
@@ -147,9 +159,9 @@ port map(
 		
 	
 -- Convert screech from 1 bit to 4 bits wide and enable via skid1  signal
-Screech_ctrl: process(screech_snd1, skid1)
+Screech_ctrl: process(screech_snd1, Skid1)
 begin
-	if (skid1 and screech_snd1) = '1' then
+	if (Skid1 and screech_snd1) = '1' then
 		screech1 <= "1111";
 	else
 		screech1 <= "0000";
@@ -171,9 +183,9 @@ end process;
 
 
 ---- Very simple low pass filter, borrowed from MikeJ's Asteroids code
-Crash_filter: process(clk_10)
+Crash_filter: process(Clk_5)
 begin
-	if rising_edge(clk_10) then
+	if rising_edge(Clk_5) then
 		if (ena_3k = '1') then
 			bang_filter_t1 <= bang_prefilter;
 			bang_filter_t2 <= bang_filter_t1;
@@ -188,9 +200,9 @@ end process;
 
 Motor1_latch: process(Motor1_n, motorspeed)
 begin
-	if Motor1_n = '0' then
+	--if Motor1_n = '0' then
 		Motor1_speed <= not motorspeed;
-	end if;
+	--end if;
 end process;
 
 Motor1: entity work.EngineSound 
@@ -198,7 +210,7 @@ generic map(
 		Freq_tune => 50 -- Tuning pot for engine sound frequency
 		)
 port map(		
-		Clk_10 => clk_10, 
+		Clk_5 => clk_5, 
 		Ena_3k => ena_3k,
 		EngineData => motor1_speed,
 		Motor => motor1_snd
@@ -206,7 +218,9 @@ port map(
 	
 	
 -- Audio mixer, also mutes sound in attract mode
-Audio1 <= '0' & ('0' & motor1_snd) + ("00" & screech1) + ('0' & bang_filtered);
+--Audio1 <= '0' & ('0' & motor1_snd) + ("00" & screech1) + ('0' & bang_filtered);
+Audio1 <= '0' & ('0' & motor1_snd) + ("00" & screech1) ;
+--Audio1 <= '0' & ('0' & motor1_snd);
 		
 
 	

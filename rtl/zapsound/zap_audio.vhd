@@ -129,14 +129,15 @@ end process p_clk_div5;
 
 Sound: entity work.audio
 port map(
-                Clk_10 => ClkDiv5,
+                Clk_5 => ClkDiv5,
                 Reset_n => '1',
-                Motor1_n => not TrigEngine,
-                Skid1 => TrigScreech,
+                --Motor1_n => not TrigEngine,
+                Motor1_n => not S1(1),
+                Skid1 => not S1(2) and not S1(1),  --TrigScreech,
                 Crash_n => not TrigEx,
                 NoiseReset_n => '1',
                 Attract => '0',
-                motorspeed =>  S2(3) & S2(2) & S2(1) & S2(0) ,
+                motorspeed =>  S2(5) & S2(3) & S2(2) & S2(1), -- & S2(0) ,
                 Audio1 => Aud
                 );
 

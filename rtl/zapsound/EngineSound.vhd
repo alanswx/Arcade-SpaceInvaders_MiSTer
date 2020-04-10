@@ -28,7 +28,7 @@ generic(
 			constant Freq_tune : integer := 50 -- Value from 0-100 used to tune the overall engine sound frequency
 			);
 port(		
-			Clk_10			: in  std_logic; 
+			Clk_5			: in  std_logic; 
 			Ena_3k		: in  std_logic;
 			EngineData	: in	std_logic_vector(3 downto 0);
 			Motor			: out std_logic_vector(5 downto 0)
@@ -62,9 +62,9 @@ begin
 -- The output of this DAC has a capacitor to smooth out the frequency variation.
 -- The constants assigned to RPM_val can be tweaked to adjust the frequency curve
 
-Speed_select: process(Clk_10)
+Speed_select: process(Clk_5)
 begin
-	if rising_edge(Clk_10) then
+	if rising_edge(Clk_5) then
 		case EngineData is
 			when "0000" => RPM_val <= 280; 
 			when "0001" => RPM_val <= 245; 
@@ -90,9 +90,9 @@ end process;
 -- There is a RC filter between the frequency control DAC and the 555 to smooth out the transitions between the
 -- 16 possible states. We can simulate a reasonable approximation of that behavior using a linear slope which is
 -- not truly accurate but should be close enough.
-RC_filt: process(clk_10, ena_3k, ramp_term_unfilt)
+RC_filt: process(Clk_5, ena_3k, ramp_term_unfilt)
 begin
-	if rising_edge(clk_10) then
+	if rising_edge(Clk_5) then
 		if ena_3k = '1' then
 			if ramp_term_unfilt > ramp_term then
 				ramp_term <= ramp_term + 5;
@@ -112,9 +112,9 @@ end process;
 ramp_term_unfilt <= ((200 - freq_tune) * RPM_val);
 
 -- Variable frequency oscillator roughly approximating the function of a 555 astable oscillator
-Ramp_osc: process(clk_10)
+Ramp_osc: process(Clk_5)
 begin
-	if rising_edge(clk_10) then
+	if rising_edge(Clk_5) then
 		motor_clk <= '1';
 		ramp_count <= ramp_count + 1;
 		if ramp_count > ramp_term then
@@ -140,9 +140,9 @@ end process;
 motor_prefilter <= ('0' & Counter_B(2)) + ('0' & Counter_B(1)) + ('0' & Counter_A);
 
 -- Very simple low pass filter, borrowed from MikeJ's Asteroids code
-Engine_filter: process(clk_10)
+Engine_filter: process(Clk_5)
 begin
-	if rising_edge(clk_10) then
+	if rising_edge(Clk_5) then
 		if (ena_3k = '1') then
 			motor_filter_t1 <= ("00" & motor_prefilter) + ("00" & motor_prefilter);
 			motor_filter_t2 <= motor_filter_t1;
