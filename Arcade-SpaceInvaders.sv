@@ -365,7 +365,7 @@ wire [7:0]bb = {8{b}};
 
 // if graphics are turned off, just use the pixels. Otherwise if the
 // background is in effect - use it
-wire [23:0] rgbdata  = status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
+wire [23:0] rgbdata  = status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
 
 
 
