@@ -1,8 +1,12 @@
 from PIL import Image
 import sys
 
-im = Image.open("280resize.jpg")
+#im = Image.open("280resize.jpg")
+#(s,s,width,height)=im.getbbox()
+#print(width,height)
+im = Image.open("280dash.jpg")
 (s,s,width,height)=im.getbbox()
+#print(width,height)
 count = 0
 for y in range(height):
     for x in range(width):
@@ -15,6 +19,4 @@ for y in range(height):
         sys.stdout.write('{:02X} '.format(00))
         if (not (count % 4)):
             print('')
-        #print(x,y,pixel)
-        #21 10 0B 00
 #print(list(im.getdata()))

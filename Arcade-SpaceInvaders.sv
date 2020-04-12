@@ -354,7 +354,7 @@ always @(posedge clk_40) begin
         reg [2:0] div;
 
         div <= div + 1'd1;
-        ce_pix <= !div;
+	ce_pix <= div == 0;
 end
 
 wire fg = |{rr,gg,bb};
@@ -371,9 +371,9 @@ arcade_video #(260,224,24) arcade_video
    .clk_video(clk_40),
 
   // .RGB_in({r,r,g,g,b,b}),
-  // .RGB_in((fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
+   .RGB_in((fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
    //.RGB_in({bg_r,bg_g,bg_b}),
-   .RGB_in(status[10]?  {bg_r,bg_g,bg_b}:{rr,gg,bb}  ),
+   //.RGB_in(status[10]?  {bg_r,bg_g,bg_b}:{rr,gg,bb}  ),
 
    .HBlank(hblank),
    .VBlank(vblank),
@@ -1272,7 +1272,7 @@ sdram sdram
 reg        pic_req;
 reg [24:1] pic_addr;
 reg  [7:0] bg_r,bg_g,bg_b,bg_a;
-always @(posedge clk_sys) begin
+always @(posedge clk_40) begin
 	reg old_vs;
 	reg use_bg = 0;
 	
