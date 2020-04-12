@@ -5,7 +5,7 @@ import sys
 def convertImage(name):
    im = Image.open(name)
    (s,s,width,height)=im.getbbox()
-   #print(width,height)
+   print(width,height)
    count = 0
    for y in range(height):
     for x in range(width):

@@ -123,7 +123,7 @@ localparam CONF_STR = {
 	"-;",
 	"O8,Overlay,On,Off;",
 	"O9,Overlay Test,Off,On;",
-	"OA,Graphic,Off,On;",
+	"OA,Background Graphic,On,Off;",
 	"-;",
 	"R0,Reset;",
 	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin;",
@@ -363,6 +363,12 @@ wire [7:0]rr = {8{r}};
 wire [7:0]gg = {8{g}};
 wire [7:0]bb = {8{b}};
 
+// if graphics are turned off, just use the pixels. Otherwise if the
+// background is in effect - use it
+wire [23:0] rgbdata  = status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
+
+
+
 //arcade_video #(260,224,6) arcade_video
 arcade_video #(260,224,24) arcade_video
 (
@@ -371,7 +377,8 @@ arcade_video #(260,224,24) arcade_video
    .clk_video(clk_40),
 
   // .RGB_in({r,r,g,g,b,b}),
-   .RGB_in((fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
+   //.RGB_in((fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
+   .RGB_in(rgbdata),
    //.RGB_in({bg_r,bg_g,bg_b}),
    //.RGB_in(status[10]?  {bg_r,bg_g,bg_b}:{rr,gg,bb}  ),
 
