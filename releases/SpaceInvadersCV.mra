@@ -14,16 +14,16 @@
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="sicv.zip" md5="none">
 <!-- 8k -->
-		<part name="cv17.36"/> 
-		<part name="cv18.35"/> 
-		<part name="cv19.34"/> 
-		<part name="cv20.33"/> 
+		<part crc="3dfbe9e6" name="cv17.36"/> 
+		<part crc="bc3c82bf" name="cv18.35"/> 
+		<part crc="d202b41c" name="cv19.34"/> 
+		<part crc="d202b41c" name="cv20.33"/> 
 <!-- 8k -->
 		<part repeat="4096">00</part> 
 		<part repeat="4096">00</part> 
 <!-- 2k -->
-		<part name="cv01.1"/> 
-		<part name="cv02.2"/> 
+		<part crc="037e16ac" name="cv01.1"/> 
+		<part crc="8263da38" name="cv02.2"/> 
 	</rom>
 
         <rom index="2">
