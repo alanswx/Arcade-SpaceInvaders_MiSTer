@@ -137,7 +137,7 @@ port map(
                 Crash_n => not TrigEx,
                 NoiseReset_n => '1',
                 Attract => '0',
-                motorspeed =>  S2(5) & S2(3) & S2(2) & S2(1), -- & S2(0) ,
+                motorspeed =>  S2(4) & S2(3) & S2(2) & S2(1), -- & S2(0) ,
                 Audio1 => Aud
                 );
 

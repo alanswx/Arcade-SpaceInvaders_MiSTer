@@ -47,10 +47,12 @@ begin
 	  elsif HStart then
 		VCnt <= VCnt + "1";
 	  end if;
-          if (HCnt = 538) then  -- 511
+          --if (HCnt = 538) then  -- 511
+          if (HCnt = 555) then  -- 511
              hblank<='1';
           end if;
-          if (HCnt = 27) then  -- 27?
+          --if (HCnt = 27) then  -- 27?
+          if (HCnt = 35) then  -- 27?
              hblank<='0';
           end if;
 
