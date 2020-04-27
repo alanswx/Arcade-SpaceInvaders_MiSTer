@@ -4,7 +4,7 @@
 	<setname>cosmo</setname>
 	<mratimestamp>20200309002130</mratimestamp>
 	<year>1979</year>
-	<manufacturer>TDS & MINTS</manufacturer>
+	<manufacturer>TDS &amp; MINTS</manufacturer>
 	<category>Space / Shooter</category>
 	<rbf>spaceinvaders</rbf>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
