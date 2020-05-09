@@ -64,6 +64,9 @@ entity invaderst is
                 GDB1            : in std_logic_vector(7 downto 0);
                 GDB2            : in std_logic_vector(7 downto 0);
                 GDB3            : in std_logic_vector(7 downto 0);
+                GDB4            : in std_logic_vector(7 downto 0);
+                GDB5            : in std_logic_vector(7 downto 0);
+                GDB6            : in std_logic_vector(7 downto 0);
 		
 		RDB             : in  std_logic_vector(7 downto 0);
 		IB              : in  std_logic_vector(7 downto 0);
@@ -158,7 +161,7 @@ architecture rtl of invaderst is
 	signal WD_Cnt       : unsigned(7 downto 0);
 	signal Sample       : std_logic;
 	signal Rst_n_s_i    : std_logic;
-	signal GDB_A        : unsigned(1 downto 0);
+	signal GDB_A        : unsigned(2 downto 0);
 begin
 
 	Rst_n_s <= Rst_n_s_i;
@@ -237,15 +240,18 @@ begin
 
         with (mod_vortex) select
                 GDB_A <= 
-			  not AD_i(9) & AD_i(8) when '1',
-			   AD_i(9) & AD_i(8) when '0';
+			  not AD_i(10) & AD_i(9) & AD_i(8) when '1',
+			   AD_i(10) & AD_i(9) & AD_i(8) when '0';
 
 	--with AD_i(9 downto 8) select
 	with GDB_A select
-		GDB <= GDB0 when "00",
-				GDB1 when "01",
-				GDB2 when "10",
-				GDB3  when others;
+		GDB <= GDB0 when "000",
+				GDB1 when "001",
+				GDB2 when "010",
+				GDB3 when "011",
+				GDB4 when "100",
+				GDB5 when "101",
+				GDB6 when others;
 
 	PortWr(0) <= '1' when AD_i(10 downto 8) = "000" and Sample = '1' else '0';
 	PortWr(1) <= '1' when AD_i(10 downto 8) = "001" and Sample = '1' else '0';

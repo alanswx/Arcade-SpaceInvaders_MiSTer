@@ -125,6 +125,9 @@ localparam CONF_STR = {
 	"O9,Overlay Test,Off,On;",
 	"OA,Background Graphic,On,Off;",
 	"-;",
+	"H2OBC,Gun Control,Joy1,Joy2,Mouse,Disabled;",
+	"H3ODE,Crosshair,Small,Medium,Big,None;",
+	"-;",
 	"R0,Reset;",
 	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin;",
 	"V,v",`BUILD_DATE
@@ -167,6 +170,7 @@ reg	[7:0] machine_info;
 
 
 wire [10:0] ps2_key;
+wire [24:0] ps2_mouse;
 
 wire [15:0] joy1, joy2, joy3, joy4;
 wire [15:0] joya, joya2;
@@ -174,7 +178,6 @@ wire [15:0] joya, joya2;
 wire [21:0] gamma_bus;
 
 wire [15:0] sdram_sz;
-
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
@@ -185,7 +188,7 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 
    .buttons(buttons),
    .status(status),
-   .status_menumask({landscape,direct_video}),
+   .status_menumask({&gun_mode|!gun_game,!gun_game,landscape,direct_video}),
    .forced_scandoubler(forced_scandoubler),
    .gamma_bus(gamma_bus),
    .direct_video(direct_video),
@@ -205,7 +208,8 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
    .joystick_3(joy4),
    .joystick_analog_0(joya),
    .joystick_analog_1(joya2),
-   .ps2_key(ps2_key)
+   .ps2_key(ps2_key),
+	.ps2_mouse(ps2_mouse)
 );
 
 wire       pressed = ps2_key[9];
@@ -280,9 +284,9 @@ wire m_right1  = btn_right  | joy1[0];
 wire m_left1   = btn_left   | joy1[1];
 wire m_down1   = btn_down   | joy1[2];
 wire m_up1     = btn_up     | joy1[3];
-wire m_fire1a  = btn_fireA  | joy1[4];
-wire m_fire1b  = btn_fireB  | joy1[5];
-wire m_fire1c  = btn_fireC  | joy1[6];
+wire m_fire1a  = btn_fireA  | joy1[4] | ps2_mouse[0];
+wire m_fire1b  = btn_fireB  | joy1[5] | ps2_mouse[1];
+wire m_fire1c  = btn_fireC  | joy1[6] | ps2_mouse[2];
 wire m_fire1d  = btn_fireD  | joy1[7];
 
 wire m_right2  = btn_right2 | joy2[0];
@@ -365,7 +369,7 @@ wire [7:0]bb = {8{b}};
 
 // if graphics are turned off, just use the pixels. Otherwise if the
 // background is in effect - use it
-wire [23:0] rgbdata  = status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
+wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
 
 
 
@@ -409,6 +413,9 @@ wire [7:0] GDB0;
 wire [7:0] GDB1;
 wire [7:0] GDB2;
 wire [7:0] GDB3;
+wire [7:0] GDB4;
+wire [7:0] GDB5;
+wire [7:0] GDB6;
 
 
 localparam mod_spaceinvaders = 0;
@@ -453,10 +460,7 @@ localparam mod_steelworker   = 36;
 reg [7:0] mod = 0;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
-
-//wire [4:0] seawolf_position =  8'd16 + joya[7:3]; // not quite correct
-wire [9:0] center_joystick_x   =  8'd127 + joya[7:0];
-wire [4:0] seawolf_position  =  center_joystick_x[7:3]; 
+ 
 wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
 //wire [9:0] positive_joystick_y   =  joya[15] ? 8'd128+ $signed(joya[15:8]) : 10'b0;
 wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
@@ -464,8 +468,7 @@ wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 10'b0;
 wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
 
 /* controls for blue shark */
-wire [7:0] joya255 = 8'd128+joya[7:0];
-wire [7:0] bluerange = { 1'b0, joya255[7:1]+8'd8 };
+wire [7:0] bluerange = { 1'b0, gun_x[7:1]+8'd8 };
 reg [7:0] blue_shark_x;
 
 always @(posedge clk_sys) 
@@ -474,6 +477,34 @@ begin
 	   blue_shark_x=8'h82;
    else
 	   blue_shark_x=bluerange[7:0];
+end
+
+/* controls for claybust */
+wire [15:0] gun_x_16 = gun_x;
+wire [15:0] gun_y_16 = gun_y + 8'h20;
+wire [15:0] claybust_gun_pos = (((gun_x_16 >> 3) | (gun_y_16 << 5)) + 2);
+reg [7:0] claybust_gun_pos_lo;
+reg [7:0] claybust_gun_pos_hi;
+reg [19:0] claybust_gun_on;
+reg claybust_old_fire;
+always @(posedge clk_10) begin
+	claybust_gun_pos_lo <= claybust_gun_pos & 8'hff;
+	claybust_gun_pos_hi <= claybust_gun_pos >> 8;
+	claybust_old_fire <= m_fire1a;
+	if (~claybust_old_fire & m_fire1a) claybust_gun_on <= 20'hfffff; // arbitrary
+	else if (claybust_gun_on) claybust_gun_on <= claybust_gun_on - 1;
+end
+
+/* controls for desert gun */
+reg [7:0] desert_gun_x;
+reg [7:0] desert_gun_y;
+reg desert_gun_select;
+
+always @(posedge clk_sys) 
+begin
+	desert_gun_x <= (gun_x[7:0]>>1)+8'h10;
+	desert_gun_y <= (gun_y[7:0]>>1)+8'h10;
+	if (Trigger_AudioDeviceP2) desert_gun_select <= SoundCtrl5[3];
 end
 
 /* controls for clown */
@@ -588,6 +619,47 @@ begin
     end
 end
 
+/* controls for seawolf */
+wire [7:0] seawolf_shifted_x = gun_x[7:0]>>3;
+reg [4:0] seawolf_position;
+
+always @(posedge clk_sys) 
+begin
+   case (seawolf_shifted_x[4:0]) 
+      5'b00000: seawolf_position <= ~5'h1e; // clamp
+      5'b00001: seawolf_position <= ~5'h1e;
+      5'b00010: seawolf_position <= ~5'h1c;
+      5'b00011: seawolf_position <= ~5'h1d;
+      5'b00100: seawolf_position <= ~5'h19;
+      5'b00101: seawolf_position <= ~5'h18;
+      5'b00110: seawolf_position <= ~5'h1a;
+      5'b00111: seawolf_position <= ~5'h1b;
+      5'b01000: seawolf_position <= ~5'h13;
+      5'b01001: seawolf_position <= ~5'h12;
+      5'b01010: seawolf_position <= ~5'h10;
+      5'b01011: seawolf_position <= ~5'h11;
+      5'b01100: seawolf_position <= ~5'h15;
+      5'b01101: seawolf_position <= ~5'h14;
+      5'b01110: seawolf_position <= ~5'h16;
+      5'b01111: seawolf_position <= ~5'h17;
+      5'b10000: seawolf_position <= ~5'h07;
+      5'b10001: seawolf_position <= ~5'h06;
+      5'b10010: seawolf_position <= ~5'h04;
+      5'b10011: seawolf_position <= ~5'h05;
+      5'b10100: seawolf_position <= ~5'h01;
+      5'b10101: seawolf_position <= ~5'h00;
+      5'b10110: seawolf_position <= ~5'h02;
+      5'b10111: seawolf_position <= ~5'h03;
+      5'b11000: seawolf_position <= ~5'h0b;
+      5'b11001: seawolf_position <= ~5'h0a;
+      5'b11010: seawolf_position <= ~5'h08;
+      5'b11011: seawolf_position <= ~5'h09;
+      5'b11100: seawolf_position <= ~5'h0d;
+      5'b11101: seawolf_position <= ~5'h0c;
+      5'b11110: seawolf_position <= ~5'h0e;
+      5'b11111: seawolf_position <= ~5'h0e; // clamp
+   endcase
+end
 
 reg fire_toggle = 0;
 always @(posedge m_fire_a) fire_toggle <= ~fire_toggle;
@@ -612,6 +684,7 @@ wire ShiftReverse;
 
 always @(*) begin
 
+        gun_game <= 0;
         landscape <= 1;
         ccw<=0;
         color_rom_enabled<=0;
@@ -725,6 +798,7 @@ always @(*) begin
 
         mod_blueshark:
         begin
+		    gun_game <= 1;
           GDB0 <= SR;
 	  // IN0
           //GDB1 <= 8'd127-joya[7:0];
@@ -988,10 +1062,11 @@ always @(*) begin
         end
         mod_claybust:
         begin 
+		    gun_game <= 1;
           // IN0
-          GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0, ~m_start1, ~m_coin1, m_fire1a, 1'b1 };
-          //GDB2 <=  // GUN low bits
-          //GDB6 <=  // GUN high bits
+          GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0, ~m_start1, ~m_coin1, |claybust_gun_on, |claybust_gun_on};
+          GDB2 <=  claybust_gun_pos_lo;
+          GDB6 <=  claybust_gun_pos_hi;
           Trigger_ShiftCount     <= PortWr[1];
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];
@@ -1082,9 +1157,10 @@ always @(*) begin
 	end
         mod_desertgun:
 	begin
-          landscape<=1;
+          gun_game <= 1;
+          landscape <= 1;
           GDB0 <= SR;
-          GDB1 <= joya[7:0];
+          GDB1 <= desert_gun_select ? desert_gun_x[7:0] : desert_gun_y[7:0];
           GDB2 <= sw[2] | { ~m_fire1a,m_coin1, 2'b0, 2'b0, 2'b0};
 
           Trigger_ShiftCount     <= PortWr[1];
@@ -1094,10 +1170,10 @@ always @(*) begin
           //<= PortWr[5]; // tone_generator_low_w
           //<= PortWr[6]; // tone_generator_hi_w
           Trigger_AudioDeviceP2  <= PortWr[7];
-
 	end
 	mod_seawolf:
 	begin
+	       gun_game <= 1;
           landscape<=1;
 	  WDEnabled <= 1'b0;
           ccw<=0;
@@ -1171,6 +1247,9 @@ invaderst invaderst(
         .GDB1(GDB1),
         .GDB2(GDB2),
         .GDB3(GDB3),
+        .GDB4(GDB4),
+        .GDB5(GDB5),
+        .GDB6(GDB6),
 
 	.WD_Enabled(WDEnabled),
 
@@ -1304,5 +1383,32 @@ always @(posedge clk_40) begin
 		{bg_a,bg_b,bg_g,bg_r} <= 0;
 	end
 end
+
+wire [1:0] gun_mode = status[12:11];
+wire [1:0] gun_cross_size = status[14:13];
+wire       gun_target;
+wire [7:0] gun_x, gun_y;
+reg        gun_game = 0;
+
+virtualgun virtualgun
+(
+	.CLK(clk_40),
+	
+	.MOUSE(ps2_mouse),
+	.MOUSE_XY(gun_mode[1]),
+	.JOY_X(!gun_mode ? joya[7:0] : joya2[7:0]),
+	.JOY_Y(!gun_mode ? joya[15:8] : joya2[15:8]),
+	.JOY(!gun_mode ? joy1 : joy2),
+
+	.HDE(~hblank),
+	.VDE(~vblank),
+	.CE_PIX(ce_pix),
+
+	.SIZE(gun_cross_size),
+
+	.TARGET(gun_target),
+	.X_OUT(gun_x),
+	.Y_OUT(gun_y)
+);
 
 endmodule
