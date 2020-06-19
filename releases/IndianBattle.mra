@@ -16,6 +16,8 @@
 	<rom index="0" zip="indianbt.zip" md5="none">
 <!-- 8k -->
 		<part name="1.36"/>
+<patch offset="0x0003">C3 2B 05</patch>
+
 		<part name="2.35"/>
 		<part name="3.34"/>
 		<part name="4.33"/>
