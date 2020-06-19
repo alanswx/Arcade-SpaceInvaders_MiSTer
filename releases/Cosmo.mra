@@ -22,5 +22,6 @@
 		<part repeat="2048">00</part>
 		<part crc="bd8576f1" name="n-1.7d"/>
 		<part crc="48f1ade5" name="n-2.6e"/>
+<patch offset="0x15FC">32 90 23 47 3A 90 23</patch>
 	</rom>
 </misterromdescription>
