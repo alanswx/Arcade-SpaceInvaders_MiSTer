@@ -8,9 +8,9 @@
 	<category>Space / Shooter</category>
 	<rbf>spaceinvaders</rbf>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<switches>
-		<dip bits="0" name="Lives" ids="2,3"/>
-		<dip bits="1" name="Bonus" ids="20k/40k(30k/50k),30k/50k(40k/70k)"/>
+        <switches default="00,00,00">
+                <dip bits="16"   name="Lives" ids="3,5"/>
+<!-- 17,18,19 unknown according to mame -->
 	</switches>
 	<rom index="1">
 		<part>14</part>
