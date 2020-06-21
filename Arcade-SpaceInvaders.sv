@@ -1237,6 +1237,7 @@ wire RWE_n;
 wire Video;
 wire HSync;
 wire VSync;
+wire CPU_RW_n;
 
 invaderst invaderst(
         .Rst_n(~(reset)),
@@ -1263,6 +1264,7 @@ invaderst invaderst(
         .Rst_n_s(Rst_n_s),
         .RWE_n(RWE_n),
         .Video(Video),
+		  .CPU_RW_n(CPU_RW_n),
 
 	.color_prom_addr(color_prom_addr),
 	.color_prom_out(color_prom_out),
@@ -1293,6 +1295,7 @@ invaderst invaderst(
 invaders_memory invaders_memory (
         .Clock(clk_sys),
         .RW_n(RWE_n),
+		  .CPU_RW_n(CPU_RW_n),
         .Addr(AD),
         .Ram_Addr(RAB),
         .Ram_out(RDB),
@@ -1305,7 +1308,8 @@ invaders_memory invaders_memory (
 	.dn_data(ioctl_dout),
 	.dn_wr(ioctl_wr&ioctl_index==0),
 	.mod_vortex(mod==mod_vortex),
-	.mod_attackforce(mod==mod_attackforce)
+	.mod_attackforce(mod==mod_attackforce),
+	.mod_cosmo(mod==mod_cosmo)
         );
 
 invaders_audio invaders_audio (

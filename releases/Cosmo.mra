@@ -4,10 +4,14 @@
 	<setname>cosmo</setname>
 	<mratimestamp>20200309002130</mratimestamp>
 	<year>1979</year>
-	<manufacturer>TDS &amp; MINTS</manufacturer>
+	<manufacturer>TDS and MINTS</manufacturer>
 	<category>Space / Shooter</category>
 	<rbf>spaceinvaders</rbf>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<switches>
+		<dip bits="0" name="Lives" ids="2,3"/>
+		<dip bits="1" name="Bonus" ids="20k/40k(30k/50k),30k/50k(40k/70k)"/>
+	</switches>
 	<rom index="1">
 		<part>14</part>
 	</rom>
@@ -20,8 +24,5 @@
 		<part crc="b037f6c4" name="6.31"/>
 		<part crc="c3831ea2" name="7.42"/>
 		<part repeat="2048">00</part>
-		<part crc="bd8576f1" name="n-1.7d"/>
-		<part crc="48f1ade5" name="n-2.6e"/>
-<patch offset="0x15FC">32 90 23 47 3A 90 23</patch>
 	</rom>
 </misterromdescription>
