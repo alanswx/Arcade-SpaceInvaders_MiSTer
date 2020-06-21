@@ -16,27 +16,6 @@
 	<rom index="0" zip="indianbt.zip" md5="none">
 <!-- 8k -->
 		<part name="1.36"/>
-<!--
-Protection, from Macro:
-5FE5: 3E 0B mvi a,$0b
-5FE7: D3 03 out $03
-5FE9: D3 01 out $01
-5FEB: DB 00 in $00
-5FED: E6 F0 ani $f0
-5FEF: FE 10 cpi $10
-5FF1: C2 00 30 jnz $3000
-5FF4: 3E 03 mvi a,$03
-5FF6: D3 03 out $03
-5FF8: D3 01 out $01
-5FFA: DB 00 in $00
-5FFC: C3 E7 5D jmp $5de7
-
-so first in 0 expects to get 0x10 returned, second one expects 0x00
-
-easy enough to patch out by just not calling this code in the first place: see patch below
--->
-<patch offset="0x0003">C3 2B 05</patch>
-
 		<part name="2.35"/>
 		<part name="3.34"/>
 		<part name="4.33"/>
@@ -48,5 +27,6 @@ easy enough to patch out by just not calling this code in the first place: see p
 <!-- 2k -->
 		<part name="mb7054.1"/> 
 		<part name="mb7054.2"/> 
+	<patch offset="0x0003">C3 2B 05</patch>
 	</rom>
 </misterromdescription>

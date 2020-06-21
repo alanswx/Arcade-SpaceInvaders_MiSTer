@@ -77,6 +77,7 @@ entity invaderst is
 		SoundCtrl5      : out std_logic_vector(5 downto 0);
 		Rst_n_s         : out std_logic;
 		RWE_n           : out std_logic;
+		CPU_RW_n        : out std_logic; -- for colour ram decode		
 		Video           : out std_logic;
 
                 color_prom_out  : in  std_logic_vector(7 downto 0);
@@ -154,6 +155,7 @@ architecture rtl of invaderst is
 	signal DB           : std_logic_vector(7 downto 0);
 	signal Sounds       : std_logic_vector(7 downto 0);
 	signal AD_i         : std_logic_vector(15 downto 0);
+	signal CPU_WR	     : std_logic;
 
 	signal EA           : std_logic_vector(2 downto 0);
 	signal A           : std_logic_vector(2 downto 0);
@@ -167,6 +169,7 @@ begin
 	Rst_n_s <= Rst_n_s_i;
 	RWD <= DB;
 	AD <= AD_i;
+	CPU_RW_n <= CPU_WR;
 
 	process (Rst_n, Clk)
 		variable Rst_n_r : std_logic;
@@ -223,7 +226,7 @@ begin
                 Vait => open,
                 HldA => open,
                 Sample => Sample,
-                Wr => open,
+                Wr => CPU_WR,
                 Video => Video,
                 color_prom_out  => color_prom_out,
                 color_prom_addr => color_prom_addr,
