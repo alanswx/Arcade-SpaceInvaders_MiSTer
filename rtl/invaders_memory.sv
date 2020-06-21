@@ -79,8 +79,7 @@ cpu_prog_rom2(
 wire [7:0] color_ram_out;
 wire [7:0] color_ram_in = mod_cosmo ? Ram_in : dn_data;
 wire [10:0] color_ram_addr = mod_cosmo ? {1'b0,rom_addr[9:0]} : dn_addr[10:0]; // will stop cosmo loading it in first place
-//wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~RW_n) : 1'b0;
-wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111) : 1'b0;  			 // write only decoded properly for 2000-3FFF range (at the moment) - so access this area, assume write!
+wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~CPU_RW_n) : 1'b0;
 
 dpram #(.addr_width_g(11),
 	.data_width_g(8))
