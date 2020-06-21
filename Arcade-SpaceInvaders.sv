@@ -917,7 +917,7 @@ always @(*) begin
         end
         mod_attackforce:
 	begin
-            landscape<=0;
+            landscape<=1;
 	    WDEnabled <= 1'b0;
             ccw<=1;
             GDB0 <= sw[0] | { ~m_coin1, 1'b1,1'b1,1'b1,1'b1,~m_fire_a, ~m_left,~m_right};

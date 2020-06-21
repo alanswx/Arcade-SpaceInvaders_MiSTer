@@ -10,18 +10,22 @@
 	<switches default="00">
 	</switches>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+        <switches default="00,00,00">
+                <dip bits="16"   name="Unused" ids="Off,On"/>
+        </switches>
+
 	<rom index="1">
 		<part>0F</part>
 	</rom>
 	<rom index="0" zip="attackfc.zip" md5="none">
-		<part crc="c12e3386" name="30a.bin"/>
+                <part crc="c12e3386" name="30a.bin"/>
 		<part crc="6738dcb9" name="36a.bin"/>
 		<part crc="787a4658" name="31a.bin"/>
 		<part crc="ad6bfbbe" name="37a.bin"/>
 		<part crc="cbe0a711" name="32a.bin"/>
+		<part repeat="1024">00</part>
 		<part crc="53147393" name="33a.bin"/>
 		<part crc="f538cf08" name="39a.bin"/>
-		<part repeat="1024">00</part>
 		<part repeat="4096">00</part>
 		<part repeat="4096">00</part>
 		<part>
