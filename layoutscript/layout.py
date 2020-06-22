@@ -11,8 +11,8 @@ overlay = bytearray(1024)
 width = 256
 height = 224
 
-vertical = ['invad2ct','invaders','escmars','galactic']
-flip = ['invaders','escmars','galactic']
+vertical = ['invad2ct','invaders','escmars','galactic','yosakdon']
+flip = ['invaders','escmars','galactic','yosakdon']
 
 
 def drawRect(left,top,right,bottom,red,green,blue):
