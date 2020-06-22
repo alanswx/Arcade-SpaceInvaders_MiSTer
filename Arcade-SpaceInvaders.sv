@@ -1194,9 +1194,9 @@ always @(*) begin
 	  ccw<=1;
           //GDB0 <= SR;
 	  // IN0
-          GDB1 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
+          GDB1 <= sw[0] | { 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
 	  // IN1
-          GDB2 <= sw[1] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0,1'b0,1'b0};
+          GDB2 <= sw[1] | { 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0,1'b0,1'b0};
 	  Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_AudioDeviceP2  <= PortWr[5];
        end
