@@ -4,6 +4,12 @@
 		<part> 22 </part>
 	</rom>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+        <switches default="00,00,00">
+                <dip bits="8,9"   name="Lives" ids="3,4,5,6"/>
+                <dip bits="10"   name="Unknown" ids="On,Off"/>
+                <dip bits="11"   name="Unknown" ids="On,Off"/>
+        </switches>
+
 	<rom index="0" zip="yosakdon.zip" md5="none">
 		<part name="yd1.bin"/> 
 		<part name="yd2.bin"/> 
