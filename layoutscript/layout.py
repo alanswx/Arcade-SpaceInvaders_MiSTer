@@ -16,7 +16,7 @@ flip = ['invaders','escmars','galactic','yosakdon']
 
 
 def drawRect(left,top,right,bottom,red,green,blue):
-    print('inside drawrect','left',left,'top',top,'right',right,'bottom',bottom,red,green,blue)
+    print('inside drawrect','left',left,'top',top,'right',right,'bottom',bottom,'rgb:',red,green,blue)
     # sanity check
     if (left<0): 
       left=0
@@ -35,11 +35,11 @@ def drawRect(left,top,right,bottom,red,green,blue):
         #uint8_t y = offset >> 5;
         #uint8_t x = offset << 3;
         val = 0
-        if (red>0.49):
+        if (red>0.39):
            val = val | 0x01
-        if (green>0.48):
+        if (green>0.38):
            val = val | 0x04
-        if (blue>0.48):
+        if (blue>0.38):
            val = val | 0x02
         overlay[color_offset+128]=val
         #print(x,y,offset,color_offset,val)
