@@ -1190,7 +1190,8 @@ always @(*) begin
         mod_yosakdon:
 	begin
 	  WDEnabled <= 1'b0;
-          landscape<=1;
+          landscape<=0;
+	  ccw<=1;
           //GDB0 <= SR;
 	  // IN0
           GDB1 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };

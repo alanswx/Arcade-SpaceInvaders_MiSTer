@@ -9,10 +9,10 @@
 		<part name="yd2.bin"/> 
 		<part name="yd3.bin"/> 
 		<part name="yd4.bin"/> 
+<part repeat="1024">00</part>
 		<part name="yd5.bin"/> 
 		<part name="yd6.bin"/> 
 		<part name="yd7.bin"/> 
-<part repeat="1024">00</part>
 <!-- 8k -->
 <part repeat="2048">00</part>
 <part repeat="2048">00</part>
