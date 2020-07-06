@@ -18,6 +18,10 @@
 //  with this program; if not, write to the Free Software Foundation, Inc.,
 //  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
+
+// Enable overlay (or not)
+`define USE_OVERLAY
+
 module emu
 (
 	//Master input clock
@@ -89,8 +93,20 @@ module emu
 	output        SDRAM_nRAS,
 	output        SDRAM_nWE,  
 	
+	//High latency DDR3 RAM interface
+	//Use for non-critical time purposes
+	output        DDRAM_CLK,
+	input         DDRAM_BUSY,
+	output  [7:0] DDRAM_BURSTCNT,
+	output [28:0] DDRAM_ADDR,
+	input  [63:0] DDRAM_DOUT,
+	input         DDRAM_DOUT_READY,
+	output        DDRAM_RD,
+	output [63:0] DDRAM_DIN,
+	output  [7:0] DDRAM_BE,
+	output        DDRAM_WE,
 	
-		// Open-drain User port.
+	// Open-drain User port.
 	// 0 - D+/RX
 	// 1 - D-/TX
 	// 2..6 - USR2..USR6
@@ -164,6 +180,7 @@ wire        ioctl_wr;
 wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_dout;
 wire  [7:0] ioctl_index;
+wire        ioctl_wait;
 
 reg	[7:0] machine_info;
 
@@ -198,7 +215,8 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
    .ioctl_addr(ioctl_addr),
    .ioctl_dout(ioctl_dout),
    .ioctl_index(ioctl_index),
-
+	.ioctl_wait(ioctl_wait),
+	
    .sdram_sz(sdram_sz),
 
 	
@@ -363,9 +381,16 @@ end
 
 wire fg = |{rr,gg,bb};
 
+`ifdef USE_OVERLAY
+// mix in overlay!
+wire [7:0]rr = {8{r}} | {C_R,C_R};
+wire [7:0]gg = {8{g}} | {C_R,C_R};
+wire [7:0]bb = {8{b}} | {C_R,C_R};
+`else
 wire [7:0]rr = {8{r}};
 wire [7:0]gg = {8{g}};
 wire [7:0]bb = {8{b}};
+`endif
 
 // if graphics are turned off, just use the pixels. Otherwise if the
 // background is in effect - use it
@@ -400,12 +425,12 @@ arcade_video #(260,224,24) arcade_video
 wire [7:0] audio;
 wire [7:0] inv_audio_data;
 wire [7:0] zap_audio_data;
+wire use_samples;
 
-assign AUDIO_L = (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
+assign AUDIO_L = use_samples? samples_left  : (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
+assign AUDIO_R = use_samples? samples_right : (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
+assign AUDIO_S = use_samples; // signed for samples, unsigned for generated
 
-//assign AUDIO_L = {audio, audio};
-assign AUDIO_R = AUDIO_L;
-assign AUDIO_S = 0;
 wire reset;
 assign reset = (RESET | status[0] | buttons[1] | ioctl_download);
 
@@ -681,6 +706,7 @@ wire [7:0] PortWr;
 wire [7:0] S;
 wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
 wire ShiftReverse;
+wire Audio_Output;
 
 always @(*) begin
 
@@ -693,14 +719,15 @@ always @(*) begin
         GDB1 <= 8'hFF;
         GDB2 <= 8'hFF;
         GDB3 <= S;
+		  Audio_Output <= 1'b1;  // Default = ON : won't do anything if no sample header loaded. 
+										 // some games control audio output via an output bit somewhere!
 
-        // space invaders default PortWr mapping
+		  // space invaders default PortWr mapping
         Trigger_ShiftCount     <= PortWr[2];
         Trigger_AudioDeviceP1  <= PortWr[3];
         Trigger_ShiftData      <= PortWr[4];
         Trigger_AudioDeviceP2  <= PortWr[5];
         Trigger_WatchDogReset  <= PortWr[6];
-
 
         case (mod) 
         mod_spaceinvaders:
@@ -1186,6 +1213,8 @@ always @(*) begin
           //<= PortWr[5];
           //<= PortWr[6];
           //<= PortWr[4];
+ 			 Trigger_AudioDeviceP1  <= PortWr[5];
+			 Trigger_AudioDeviceP2  <= 1'b0;
        end
         mod_yosakdon:
 	begin
@@ -1239,6 +1268,9 @@ wire Video;
 wire HSync;
 wire VSync;
 wire CPU_RW_n;
+
+wire [11:0] HCount;
+wire [11:0] VCount;
 
 invaderst invaderst(
         .Rst_n(~(reset)),
@@ -1411,9 +1443,118 @@ virtualgun virtualgun
 
 	.SIZE(gun_cross_size),
 
+	.H_COUNT(HCount),
+	.V_COUNT(VCount),
+
 	.TARGET(gun_target),
 	.X_OUT(gun_x),
 	.Y_OUT(gun_y)
 );
+
+////////////////////////////  Samples   ///////////////////////////////////
+
+wire wav_load = ioctl_download && (ioctl_index == 4);
+reg  [27:0] wav_addr;
+wire  [7:0] wav_data;
+wire        wav_want_byte;
+wire wav_data_ready;
+wire [15:0] samples_left;
+wire [15:0] samples_right;
+
+assign DDRAM_CLK = clk_mem;
+ddram ddram
+(
+	.*,
+	.addr(wav_load ? ioctl_addr : wav_addr),
+	.dout(wav_data),
+	.din(ioctl_dout),
+	.we(wav_wr),
+	.rd(wav_want_byte),
+	.ready(wav_data_ready)
+);
+
+
+//
+//  signals for DDRAM
+//
+// NOTE: the wav_wr (we) line doesn't want to stay high. It needs to be high to start, and then can't go high until wav_data_ready
+// we hold the ioctl_wait high (stop the data from HPS) until we get waV_data_ready
+
+reg wav_wr;
+always @(posedge clk_sys) begin
+	reg old_reset;
+
+	old_reset <= reset;
+	if(~old_reset && reset) ioctl_wait <= 0;
+
+	wav_wr <= 0;
+	if(ioctl_wr & wav_load) begin
+		ioctl_wait <= 1;
+		wav_wr <= 1;
+	end
+	else if(~wav_wr & ioctl_wait & wav_data_ready) begin
+		ioctl_wait <= 0;
+	end
+end
+
+// Link to Samples module
+
+samples samples
+(
+	.audio_enabled(Audio_Output),
+	.audio_port_0(SoundCtrl3),
+	.audio_port_1(SoundCtrl5),
+
+	.wave_addr(wav_addr),        
+	.wave_read(wav_want_byte),   
+	.wave_data(wav_data),        
+	.wave_ready(wav_data_ready), 
+	.samples_ok(use_samples),
+
+	.dl_addr(ioctl_addr),
+	.dl_wr(ioctl_wr),
+	.dl_data(ioctl_dout),
+	.dl_download(ioctl_download && (ioctl_index == 3)),
+	
+	.CLK_SYS(clk_sys),
+	.clock(clk_mem),
+	.reset(reset),
+	
+`ifdef USE_OVERLAY
+	.Hex1(Line1),
+`endif
+	
+	.audio_out_L(samples_left),
+	.audio_out_R(samples_right)
+);
+
+
+// Overlay!
+
+`ifdef USE_OVERLAY
+
+reg [3:0] C_R,C_G,C_B;
+reg [0:159] Line1,Line2;
+
+ovo OVERLAY
+(
+    .i_r(4'd0),
+    .i_g(4'd0),
+    .i_b(4'd0),
+    .i_clk(ce_pix),
+	 
+	 .i_Hcount(HCount),
+	 .i_VCount(VCount),
+
+    .o_r(C_R),
+    .o_g(C_G),
+    .o_b(C_B),
+    .ena(1'd1),
+
+    .in0(Line1),
+    .in1(Line2)
+);
+
+`endif
 
 endmodule

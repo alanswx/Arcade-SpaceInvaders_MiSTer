@@ -15,6 +15,9 @@ module virtualgun
 	
 	input  [1:0] SIZE,
 	
+	output [9:0] H_COUNT,
+	output [8:0] V_COUNT,
+	
 	output       TARGET,
 	output [7:0] X_OUT,
 	output [7:0] Y_OUT
@@ -108,6 +111,9 @@ always @(posedge CLK) begin
 	
 	draw <= (((SIZE[1] || ($signed(hcnt) >= $signed(xm) && hcnt <= xp)) && y == vcnt) || 
 				((SIZE[1] || ($signed(vcnt) >= $signed(ym) && vcnt <= yp)) && x == hcnt));
+				
+	H_COUNT <= hcnt;
+	V_COUNT <= vcnt;
 end
 
 endmodule
