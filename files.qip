@@ -25,6 +25,6 @@ set_global_assignment -name VHDL_FILE rtl/T80/T80_ALU.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80.vhd
 set_global_assignment -name VHDL_FILE rtl/invaders_video.vhd
 set_global_assignment -name VHDL_FILE rtl/invaders_blank.vhd
-set_global_assignment -name VHDL_FILE rtl/samples.vhd
+set_global_assignment -name VHDL_FILE rtl/Samples.vhd
 set_global_assignment -name VHDL_FILE rtl/OVO.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/virtualgun.sv
