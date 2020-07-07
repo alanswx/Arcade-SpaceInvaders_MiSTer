@@ -73,8 +73,10 @@ entity invaderst is
 		RWD             : out std_logic_vector(7 downto 0);
 		RAB             : out std_logic_vector(12 downto 0);
 		AD              : out std_logic_vector(15 downto 0);
-		SoundCtrl3      : out std_logic_vector(5 downto 0);
-		SoundCtrl5      : out std_logic_vector(5 downto 0);
+		SoundCtrl3      : out std_logic_vector(7 downto 0);
+		SoundCtrl5      : out std_logic_vector(7 downto 0);
+		Tone_Low        : out std_logic_vector(5 downto 0);
+		Tone_High       : out std_logic_vector(5 downto 0);
 		Rst_n_s         : out std_logic;
 		RWE_n           : out std_logic;
 		CPU_RW_n        : out std_logic; -- for colour ram decode		
@@ -100,6 +102,8 @@ entity invaderst is
 	        Trigger_AudioDeviceP1 : in std_logic;
 	        Trigger_AudioDeviceP2 : in std_logic;
 	        Trigger_WatchDogReset : in std_logic;
+		     Trigger_Tone_Low      : in std_logic;
+		     Trigger_Tone_High     : in std_logic;
 
 	        PortWr       : out std_logic_vector(7 downto 0);
 
@@ -282,14 +286,20 @@ begin
 				ShiftReverse <= DB(3);
 			end if;
 			if Trigger_AudioDeviceP1 = '1' then
-				SoundCtrl3 <= DB(5 downto 0);
+				SoundCtrl3 <= DB(7 downto 0);
 			end if;
 			if Trigger_ShiftData = '1' and OldSample = '0' then
 				D5(15 downto 8) <= DB;
 				D5(7 downto 0) <= D5(15 downto 8);
 			end if;
 			if Trigger_AudioDeviceP2 = '1' then
-				SoundCtrl5 <= DB(5 downto 0);
+				SoundCtrl5 <= DB(7 downto 0);
+			end if;
+			if Trigger_Tone_Low = '1' then
+				Tone_Low <= DB(5 downto 0);
+			end if;
+			if Trigger_Tone_High = '1' then
+				Tone_High <= DB(5 downto 0);
 			end if;
 			OldSample := Sample;
 		end if;
