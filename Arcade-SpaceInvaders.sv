@@ -140,6 +140,7 @@ localparam CONF_STR = {
 	"O8,Overlay,On,Off;",
 	"O9,Overlay Test,Off,On;",
 	"OA,Background Graphic,On,Off;",
+	"OB,Sound Debug,Off,On;",
 	"-;",
 	"H2OBC,Gun Control,Joy1,Joy2,Mouse,Disabled;",
 	"H3ODE,Crosshair,Small,Medium,Big,None;",
@@ -1549,7 +1550,7 @@ ovo OVERLAY
     .o_r(C_R),
     .o_g(C_G),
     .o_b(C_B),
-    .ena(1'd1),
+    .ena(~status[11]),
 
     .in0(Line1),
     .in1(Line2)
