@@ -709,6 +709,11 @@ wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
 wire ShiftReverse;
 wire Audio_Output;
 
+wire [5:0] Tone_Low;
+wire [5:0] Tone_High;
+wire Trigger_Tone_Low;
+wire Trigger_Tone_High;
+
 always @(*) begin
 
         gun_game <= 0;
@@ -728,7 +733,7 @@ always @(*) begin
         Trigger_AudioDeviceP1  <= PortWr[3];
         Trigger_ShiftData      <= PortWr[4];
         Trigger_AudioDeviceP2  <= PortWr[5];
-        Trigger_WatchDogReset  <= PortWr[6];
+        Trigger_WatchDogReset  <= PortWr[6];		  
 
         case (mod) 
         mod_spaceinvaders:
@@ -854,9 +859,11 @@ always @(*) begin
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];
           Trigger_WatchDogReset  <= PortWr[4];
-          //<= PortWr[5]; // tone_generator_low_w
-          //<= PortWr[6]; // tone_generator_hi_w
-	  GDB3 <= ShiftReverse ? SR: S;
+	 		 Trigger_Tone_Low       <= PortWr[5];
+		    Trigger_Tone_High      <= PortWr[6];
+			 Audio_Output           <= SoundCtrl3[3];
+
+			 GDB3 <= ShiftReverse ? SR: S;
 
         end
         mod_lunarrescue:
@@ -1261,8 +1268,8 @@ wire [15:0]AD;
 wire [7:0]RDB;
 wire [7:0]RWD;
 wire [7:0]IB;
-wire [5:0]SoundCtrl3;
-wire [5:0]SoundCtrl5;
+wire [7:0]SoundCtrl3;
+wire [7:0]SoundCtrl5;
 wire Rst_n_s;
 wire RWE_n;
 wire Video;
@@ -1295,6 +1302,8 @@ invaderst invaderst(
         .AD(AD),
         .SoundCtrl3(SoundCtrl3),
         .SoundCtrl5(SoundCtrl5),
+		  .Tone_Low(Tone_Low),
+		  .Tone_High(Tone_High),
         .Rst_n_s(Rst_n_s),
         .RWE_n(RWE_n),
         .Video(Video),
@@ -1319,6 +1328,8 @@ invaderst invaderst(
         .Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
         .Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
         .Trigger_WatchDogReset(Trigger_WatchDogReset),
+		  .Trigger_Tone_Low(Trigger_Tone_Low),
+		  .Trigger_Tone_High(Trigger_Tone_High),
 
         .PortWr(PortWr),
         .S(S),
@@ -1525,10 +1536,26 @@ samples samples
 	.Hex1(Line1),
 `endif
 	
+	.audio_in(Tone_Out),
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );
 
+// Tone Generator
+
+reg [15:0] Tone_Out;
+
+ToneGen ToneGen
+(
+	 .Tone_enabled(Tone_Low[0]),
+	 .Tone_Low({Tone_Low[5:1],1'b0}),
+	 .Tone_High(Tone_High),
+	 
+	 .Tone_out(Tone_Out),
+	 
+	.CLK_SYS(clk_sys),
+	.reset(reset),
+);
 
 // Overlay!
 
@@ -1550,7 +1577,7 @@ ovo OVERLAY
     .o_r(C_R),
     .o_g(C_G),
     .o_b(C_B),
-    .ena(~status[11]),
+    .ena(status[11]),
 
     .in0(Line1),
     .in1(Line2)

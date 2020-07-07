@@ -10,6 +10,7 @@ port(
 	 audio_port_0   : in  std_logic_vector( 7 downto 0);
 	 audio_port_1   : in  std_logic_vector( 7 downto 0);
 	 
+	 audio_in       : in  std_logic_vector(15 downto 0);
 	 audio_out_L    : out std_logic_vector(15 downto 0);
 	 audio_out_R    : out std_logic_vector(15 downto 0);
 	 
@@ -183,12 +184,10 @@ begin
 					next_ports <= ports;
 					
 					-- latch final audio / reset sum
---					audio_r <= to_signed(audio_sum_r,20);
---					audio_l <= to_signed(audio_sum_l,20);
 					audio_r <= audio_sum_r;
 					audio_l <= audio_sum_l;
-					audio_sum_r <= (others => '0');
-					audio_sum_l <= (others => '0');
+					audio_sum_r <= resize(signed(audio_in), 20);
+					audio_sum_l <= resize(signed(audio_in), 20);
 				else
 					wav_clk_cnt <= wav_clk_cnt + 1;
 				end if;
