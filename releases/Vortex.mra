@@ -7,6 +7,7 @@
 
 
         <switches default="00,00,80">
+                <dip bits="0,1"   name="Ships" ids="2,3,4,5"/>
                 <dip bits="23"   name="Coinage" ids="2C_1C,1C_1C"/>
         </switches>
         <setname>vortex</setname>
