@@ -10,7 +10,7 @@
                 <dip bits="23"   name="Coinage" ids="2C_1C,1C_1C"/>
         </switches>
         <setname>vortex</setname>
-        <buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+        <buttons names="Fire - Hold Thurst,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 
 
 	<rom index="0" zip="vortex.zip" md5="none">
