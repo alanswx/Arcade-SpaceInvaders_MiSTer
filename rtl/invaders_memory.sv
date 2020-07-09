@@ -2,7 +2,7 @@
 module invaders_memory(
 input            Clock,
 input            RW_n,
-input				  CPU_RW_n,
+input            CPU_RW_n,
 input     [15:0] Addr,
 input     [15:0] Ram_Addr,
 output    [7:0]  Ram_out,
@@ -15,7 +15,9 @@ input     [7:0]  dn_data,
 input            dn_wr,
 input            mod_vortex,
 input            mod_attackforce,
-input				  mod_cosmo
+input            mod_cosmo,
+input            mod_polaris,
+input            mod_lupin
 );
 
 /*
@@ -29,6 +31,8 @@ always @(posedge Clock ) begin
 end
 //wire [10:0] color_prom_addr={ Ram_Addr[12:7],Ram_Addr[4:0]};
 */
+
+wire [7:0] color_prom_out_rom;
 
 wire [7:0]rom_data;
 wire [7:0]rom2_data;
@@ -73,31 +77,59 @@ cpu_prog_rom2(
 	.q_b(rom2_data)
 );
 
+assign color_prom_out  = mod_vortex ? { 5'b0, ~Addr[12] , color_prom_addr[1], Addr[12]}: color_prom_out_rom;
+
+
+//=======================
+//
+// W A R N I N G
+//
+// The lupin color stuff
+// doesn't work, isn't
+// complete
+//
+//=======================
+
+
 // Colour ROM / RAM
-
+wire use_color_ram = mod_cosmo | mod_lupin ;
 // Cosmo can read/write Colour RAM (5C00-5FFF)
+//
+// Lupin, Polaris, xxx uses C000-DFFF with a 2k repeat
+wire [10:0] lupin_addr = ( rom_addr[10:0] & 11'h1f) | (( rom_addr[10:0] & 11'h1f80) >> 8'd2);
 wire [7:0] color_ram_out;
-wire [7:0] color_ram_in = mod_cosmo ? Ram_in : dn_data;
-wire [10:0] color_ram_addr = mod_cosmo ? {1'b0,rom_addr[9:0]} : dn_addr[10:0]; // will stop cosmo loading it in first place
-wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~CPU_RW_n) : 1'b0;
+//wire [7:0] color_ram_in = use_color_ram ? Ram_in : dn_data;
+wire [10:0] color_ram_addr = mod_lupin ? lupin_addr :  {1'b0,rom_addr[9:0]}; // ??  : dn_addr[10:0]; // will stop cosmo loading it in first place
+wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~CPU_RW_n) : mod_lupin ? (rom_addr[15:13]==3'b110 & ~CPU_RW_n):1'b0;
 
+wire [10:0] lupin_prom_addr = color_prom_addr[4:0] | {color_prom_addr[10:5],5'b00000};
 dpram #(.addr_width_g(11),
 	.data_width_g(8))
 video_rom(
 	.clock_a(Clock),
 	.wren_a(vrom_cs | color_ram_wr),
-	.address_a(color_ram_addr),
-	.data_a(color_ram_in),
+	.address_a(vrom_cs ? dn_addr[10:0] : color_ram_addr),
+	.data_a(vrom_cs ? dn_data : Ram_in),
 	.q_a(color_ram_out),
 
 	.clock_b(Clock),
-	.address_b(color_prom_addr),
-	.q_b(color_prom_out)
+	.address_b(mod_lupin ? lupin_prom_addr : color_prom_addr),
+	.q_b(color_prom_out_rom)
 );
 	
 always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
 	
 	Rom_out = 8'b00000000;
+
+	// Lupin, Polaris, xxx uses C000-DFFF with a 2k repeat
+	// allow them to read back the color_ram
+	if (rom_addr[15]==1'b1) begin
+	   if (mod_lupin & rom_addr[14:13]==2'b10) begin
+		 Rom_out = color_ram_out;
+	   end
+	end
+	else
+	begin
 		case (rom_addr[15:11])
 			5'b00000 : Rom_out = rom_data;
 			5'b00001 : Rom_out = rom_data;
@@ -115,6 +147,7 @@ always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
 						  end
 			default : Rom_out = 8'b00000000;
 		endcase
+	end
 end
 		
 spram #(

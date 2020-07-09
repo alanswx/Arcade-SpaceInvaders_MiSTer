@@ -247,7 +247,7 @@ begin
 
         with (mod_vortex) select
                 GDB_A <= 
-			  not AD_i(10) & AD_i(9) & AD_i(8) when '1',
+			  AD_i(10) & not AD_i(9) & AD_i(8) when '1',
 			   AD_i(10) & AD_i(9) & AD_i(8) when '0';
 
 	--with AD_i(9 downto 8) select

@@ -772,15 +772,18 @@ always @(*) begin
           //
           landscape<=0;
           ccw<=1;
-	  // IN2 -- settings
-          GDB0 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0};
-          GDB1 <= S;
+	  // note because the CPU has the address line A9 (A1 for IO) inverted
+	  // we have to be careful in looking at mame mapping
+	  // Currently: GDB0-7 have A9 inverted, but PortWr doesn't
+	  // we should probably not invert A9 in GDB0-7? AJS TODO
 	  // IN0
-	  //GDB2 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, ~m_coin1 };
-	  //GDB2 <= sw[1] | { 1'b1, m_right1,m_left1,m_fire1a,1'b1,m_start1, m_start2, ~m_coin1 };
-          GDB2 <= 8'h00;
+          GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
 	  // IN1
-          GDB3 <= sw[1] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,m_start1, m_start2, ~m_coin1 };
+          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
+          //GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+          GDB2 <= sw[2] | { 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+	  // IN2 -- settings
+          GDB3 <= S;
 	  
           Trigger_ShiftCount     <= PortWr[0];
           Trigger_AudioDeviceP1  <= PortWr[1];
@@ -1137,6 +1140,7 @@ always @(*) begin
         begin
           landscape<=0;
 	  ccw <= 1;
+          color_rom_enabled<=1;
           GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b1};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
@@ -1178,6 +1182,7 @@ always @(*) begin
 	begin
           landscape<=0;
 	  ccw<=1;
+          color_rom_enabled<=1;
           GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
@@ -1354,7 +1359,9 @@ invaders_memory invaders_memory (
 	.dn_wr(ioctl_wr&ioctl_index==0),
 	.mod_vortex(mod==mod_vortex),
 	.mod_attackforce(mod==mod_attackforce),
-	.mod_cosmo(mod==mod_cosmo)
+	.mod_cosmo(mod==mod_cosmo),
+	.mod_polaris(mod==mod_polaris),
+	.mod_lupin(mod==mod_lupin)
         );
 
 invaders_audio invaders_audio (
