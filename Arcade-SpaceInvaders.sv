@@ -1026,14 +1026,16 @@ always @(*) begin
           GDB0 <= clown_y;
           GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
           GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
-	  
-          Trigger_ShiftCount     <= PortWr[1];
-          Trigger_AudioDeviceP1  <= PortWr[3];
+	  GDB3 <= ShiftReverse ? SR: S;
+
+	  Trigger_ShiftCount     <= PortWr[1];
+          Trigger_AudioDeviceP1  <= PortWr[7];
           Trigger_ShiftData      <= PortWr[2];
-          Trigger_AudioDeviceP2  <= PortWr[7];
+          Trigger_AudioDeviceP2  <= PortWr[3];
           Trigger_WatchDogReset  <= PortWr[4];
-             //<= PortWr[5]; // tone_generator_low_w
-             //<= PortWr[6]; // tone_generator_hi_w
+          Audio_Output           <= SoundCtrl3[3];
+          Trigger_Tone_Low       <= PortWr[5];
+          Trigger_Tone_High      <= PortWr[6];
 	end
         mod_cosmo:
 	begin
