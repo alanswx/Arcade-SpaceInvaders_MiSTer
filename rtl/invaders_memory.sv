@@ -77,7 +77,7 @@ cpu_prog_rom2(
 	.q_b(rom2_data)
 );
 
-assign color_prom_out  = mod_vortex ? { 5'b0, ~Addr[12] , color_prom_addr[1], Addr[12]}: color_prom_out_rom;
+assign color_prom_out  = mod_vortex ? { 5'b0, Addr[12] , ~color_prom_addr[1], ~Addr[12]}: color_prom_out_rom;
 
 
 //=======================

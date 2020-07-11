@@ -903,17 +903,19 @@ always @(*) begin
 		  end
         mod_spacewalk:
         begin
-	     WDEnabled <= 1'b0;
-             GDB0 <= clown_y;
+	     WDEnabled <= 1'b1;
+             //GDB0 <= clown_y;
+             GDB0 <= ~(8'd127-joya[7:0]);
              GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
              GDB2 <= sw[2];
-             Trigger_ShiftCount     <= PortWr[1];
-             Trigger_AudioDeviceP1  <= PortWr[3];
+	     Trigger_ShiftCount     <= PortWr[1];
+             Trigger_AudioDeviceP1  <= PortWr[7];
              Trigger_ShiftData      <= PortWr[2];
-             Trigger_AudioDeviceP2  <= PortWr[6];
-             Trigger_WatchDogReset  <= PortWr[7];
-             //<= PortWr[5]; // tone_generator_low_w
-             //<= PortWr[6]; // tone_generator_hi_w
+             Trigger_AudioDeviceP2  <= PortWr[3];
+             Trigger_WatchDogReset  <= PortWr[4];
+             Audio_Output           <= SoundCtrl5[3];
+             Trigger_Tone_Low       <= PortWr[5];
+             Trigger_Tone_High      <= PortWr[6];
         end
         mod_spaceinvaderscv:
         begin
@@ -1022,11 +1024,11 @@ always @(*) begin
           landscape<=1;
 	  // IN0
           //GDB0 <= sw[0] | 8'b0;
-          //GDB0 <= 8'd127-joya[7:0];
-          GDB0 <= clown_y;
+          GDB0 <= ~(8'd127-joya[7:0]);
+          //GDB0 <= clown_y;
           GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
           GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
-	  GDB3 <= ShiftReverse ? SR: S;
+	  GDB3 <= S;
 
 	  Trigger_ShiftCount     <= PortWr[1];
           Trigger_AudioDeviceP1  <= PortWr[7];
