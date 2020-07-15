@@ -78,8 +78,9 @@ cpu_prog_rom2(
 	.q_b(rom2_data)
 );
 
-assign color_prom_out  = mod_vortex ? { 5'b0, Addr[12] , ~color_prom_addr[1], ~Addr[12]}: color_prom_out_rom;
+// 0 - RED, 1 - BLUE, 2 - GREEN
 
+assign color_prom_out = mod_cosmo ? {color_prom_out_rom[7:3],color_prom_out_rom[1],color_prom_out_rom[2],color_prom_out_rom[0]} : color_prom_out_rom;
 
 //=======================
 //
@@ -153,7 +154,7 @@ end
 
 // For Vortex - Read next screen byte
 wire [15:0] VortexAddr = Ram_Addr + 1;
-wire [7:0] VortexColour;
+wire [7:0]  VortexColour;
 
 assign Vortex_bit = VortexColour[0];
 		
