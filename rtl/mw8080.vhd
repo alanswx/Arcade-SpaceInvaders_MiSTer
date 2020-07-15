@@ -91,7 +91,10 @@ entity mw8080 is
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
 		HSync           : out std_logic;
-		VSync           : out std_logic);
+		VSync           : out std_logic;
+	   mod_vortex      : in std_logic;
+		Vortex_Col      : in std_logic
+		);
 
 end mw8080;
 
@@ -147,7 +150,7 @@ architecture struct of mw8080 is
         signal VCnt            : std_logic_vector(11 downto 0);
         signal HSync_t1        : std_logic;
 
-
+	signal LastVortexCol : std_logic_vector(2 downto 0);
 
 begin
 	ENA <= ClkEnCnt(2);
@@ -312,6 +315,7 @@ begin
 
 	-- Video shift register
 	process (Rst_n, Clk)
+	variable H_Pos : unsigned(8 downto 0);
 	begin
 		if Rst_n = '0' then
 			Shift <= (others => '0');
@@ -321,6 +325,11 @@ begin
 				if CntE7(4) = '0' and CntE5(4) = '0' and CntD5(2 downto 0) = "011" then
 					color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
 					Shift(7 downto 0) <= RDB(7 downto 0);
+					-- Corrected horizontal position
+					H_Pos(8 downto 4) := CntE5;
+					H_Pos(3 downto 0) := CntD5; 
+					H_Pos := H_Pos - 3;
+					LastVortexCol <= not Vortex_Col & H_Pos(5) & Vortex_Col;
 				else
 					Shift(6 downto 0) <= Shift(7 downto 1);
 					Shift(7) <= '0';
@@ -332,9 +341,15 @@ begin
 				   O_VIDEO_B <= color_prom_out(1);
 				elsif (Shift(0)='1') then
 				   if (Overlay = '1') then
-				     O_VIDEO_R <= color_prom_out(0);
-				     O_VIDEO_G <= color_prom_out(2);
-				     O_VIDEO_B <= color_prom_out(1);
+						if mod_vortex='1' then
+						  O_VIDEO_R <= LastVortexCol(2);
+						  O_VIDEO_G <= LastVortexCol(0);
+						  O_VIDEO_B <= LastVortexCol(1);
+						else
+						  O_VIDEO_R <= color_prom_out(0);
+						  O_VIDEO_G <= color_prom_out(2);
+						  O_VIDEO_B <= color_prom_out(1);
+						end if;
 			           else
 				     O_VIDEO_R <= '1';
 				     O_VIDEO_G <= '1';
