@@ -14,6 +14,7 @@ input     [15:0] dn_addr,
 input     [7:0]  dn_data,
 input            dn_wr,
 input            mod_vortex,
+output           Vortex_bit,
 input            mod_attackforce,
 input            mod_cosmo,
 input            mod_polaris,
@@ -149,16 +150,25 @@ always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
 		endcase
 	end
 end
+
+// For Vortex - Read next screen byte
+wire [15:0] VortexAddr = Ram_Addr + 1;
+wire [7:0] VortexColour;
+
+assign Vortex_bit = VortexColour[0];
 		
-spram #(
+dpram #(
 	.addr_width_g(13),
 	.data_width_g(8)) 
 u_ram0(
-	.address(Ram_Addr[12:0]),
-	.clken(1'b1),
-	.clock(Clock),
-	.data(Ram_in),
-	.wren(~RW_n),
-	.q(Ram_out)
+	.address_a(Ram_Addr[12:0]),
+	.clock_a(Clock),
+	.data_a(Ram_in),
+	.wren_a(~RW_n),
+	.q_a(Ram_out),
+	
+	.address_b(VortexAddr[12:0]),
+	.clock_b(Clock),
+	.q_b(VortexColour)
 	);
 endmodule 

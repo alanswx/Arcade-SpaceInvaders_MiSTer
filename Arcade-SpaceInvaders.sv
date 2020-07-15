@@ -1289,6 +1289,8 @@ wire CPU_RW_n;
 wire [11:0] HCount;
 wire [11:0] VCount;
 
+wire Vortex_Col;
+
 invaderst invaderst(
         .Rst_n(~(reset)),
         .Clk(clk_sys),
@@ -1344,7 +1346,8 @@ invaderst invaderst(
         .S(S),
         .ShiftReverse(ShiftReverse),
 
-	.mod_vortex(mod==mod_vortex)
+	.mod_vortex(mod==mod_vortex),
+	.Vortex_Col(Vortex_Col)
         );
 invaders_memory invaders_memory (
         .Clock(clk_sys),
@@ -1362,6 +1365,7 @@ invaders_memory invaders_memory (
 	.dn_data(ioctl_dout),
 	.dn_wr(ioctl_wr&ioctl_index==0),
 	.mod_vortex(mod==mod_vortex),
+	.Vortex_bit(Vortex_Col),
 	.mod_attackforce(mod==mod_attackforce),
 	.mod_cosmo(mod==mod_cosmo),
 	.mod_polaris(mod==mod_polaris),

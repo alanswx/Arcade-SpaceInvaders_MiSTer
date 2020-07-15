@@ -111,7 +111,8 @@ entity invaderst is
 		S            : out std_logic_vector(7 downto 0);
                 ShiftReverse : out std_logic;
 
-	        mod_vortex      : in std_logic
+	        mod_vortex      : in std_logic;
+			  Vortex_Col      : in std_logic
 		);
 end invaderst;
 
@@ -152,7 +153,10 @@ architecture rtl of invaderst is
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
 		HSync           : out std_logic;
-		VSync           : out std_logic);
+		VSync           : out std_logic;
+	   mod_vortex      : in std_logic;
+		Vortex_Col      : in std_logic
+	);
 	end component;
 
 	signal GDB          : std_logic_vector(7 downto 0);
@@ -168,6 +172,7 @@ architecture rtl of invaderst is
 	signal Sample       : std_logic;
 	signal Rst_n_s_i    : std_logic;
 	signal GDB_A        : unsigned(2 downto 0);
+	
 begin
 
 	Rst_n_s <= Rst_n_s_i;
@@ -242,7 +247,9 @@ begin
 		VBlank => HBlank,
 		HBlank => VBlank,
                 HSync => HSync,
-                VSync => VSync);
+                VSync => VSync,
+					 mod_vortex => mod_vortex,
+					 Vortex_Col => Vortex_Col);
 
 
         with (mod_vortex) select
