@@ -11,18 +11,16 @@
         </switches>
 
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="0" zip="lupin3.zip" md5="none">
-<!-- 8k -->
-		<part name="lp01.36"/>
-		<part name="lp02.35"/>
-		<part name="lp03.34"/>
-		<part name="lp04.33"/>
-<!-- 8k -->
-		<part name="lp05.32"/>
-		<part name="lp06.31"/>
-		<part repeat="4096">00</part>
-<!-- 2k -->
-		<part name="lp08.1"/> 
-		<part name="lp09.2"/> 
+	<rom index="0" zip="lupin3a.zip" md5="none">
+		<!-- 8k -->
+		<part name="lp12.bin"/>
+		<part name="lp13.bin"/>
+		<part name="lp14.bin"/>
+		<part name="lp15.bin"/>
+		<!-- 8k -->
+		<part name="lp16.bin"/>
+		<part name="lp17.bin"/>
+		<part name="lp18.bin"/>
+                <part repeat="2048">00</part>
 	</rom>
 </misterromdescription>

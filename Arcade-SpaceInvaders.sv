@@ -913,7 +913,7 @@ always @(*) begin
              Trigger_ShiftData      <= PortWr[2];
              Trigger_AudioDeviceP2  <= PortWr[3];
              Trigger_WatchDogReset  <= PortWr[4];
-             Audio_Output           <= SoundCtrl5[3];
+             Audio_Output           <= SoundCtrl5[2];
              Trigger_Tone_Low       <= PortWr[5];
              Trigger_Tone_High      <= PortWr[6];
         end
@@ -1145,7 +1145,7 @@ always @(*) begin
           landscape<=0;
 	  ccw <= 1;
           color_rom_enabled<=1;
-          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b1};
+          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b0};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
           Trigger_ShiftCount     <= PortWr[2];
