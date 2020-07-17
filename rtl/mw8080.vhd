@@ -324,7 +324,15 @@ begin
 			if VidEn = '1' then
 				if CntE7(4) = '0' and CntE5(4) = '0' and CntD5(2 downto 0) = "011" then
 					color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
-					Shift(7 downto 0) <= RDB(7 downto 0);
+					if OverlayTest='1' then
+						case CntE6(2 downto 0) is
+							when "000" | "111" => Shift(7 downto 0) <= RDB(7 downto 0) or x"C3";
+							when "001" | "110" => Shift(7 downto 0) <= RDB(7 downto 0) or x"81";
+							when others        => Shift(7 downto 0) <= RDB(7 downto 0);
+						end case;
+					else
+						Shift(7 downto 0) <= RDB(7 downto 0);
+					end if;
 					-- Corrected horizontal position
 					H_Pos(8 downto 4) := CntE5;
 					H_Pos(3 downto 0) := CntD5; 
@@ -335,11 +343,12 @@ begin
 					Shift(7) <= '0';
 				end if;
 				Video <= Shift(0);
-				if OverlayTest = '1' then
-				   O_VIDEO_R <= color_prom_out(0);
-				   O_VIDEO_G <= color_prom_out(2);
-				   O_VIDEO_B <= color_prom_out(1);
-				elsif (Shift(0)='1') then
+--				if OverlayTest = '1' then
+--				   O_VIDEO_R <= color_prom_out(0);
+--				   O_VIDEO_G <= color_prom_out(2);
+--				   O_VIDEO_B <= color_prom_out(1);
+--				els
+				if (Shift(0)='1') then
 				   if (Overlay = '1') then
 						if mod_vortex='1' then
 						  O_VIDEO_R <= LastVortexCol(2);

@@ -9,7 +9,7 @@ output    [7:0]  Ram_out,
 input     [7:0]  Ram_in,
 output    [7:0]  Rom_out,
 output    [7:0]  color_prom_out,
-input     [10:0] color_prom_addr,
+input     [12:0] color_prom_addr,
 input     [15:0] dn_addr,
 input     [7:0]  dn_data,
 input            dn_wr,
@@ -40,7 +40,7 @@ wire [7:0]rom2_data;
 
 wire [15:0]rom_addr_vortex = {Addr[15:10],~Addr[9],Addr[8:4],~Addr[3],Addr[2:1],~Addr[0]};
 wire [15:0]rom_addr_attackforce = {Addr[15:10],Addr[8],Addr[9],Addr[7:0]};
-wire [15:0] rom_addr = mod_vortex? rom_addr_vortex : mod_attackforce ? rom_addr_attackforce : Addr;
+wire [15:0]rom_addr = mod_vortex? rom_addr_vortex : mod_attackforce ? rom_addr_attackforce : Addr;
 
 wire rom_cs  = dn_wr & dn_addr[15:13]==3'b000;
 
@@ -80,7 +80,7 @@ cpu_prog_rom2(
 
 // 0 - RED, 1 - BLUE, 2 - GREEN
 
-assign color_prom_out = mod_cosmo ? {color_prom_out_rom[7:3],color_prom_out_rom[1],color_prom_out_rom[2],color_prom_out_rom[0]} : color_prom_out_rom;
+assign color_prom_out = mod_cosmo ? {color_prom_out_rom[7:3],color_prom_out_rom[1],color_prom_out_rom[2],color_prom_out_rom[0]} : mod_lupin ? ~color_prom_out_rom : color_prom_out_rom;
 
 //=======================
 //
@@ -95,16 +95,17 @@ assign color_prom_out = mod_cosmo ? {color_prom_out_rom[7:3],color_prom_out_rom[
 
 // Colour ROM / RAM
 wire use_color_ram = mod_cosmo | mod_lupin ;
+
 // Cosmo can read/write Colour RAM (5C00-5FFF)
-//
-// Lupin, Polaris, xxx uses C000-DFFF with a 2k repeat
-wire [10:0] lupin_addr = ( rom_addr[10:0] & 11'h1f) | (( rom_addr[10:0] & 11'h1f80) >> 8'd2);
-wire [7:0] color_ram_out;
-//wire [7:0] color_ram_in = use_color_ram ? Ram_in : dn_data;
-wire [10:0] color_ram_addr = mod_lupin ? lupin_addr :  {1'b0,rom_addr[9:0]}; // ??  : dn_addr[10:0]; // will stop cosmo loading it in first place
+// Lupin, Polaris, xxx use colour ram but mapped from C000-DFFF
 wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~CPU_RW_n) : mod_lupin ? (rom_addr[15:13]==3'b110 & ~CPU_RW_n):1'b0;
 
-wire [10:0] lupin_prom_addr = color_prom_addr[4:0] | {color_prom_addr[10:5],5'b00000};
+wire [10:0] cosmo_addr = {1'b0,rom_addr[9:0]};
+wire [10:0] lupin_addr = {1'd0,rom_addr[12:8],rom_addr[4:0]};
+
+wire [7:0]  color_ram_out;
+wire [10:0] color_ram_addr = mod_lupin ? lupin_addr : cosmo_addr;
+
 dpram #(.addr_width_g(11),
 	.data_width_g(8))
 video_rom(
@@ -115,7 +116,7 @@ video_rom(
 	.q_a(color_ram_out),
 
 	.clock_b(Clock),
-	.address_b(mod_lupin ? lupin_prom_addr : color_prom_addr),
+	.address_b(color_prom_addr),
 	.q_b(color_prom_out_rom)
 );
 	
@@ -123,8 +124,7 @@ always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
 	
 	Rom_out = 8'b00000000;
 
-	// Lupin, Polaris, xxx uses C000-DFFF with a 2k repeat
-	// allow them to read back the color_ram
+	// Lupin, Polaris, xxx uses C000-DFFF - allow them to read back the color_ram
 	if (rom_addr[15]==1'b1) begin
 	   if (mod_lupin & rom_addr[14:13]==2'b10) begin
 		 Rom_out = color_ram_out;
@@ -152,7 +152,7 @@ always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
 	end
 end
 
-// For Vortex - Read next screen byte
+// For Vortex - Read next screen byte (picked up in SI queued to load shifter)
 wire [15:0] VortexAddr = Ram_Addr + 1;
 wire [7:0]  VortexColour;
 
