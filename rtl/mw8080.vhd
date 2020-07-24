@@ -88,6 +88,9 @@ entity mw8080 is
                 O_VIDEO_B       : out std_logic;
                 Overlay         : in std_logic;
                 OverlayTest     : in std_logic;
+					 ScreenFlip      : in std_logic;
+					 Overlay_Align   : in std_logic;
+					 
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
 		HSync           : out std_logic;
@@ -186,8 +189,10 @@ begin
 			RR(7 downto 0) when others;
 
 	RWE_n <= Wr_n or not (RR(8) xor RR(9)) or not CntD5(2);
+	
 	RAB <= A(12 downto 0) when CntD5(2) = '1' else
-		std_logic_vector(CntE7(3 downto 0) & CntE6(3 downto 0) & CntE5(3 downto 0) & CntD5(3));
+		    std_logic_vector(CntE7(3 downto 0) & CntE6(3 downto 0) & CntE5(3 downto 0) & CntD5(3)) when ScreenFlip='0' else
+		    not std_logic_vector((CntE7(3 downto 0)-2) & CntE6(3 downto 0) & CntE5(3 downto 0) & CntD5(3));
 
 	u_8080: T8080se
 		generic map (
@@ -264,7 +269,7 @@ begin
 			end if;
 			if Sync = '1' and A(13) = '1' then
 				RR <= (others => '0');
-			elsif (CntD5(2) = '1' and OldASEL = '0') or                                 -- ASEL pos edge
+			elsif (CntD5(2) = '1' and OldASEL = '0') or                -- ASEL pos edge
 				(CntD5(2) = '0' and OldASEL = '1' and RR(8) = '1') then -- ASEL neg edge
 				RR(7 downto 0) <= RDB;
 				RR(8) <= '1';
@@ -315,7 +320,9 @@ begin
 
 	-- Video shift register
 	process (Rst_n, Clk)
-	variable H_Pos : unsigned(8 downto 0);
+	variable H_Pos  : unsigned(8 downto 0);
+	variable V_Pos  : unsigned(8 downto 0);
+	variable Bitmap : std_logic_vector(7 downto 0);
 	begin
 		if Rst_n = '0' then
 			Shift <= (others => '0');
@@ -323,31 +330,52 @@ begin
 		elsif Clk'event and Clk = '1' then
 			if VidEn = '1' then
 				if CntE7(4) = '0' and CntE5(4) = '0' and CntD5(2 downto 0) = "011" then
-					color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
-					if OverlayTest='1' then
-						case CntE6(2 downto 0) is
-							when "000" | "111" => Shift(7 downto 0) <= RDB(7 downto 0) or x"C3";
-							when "001" | "110" => Shift(7 downto 0) <= RDB(7 downto 0) or x"81";
-							when others        => Shift(7 downto 0) <= RDB(7 downto 0);
-						end case;
-					else
-						Shift(7 downto 0) <= RDB(7 downto 0);
-					end if;
-					-- Corrected horizontal position
+
+					-- Corrected horizontal position for Vortex
 					H_Pos(8 downto 4) := CntE5;
 					H_Pos(3 downto 0) := CntD5; 
 					H_Pos := H_Pos - 3;
-					LastVortexCol <= not Vortex_Col & H_Pos(5) & Vortex_Col;
+
+					-- Used to correct if overlay aligned to 4 pixels
+					V_Pos := CntE7 & CntE6;
+					
+					if ScreenFlip='0' then
+						-- Normal way up
+						if Overlay_Align='0' then
+							color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
+						else
+							V_Pos := V_Pos + 4;
+							color_prom_addr <= std_logic_vector('0' & V_Pos(7 downto 3) & CntE5(3 downto 0) & CntD5(3));
+						end if;
+						Bitmap          := RDB;
+						LastVortexCol   <= not Vortex_Col & H_Pos(5) & Vortex_Col;
+					else
+					   -- Flipped 
+						if Overlay_Align='0' then
+							v_Pos := V_Pos - 32;
+							color_prom_addr <= not std_logic_vector('1' & V_Pos(7 downto 3) & CntE5(3 downto 0) & CntD5(3));
+						else
+							v_Pos := V_Pos - 28;
+							color_prom_addr <= not std_logic_vector('1' & V_Pos(7 downto 3) & CntE5(3 downto 0) & CntD5(3));
+						end if;
+						Bitmap          := RDB(0) & RDB(1) & RDB(2) & RDB(3) & RDB(4) & RDB(5) & RDB(6) & RDB(7);
+						LastVortexCol   <= not Vortex_Col & not H_Pos(5) & Vortex_Col;
+					end if;
+					 
+					if OverlayTest='1' then
+						case CntE6(2 downto 0) is
+							when "000" | "111" => Shift(7 downto 0) <= Bitmap(7 downto 0) or x"C3";
+							when "001" | "110" => Shift(7 downto 0) <= Bitmap(7 downto 0) or x"81";
+							when others        => Shift(7 downto 0) <= Bitmap(7 downto 0);
+						end case;
+					else
+						Shift(7 downto 0) <= Bitmap(7 downto 0);
+					end if;
 				else
 					Shift(6 downto 0) <= Shift(7 downto 1);
 					Shift(7) <= '0';
 				end if;
 				Video <= Shift(0);
---				if OverlayTest = '1' then
---				   O_VIDEO_R <= color_prom_out(0);
---				   O_VIDEO_G <= color_prom_out(2);
---				   O_VIDEO_B <= color_prom_out(1);
---				els
 				if (Shift(0)='1') then
 				   if (Overlay = '1') then
 						if mod_vortex='1' then
