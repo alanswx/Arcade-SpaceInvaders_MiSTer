@@ -134,6 +134,7 @@ localparam CONF_STR = {
 	"H0O1,Aspect Ratio,Original,Wide;", 
 	"H1H0O2,Orientation,Vert,Horz;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",  
+	"O6,Flip Screen (Vert only),No,Yes;",
 	"-;",
 	"DIP;",
 	"-;",
@@ -165,7 +166,6 @@ pll pll
 	.outclk_1(clk_10),
 	.outclk_2(clk_80),
 	.locked(pll_locked)
-
 );
 
 
@@ -383,14 +383,14 @@ end
 wire fg = |{rr,gg,bb};
 
 `ifdef USE_OVERLAY
-// mix in overlay!
-wire [7:0]rr = {8{r}} | {C_R,C_R};
-wire [7:0]gg = {8{g}} | {C_R,C_R};
-wire [7:0]bb = {8{b}} | {C_R,C_R};
+	// mix in overlay!
+	wire [7:0]rr = {8{r}} | {C_R,C_R};
+	wire [7:0]gg = {8{g}} | {C_R,C_R};
+	wire [7:0]bb = {8{b}} | {C_R,C_R};
 `else
-wire [7:0]rr = {8{r}};
-wire [7:0]gg = {8{g}};
-wire [7:0]bb = {8{b}};
+	wire [7:0]rr = {8{r}};
+	wire [7:0]gg = {8{g}};
+	wire [7:0]bb = {8{b}};
 `endif
 
 // if graphics are turned off, just use the pixels. Otherwise if the
@@ -693,59 +693,77 @@ always @(posedge m_fire_a) fire_toggle <= ~fire_toggle;
 reg [7:0] sw[8];
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 
-reg landscape;
-reg ccw;
-reg color_rom_enabled;
+// Global Enables
+reg landscape;				// Landscape
+reg ccw;						// Rotates Counter Clockwise
+reg color_rom_enabled;	// Uses colour prom / ram
+wire WDEnabled;			// Uses Watchdog
+wire ShiftReverse;		// Uses shifter that does both directions
+wire Audio_Output;		// Audio output control
+wire ScreenFlip;			// Flip the screen 180 degrees
+wire Overlay4;          // Overlay aligned to 4 pixels (otherwise 8)
 
-wire WDEnabled;
+// Trigger addresses - set addresses where these registers are written to
 wire Trigger_ShiftCount;
 wire Trigger_ShiftData;
 wire Trigger_AudioDeviceP1;
 wire Trigger_AudioDeviceP2;
 wire Trigger_WatchDogReset;
-wire [7:0] PortWr;
-wire [7:0] S;
-wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
-wire ShiftReverse;
-wire Audio_Output;
-
-wire [5:0] Tone_Low;
-wire [5:0] Tone_High;
 wire Trigger_Tone_Low;
 wire Trigger_Tone_High;
 
+// Port data 
+wire [7:0] PortWr;
+
+// Shifter data
+wire [7:0] S;
+wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
+
+// Midway Tone Generator data
+wire [5:0] Tone_Low;
+wire [5:0] Tone_High;
+
 always @(*) begin
 
-        gun_game <= 0;
-        landscape <= 1;
-        ccw<=0;
-        color_rom_enabled<=0;
-	WDEnabled <= 1'b1;
-        GDB0 <= 8'hFF;
-        GDB1 <= 8'hFF;
-        GDB2 <= 8'hFF;
-        GDB3 <= S;
-		  Audio_Output <= 1'b1;  // Default = ON : won't do anything if no sample header loaded. 
-										 // some games control audio output via an output bit somewhere!
+			// Defaults - games in case statement change these as needed
+		
+        gun_game  			<= 0;
+        landscape 			<= 1;
+        ccw						<= 0;
+        color_rom_enabled	<= 0;
+		  WDEnabled 			<= 1;
+        GDB0 					<= 8'hFF;
+        GDB1 					<= 8'hFF;
+        GDB2 					<= 8'hFF;
+        GDB3 					<= S;
+		  Audio_Output 		<= 1;  	 // Default = ON : won't do anything if no sample header loaded. 
+												 // some games control audio output via an output bit somewhere!
 
-		  // space invaders default PortWr mapping
+		  ScreenFlip         <= status[6];
+		  Overlay4           <= 0; 	 // Default aligned to characters
+												 
+		  // default PortWr mapping
         Trigger_ShiftCount     <= PortWr[2];
         Trigger_AudioDeviceP1  <= PortWr[3];
         Trigger_ShiftData      <= PortWr[4];
         Trigger_AudioDeviceP2  <= PortWr[5];
         Trigger_WatchDogReset  <= PortWr[6];		  
+		  Trigger_Tone_Low       <= 0;
+		  Trigger_Tone_High      <= 0;
 
         case (mod) 
-        mod_spaceinvaders:
-        begin
-          landscape<=0;
-          ccw<=1;
+		  
+			mod_spaceinvaders:
+				begin
+				 landscape	<=0;
+				 ccw			<=1;
 
-          GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
-          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
-        end
-        mod_shuffleboard:
+				 GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
+				 GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+				 GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+				end
+			
+			mod_shuffleboard:
         begin
           landscape<=0;
           ccw<=0;
@@ -903,12 +921,12 @@ always @(*) begin
 		  end
         mod_spacewalk:
         begin
-	     WDEnabled <= 1'b1;
+				 WDEnabled <= 1'b1;
              //GDB0 <= clown_y;
              GDB0 <= ~(8'd127-joya[7:0]);
              GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
              GDB2 <= sw[2];
-	     Trigger_ShiftCount     <= PortWr[1];
+				 Trigger_ShiftCount     <= PortWr[1];
              Trigger_AudioDeviceP1  <= PortWr[7];
              Trigger_ShiftData      <= PortWr[2];
              Trigger_AudioDeviceP2  <= PortWr[3];
@@ -916,7 +934,9 @@ always @(*) begin
              Audio_Output           <= SoundCtrl5[2];
              Trigger_Tone_Low       <= PortWr[5];
              Trigger_Tone_High      <= PortWr[6];
+				 Overlay4               <= 1;
         end
+		  
         mod_spaceinvaderscv:
         begin
             landscape<=0;
@@ -1304,7 +1324,7 @@ invaderst invaderst(
         .GDB5(GDB5),
         .GDB6(GDB6),
 
-	.WD_Enabled(WDEnabled),
+		  .WD_Enabled(WDEnabled),
 
         .RDB(RDB),
         .IB(IB),
@@ -1320,19 +1340,21 @@ invaderst invaderst(
         .Video(Video),
 		  .CPU_RW_n(CPU_RW_n),
 
-	.color_prom_addr(color_prom_addr),
-	.color_prom_out(color_prom_out),
+	     .color_prom_addr(color_prom_addr),
+	     .color_prom_out(color_prom_out),
+		  .ScreenFlip(ScreenFlip & ~landscape),
+		  .Overlay_Align(Overlay4),
+		  
         .O_VIDEO_R(r),
         .O_VIDEO_G(g),
         .O_VIDEO_B(b),
         //.HBLANK(hblank),
         //.VBLANK(vblank),
         .Overlay(~status[8]),
-	.OverlayTest(status[9]),
+	     .OverlayTest(status[9]),
 
         .HSync(HSync),
         .VSync(VSync),
-
 
         .Trigger_ShiftCount(Trigger_ShiftCount),
         .Trigger_ShiftData(Trigger_ShiftData),
@@ -1360,7 +1382,6 @@ invaders_memory invaders_memory (
         .Rom_out(IB),
 	.color_prom_out(color_prom_out),
 	.color_prom_addr(color_prom_addr),
-
 	.dn_addr(ioctl_addr[15:0]),
 	.dn_data(ioctl_dout),
 	.dn_wr(ioctl_wr&ioctl_index==0),
@@ -1569,7 +1590,7 @@ ToneGen ToneGen
 	 .Tone_out(Tone_Out),
 	 
 	.CLK_SYS(clk_sys),
-	.reset(reset),
+	.reset(reset)
 );
 
 // Overlay!

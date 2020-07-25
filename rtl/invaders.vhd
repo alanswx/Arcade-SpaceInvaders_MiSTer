@@ -59,15 +59,15 @@ entity invaderst is
 		Rst_n           : in  std_logic;
 		Clk             : in  std_logic;
 		ENA             : out  std_logic;
-		
-                GDB0            : in std_logic_vector(7 downto 0);
-                GDB1            : in std_logic_vector(7 downto 0);
-                GDB2            : in std_logic_vector(7 downto 0);
-                GDB3            : in std_logic_vector(7 downto 0);
-                GDB4            : in std_logic_vector(7 downto 0);
-                GDB5            : in std_logic_vector(7 downto 0);
-                GDB6            : in std_logic_vector(7 downto 0);
-		
+
+		GDB0            : in std_logic_vector(7 downto 0);
+		GDB1            : in std_logic_vector(7 downto 0);
+		GDB2            : in std_logic_vector(7 downto 0);
+		GDB3            : in std_logic_vector(7 downto 0);
+		GDB4            : in std_logic_vector(7 downto 0);
+		GDB5            : in std_logic_vector(7 downto 0);
+		GDB6            : in std_logic_vector(7 downto 0);
+
 		RDB             : in  std_logic_vector(7 downto 0);
 		IB              : in  std_logic_vector(7 downto 0);
 		RWD             : out std_logic_vector(7 downto 0);
@@ -82,38 +82,43 @@ entity invaderst is
 		CPU_RW_n        : out std_logic; -- for colour ram decode		
 		Video           : out std_logic;
 
-                color_prom_out  : in  std_logic_vector(7 downto 0);
-                color_prom_addr : out std_logic_vector(10 downto 0);
-                O_VIDEO_R       : out std_logic;
-                O_VIDEO_G       : out std_logic;
-                O_VIDEO_B       : out std_logic;
+		color_prom_out  : in  std_logic_vector(7 downto 0);
+		color_prom_addr : out std_logic_vector(10 downto 0);
+		ScreenFlip      : in  std_logic;
+		Overlay_Align   : in  std_logic;
+					 
+		O_VIDEO_R       : out std_logic;
+		O_VIDEO_G       : out std_logic;
+		O_VIDEO_B       : out std_logic;
+		
 		WD_Enabled      : in std_logic;
 		Overlay         : in std_logic;
 		OverlayTest     : in std_logic;
+		
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
 
 		HSync           : out std_logic;
 		VSync           : out std_logic;
 
-	        -- PortWR triggers
-	        Trigger_ShiftCount    : in std_logic;
-	        Trigger_ShiftData     : in std_logic;
-	        Trigger_AudioDeviceP1 : in std_logic;
-	        Trigger_AudioDeviceP2 : in std_logic;
-	        Trigger_WatchDogReset : in std_logic;
-		     Trigger_Tone_Low      : in std_logic;
-		     Trigger_Tone_High     : in std_logic;
+		-- PortWR triggers
+		Trigger_ShiftCount    : in std_logic;
+		Trigger_ShiftData     : in std_logic;
+		Trigger_AudioDeviceP1 : in std_logic;
+		Trigger_AudioDeviceP2 : in std_logic;
+		Trigger_WatchDogReset : in std_logic;
+		Trigger_Tone_Low      : in std_logic;
+		Trigger_Tone_High     : in std_logic;
 
-	        PortWr       : out std_logic_vector(7 downto 0);
+		PortWr       			 : out std_logic_vector(7 downto 0);
 
-	        -- output of shifter
-		S            : out std_logic_vector(7 downto 0);
-                ShiftReverse : out std_logic;
+		-- output of shifter
+		S            			 : out std_logic_vector(7 downto 0);
+		ShiftReverse 			 : out std_logic;
 
-	        mod_vortex      : in std_logic;
-			  Vortex_Col      : in std_logic
-		);
+		mod_vortex      		 :	in std_logic;
+		Vortex_Col      		 : in std_logic
+);
 end invaderst;
 
 architecture rtl of invaderst is
@@ -150,6 +155,9 @@ architecture rtl of invaderst is
                 O_VIDEO_B       : out std_logic;
 		Overlay         : in std_logic;
 		OverlayTest     : in std_logic;
+		ScreenFlip      : in std_logic;
+		Overlay_Align   : in std_logic;
+		
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
 		HSync           : out std_logic;
@@ -244,6 +252,8 @@ begin
                 O_VIDEO_B => O_VIDEO_B,
 		Overlay => Overlay,
 		OverlayTest => OverlayTest,
+		ScreenFlip => ScreenFlip,
+		Overlay_Align => Overlay_Align,
 		VBlank => HBlank,
 		HBlank => VBlank,
                 HSync => HSync,
