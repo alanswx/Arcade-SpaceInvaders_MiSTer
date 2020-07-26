@@ -723,6 +723,8 @@ wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
 wire [5:0] Tone_Low;
 wire [5:0] Tone_High;
 
+reg software_screen_flip = 1'b0;
+
 always @(*) begin
 
 			// Defaults - games in case statement change these as needed
@@ -893,6 +895,10 @@ always @(*) begin
           color_rom_enabled<=1;
           ccw<=1;
 	  WDEnabled <= 1'b0;
+	  if (Trigger_AudioDeviceP1)
+	  	software_screen_flip <= SoundCtrl5[5] & sw[2][2];
+	  ScreenFlip <= software_screen_flip;
+
           //GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
           //GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
           //GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
@@ -903,6 +909,9 @@ always @(*) begin
         end
         mod_ozmawars:
         begin
+	  if (Trigger_AudioDeviceP1)
+	  	software_screen_flip <= SoundCtrl5[5] & sw[3][0];
+	  ScreenFlip <= software_screen_flip;
             landscape<=0;
             ccw<=1;
             color_rom_enabled<=1;
@@ -942,6 +951,9 @@ always @(*) begin
             landscape<=0;
             ccw<=1;
             color_rom_enabled<=1;
+	  if (Trigger_AudioDeviceP1)
+	  	software_screen_flip <= SoundCtrl5[5] & sw[3][0];
+	  ScreenFlip <= software_screen_flip;
             GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
             GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
             GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
@@ -1324,7 +1336,7 @@ invaderst invaderst(
         .GDB5(GDB5),
         .GDB6(GDB6),
 
-		  .WD_Enabled(WDEnabled),
+	.WD_Enabled(WDEnabled),
 
         .RDB(RDB),
         .IB(IB),
@@ -1333,17 +1345,17 @@ invaderst invaderst(
         .AD(AD),
         .SoundCtrl3(SoundCtrl3),
         .SoundCtrl5(SoundCtrl5),
-		  .Tone_Low(Tone_Low),
-		  .Tone_High(Tone_High),
+	.Tone_Low(Tone_Low),
+	.Tone_High(Tone_High),
         .Rst_n_s(Rst_n_s),
         .RWE_n(RWE_n),
         .Video(Video),
-		  .CPU_RW_n(CPU_RW_n),
+	.CPU_RW_n(CPU_RW_n),
 
-	     .color_prom_addr(color_prom_addr),
-	     .color_prom_out(color_prom_out),
-		  .ScreenFlip(ScreenFlip & ~landscape),
-		  .Overlay_Align(Overlay4),
+	.color_prom_addr(color_prom_addr),
+	.color_prom_out(color_prom_out),
+	.ScreenFlip(ScreenFlip & ~landscape),
+	.Overlay_Align(Overlay4),
 		  
         .O_VIDEO_R(r),
         .O_VIDEO_G(g),
@@ -1361,8 +1373,8 @@ invaderst invaderst(
         .Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
         .Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
         .Trigger_WatchDogReset(Trigger_WatchDogReset),
-		  .Trigger_Tone_Low(Trigger_Tone_Low),
-		  .Trigger_Tone_High(Trigger_Tone_High),
+	.Trigger_Tone_Low(Trigger_Tone_Low),
+	.Trigger_Tone_High(Trigger_Tone_High),
 
         .PortWr(PortWr),
         .S(S),

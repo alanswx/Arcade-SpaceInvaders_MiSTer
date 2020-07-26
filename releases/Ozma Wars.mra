@@ -3,6 +3,13 @@
 	<rom index="1" >
 		<part> 07 </part>
 	</rom>
+    <switches default="00,00,00,00">
+                <dip bits="16,17"   name="Energy" ids="15k,20k,25k,35k"/>
+                <dip bits="19"   name="Bonus Energy" ids="15k,10k" />
+                <dip bits="23"   name="Coins" ids="1C/1C,1C/2C" />
+                <dip bits="24"   name="Cabinet" ids="Upright,Cocktail"/>
+        </switches>
+
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
 	<rom index="0" zip="ozmawars.zip" md5="none">
 		<part name="mw01"/> 
