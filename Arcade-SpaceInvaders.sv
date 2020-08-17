@@ -35,11 +35,11 @@ module emu
 	inout  [45:0] HPS_BUS,
 
 	//Base video clock. Usually equals to CLK_SYS.
-	output        VGA_CLK,
+	output        CLK_VIDEO, // VGA_CLK,
 
 	//Multiple resolutions are supported using different VGA_CE rates.
 	//Must be based on CLK_VIDEO
-	output        VGA_CE,
+	output        CE_PIXEL, // VGA_CE,
 
 	output  [7:0] VGA_R,
 	output  [7:0] VGA_G,
@@ -48,6 +48,7 @@ module emu
 	output        VGA_VS,
 	output        VGA_DE,    // = ~(VBlank | HBlank)
 	output        VGA_F1,
+   output [1:0]  VGA_SL,
 
 	//Base video clock. Usually equals to CLK_SYS.
 	output        HDMI_CLK,
@@ -65,8 +66,25 @@ module emu
 	output  [1:0] HDMI_SL,   // scanlines fx
 
 	//Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
-	output  [7:0] HDMI_ARX,
-	output  [7:0] HDMI_ARY,
+	output  [7:0] VIDEO_ARX,
+	output  [7:0] VIDEO_ARY,
+
+	// Use framebuffer from DDRAM (USE_FB=1 in qsf)
+	// FB_FORMAT:
+	//    [2:0] : 011=8bpp(palette) 100=16bpp 101=24bpp 110=32bpp
+	//    [3]   : 0=16bits 565 1=16bits 1555
+	//    [4]   : 0=RGB  1=BGR (for 16/24/32 modes)
+	//
+	// FB_STRIDE either 0 (rounded to 256 bytes) or multiple of 16 bytes.
+
+	output        FB_EN,
+	output  [4:0] FB_FORMAT,
+	output [11:0] FB_WIDTH,
+	output [11:0] FB_HEIGHT,
+	output [31:0] FB_BASE,
+	output [13:0] FB_STRIDE,
+	input         FB_VBL,
+	input         FB_LL,
 
 	output        LED_USER,  // 1 - ON, 0 - OFF.
 
@@ -76,9 +94,11 @@ module emu
 	output  [1:0] LED_POWER,
 	output  [1:0] LED_DISK,
 
+   input         CLK_AUDIO, // 24.576 MHz
 	output [15:0] AUDIO_L,
 	output [15:0] AUDIO_R,
 	output        AUDIO_S,    // 1 - signed audio samples, 0 - unsigned
+	output  [1:0] AUDIO_MIX,  // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
 
 	//SDRAM interface with lower latency
 	output        SDRAM_CLK,
@@ -122,10 +142,8 @@ assign LED_USER  = ioctl_download;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 
-assign HDMI_ARX = status[1] ? 8'd16 : (status[2] | landscape) ? 8'd4 : 8'd3;
-assign HDMI_ARY = status[1] ? 8'd9  : (status[2] | landscape) ? 8'd3 : 8'd4;
-
-
+assign VIDEO_ARX = status[1] ? 8'd16 : (status[2] | landscape) ? 8'd4 : 8'd3;
+assign VIDEO_ARY = status[1] ? 8'd9  : (status[2] | landscape) ? 8'd3 : 8'd4;
 
 `include "build_id.v" 
 localparam CONF_STR = {
@@ -397,31 +415,28 @@ wire fg = |{rr,gg,bb};
 // background is in effect - use it
 wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
 
-
-
-//arcade_video #(260,224,6) arcade_video
-arcade_video #(260,224,24) arcade_video
+arcade_video #(.WIDTH(260), .DW(24)) arcade_video
 (
-   .*,
+        .*,
 
-   .clk_video(clk_40),
+        .clk_video(clk_40),
+        .ce_pix(ce_pix),
 
-  // .RGB_in({r,r,g,g,b,b}),
-   //.RGB_in((fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b}),
-   .RGB_in(rgbdata),
-   //.RGB_in({bg_r,bg_g,bg_b}),
-   //.RGB_in(status[10]?  {bg_r,bg_g,bg_b}:{rr,gg,bb}  ),
+        .RGB_in(rgbdata),
+        .HBlank(hblank),
+        .VBlank(vblank),
+        .HSync(HSync),
+        .VSync(VSync),
 
-   .HBlank(hblank),
-   .VBlank(vblank),
-   .HSync(HSync),
-   .VSync(VSync),
-
-   .rotate_ccw(ccw),
-   .fx(status[5:3])
-
+        .fx(status[5:3]),
+		  .forced_scandoubler(forced_scandoubler)
 );
 
+screen_rotate screen_rotate
+(
+		  .*,
+		  .rotate_ccw(ccw)
+);
 
 wire [7:0] audio;
 wire [7:0] inv_audio_data;
@@ -431,6 +446,7 @@ wire use_samples;
 assign AUDIO_L = use_samples? samples_left  : (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
 assign AUDIO_R = use_samples? samples_right : (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
 assign AUDIO_S = use_samples; // signed for samples, unsigned for generated
+assign AUDIO_MIX = 2'd0;
 
 wire reset;
 assign reset = (RESET | status[0] | buttons[1] | ioctl_download);
@@ -443,47 +459,51 @@ wire [7:0] GDB4;
 wire [7:0] GDB5;
 wire [7:0] GDB6;
 
+// Games - Completed
+localparam mod_seawolf       = 33;
+localparam mod_boothill      = 5;
 
-localparam mod_spaceinvaders = 0;
-localparam mod_shuffleboard  = 1;
+// Games - Working
+localparam mod_clowns        = 19;			// P2 Controls / Flip
+localparam mod_cosmo         = 20;
+localparam mod_spacewalk     = 9;
 localparam mod_vortex        = 2;
+localparam mod_indianbattle  = 26;
+localparam mod_lupin         = 27;
+localparam mod_spaceinvaderscv = 10;
+localparam mod_spaceinvaders = 0;
+
+localparam mod_attackforce   = 15;
+localparam mod_polaris       = 30;
+
+// Games - Not yet looked at
+localparam mod_shuffleboard  = 1;
 localparam mod_280zap        = 3;
 localparam mod_blueshark     = 4;
-localparam mod_boothill      = 5;
 localparam mod_lunarrescue   = 6;
 localparam mod_ozmawars      = 7;
 localparam mod_spacelaser    = 8;
-localparam mod_spacewalk     = 9;
-localparam mod_spaceinvaderscv = 10;
 localparam mod_unknown1      = 11;
 localparam mod_unknown2      = 12;
 localparam mod_spaceinvadersii = 13;
 localparam mod_amazingmaze   = 14;
-localparam mod_attackforce   = 15;
 localparam mod_ballbomb      = 16;
 localparam mod_bowler        = 17;
 localparam mod_checkmate     = 18;
-localparam mod_clowns        = 19;
-localparam mod_cosmo         = 20;
 localparam mod_dogpatch      = 21;
 localparam mod_doubleplay    = 22;
 localparam mod_guidedmissle  = 23;
 localparam mod_claybust      = 24;
 localparam mod_gunfight      = 25;
-localparam mod_indianbattle  = 26;
-localparam mod_lupin         = 27;
 localparam mod_m4            = 28;
 localparam mod_phantom       = 29;
-localparam mod_polaris       = 30;
 localparam mod_desertgun     = 31;
 localparam mod_lagunaracer   = 32;
-localparam mod_seawolf       = 33;
 localparam mod_yosakdon      = 34;
 localparam mod_spacechaser   = 35;
 localparam mod_steelworker   = 36;
 
-
-reg [7:0] mod = 0;
+reg [7:0] mod = 255;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
  
@@ -694,14 +714,15 @@ reg [7:0] sw[8];
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 
 // Global Enables
-reg landscape;				// Landscape
-reg ccw;						// Rotates Counter Clockwise
-reg color_rom_enabled;	// Uses colour prom / ram
+reg  landscape;			// Landscape
+reg  ccw;					// Rotates Counter Clockwise
+reg  color_rom_enabled;	// Uses colour prom / ram
 wire WDEnabled;			// Uses Watchdog
 wire ShiftReverse;		// Uses shifter that does both directions
 wire Audio_Output;		// Audio output control
 wire ScreenFlip;			// Flip the screen 180 degrees
 wire Overlay4;          // Overlay aligned to 4 pixels (otherwise 8)
+reg  software_flip = 0; // Flip the screen when software says to 
 
 // Trigger addresses - set addresses where these registers are written to
 wire Trigger_ShiftCount;
@@ -722,8 +743,6 @@ wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
 // Midway Tone Generator data
 wire [5:0] Tone_Low;
 wire [5:0] Tone_High;
-
-reg software_screen_flip = 1'b0;
 
 always @(*) begin
 
@@ -894,11 +913,9 @@ always @(*) begin
           landscape<=0;
           color_rom_enabled<=1;
           ccw<=1;
-	  WDEnabled <= 1'b0;
-	  if (Trigger_AudioDeviceP1)
-	  	software_screen_flip <= SoundCtrl5[5] & sw[2][2];
-	  ScreenFlip <= software_screen_flip;
-
+			 WDEnabled <= 1'b0;
+//			 if (Trigger_AudioDeviceP2)
+//			     software_screen_flip <= SoundCtrl5[5] & sw[2][2];			 
           //GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
           //GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
           //GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
@@ -909,11 +926,10 @@ always @(*) begin
         end
         mod_ozmawars:
         begin
-	  if (Trigger_AudioDeviceP1)
-	  	software_screen_flip <= SoundCtrl5[5] & sw[3][0];
-	  ScreenFlip <= software_screen_flip;
             landscape<=0;
-            ccw<=1;
+//				if (Trigger_AudioDeviceP2)
+//				    software_screen_flip <= SoundCtrl5[5] & sw[3][0];
+			   ccw<=1;
             color_rom_enabled<=1;
          // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
             GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
@@ -946,18 +962,17 @@ always @(*) begin
 				 Overlay4               <= 1;
         end
 		  
-        mod_spaceinvaderscv:
-        begin
-            landscape<=0;
-            ccw<=1;
-            color_rom_enabled<=1;
-	  if (Trigger_AudioDeviceP1)
-	  	software_screen_flip <= SoundCtrl5[5] & sw[3][0];
-	  ScreenFlip <= software_screen_flip;
-            GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
-            GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
-            GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
-        end
+			mod_spaceinvaderscv:
+			begin
+				landscape<=0;
+				ccw<=1;
+				color_rom_enabled<=1;
+				if (Trigger_AudioDeviceP2) software_flip <= SoundCtrl5[5] & sw[3][0];
+				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+				GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+				GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+			end
+
         mod_unknown1:
         begin
         GDB0 <= 8'hFF;
@@ -1050,28 +1065,30 @@ always @(*) begin
           //<= PortWr[3]; //  checkmat_io_w
 	end
         mod_clowns:
-	begin
-          //GDB0 -- all FF
-          //
-          landscape<=1;
-	  // IN0
-          //GDB0 <= sw[0] | 8'b0;
-          GDB0 <= ~(8'd127-joya[7:0]);
-          //GDB0 <= clown_y;
-          GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
-          GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
-	  GDB3 <= S;
+			begin
+				//GDB0 -- all FF
+				//
+				landscape<=1;
+				// IN0
+				//GDB0 <= sw[0] | 8'b0;
+				GDB0 <= ~(8'd127-joya[7:0]);
+				//GDB0 <= clown_y;
+				GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
+				GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+				GDB3 <= S;
 
-	  Trigger_ShiftCount     <= PortWr[1];
-          Trigger_AudioDeviceP1  <= PortWr[7];
-          Trigger_ShiftData      <= PortWr[2];
-          Trigger_AudioDeviceP2  <= PortWr[3];
-          Trigger_WatchDogReset  <= PortWr[4];
-          Audio_Output           <= SoundCtrl3[3];
-          Trigger_Tone_Low       <= PortWr[5];
-          Trigger_Tone_High      <= PortWr[6];
-	end
-        mod_cosmo:
+				Trigger_ShiftCount     <= PortWr[1];
+				Trigger_AudioDeviceP1  <= PortWr[7];
+				Trigger_ShiftData      <= PortWr[2];
+				Trigger_AudioDeviceP2  <= PortWr[3];
+				Trigger_WatchDogReset  <= PortWr[4];
+				Audio_Output           <= SoundCtrl3[3];
+				Trigger_Tone_Low       <= PortWr[5];
+				Trigger_Tone_High      <= PortWr[6];
+				software_flip   		  <= 1'd0;
+			end
+
+			mod_cosmo:
 	begin
             landscape<=0;
             ccw<=0;
@@ -1323,6 +1340,9 @@ wire [11:0] VCount;
 
 wire Vortex_Col;
 
+// Software flip reverses whatever the hardware flip was set to
+wire DoScreenFlip = software_flip ? ~(ScreenFlip & ~landscape) : (ScreenFlip & ~landscape);
+
 invaderst invaderst(
         .Rst_n(~(reset)),
         .Clk(clk_sys),
@@ -1336,7 +1356,7 @@ invaderst invaderst(
         .GDB5(GDB5),
         .GDB6(GDB6),
 
-	.WD_Enabled(WDEnabled),
+		  .WD_Enabled(WDEnabled),
 
         .RDB(RDB),
         .IB(IB),
@@ -1345,17 +1365,17 @@ invaderst invaderst(
         .AD(AD),
         .SoundCtrl3(SoundCtrl3),
         .SoundCtrl5(SoundCtrl5),
-	.Tone_Low(Tone_Low),
-	.Tone_High(Tone_High),
+		  .Tone_Low(Tone_Low),
+		  .Tone_High(Tone_High),
         .Rst_n_s(Rst_n_s),
         .RWE_n(RWE_n),
         .Video(Video),
-	.CPU_RW_n(CPU_RW_n),
+		  .CPU_RW_n(CPU_RW_n),
 
-	.color_prom_addr(color_prom_addr),
-	.color_prom_out(color_prom_out),
-	.ScreenFlip(ScreenFlip & ~landscape),
-	.Overlay_Align(Overlay4),
+	     .color_prom_addr(color_prom_addr),
+	     .color_prom_out(color_prom_out),
+		  .ScreenFlip(DoScreenFlip),
+		  .Overlay_Align(Overlay4),
 		  
         .O_VIDEO_R(r),
         .O_VIDEO_G(g),
@@ -1373,8 +1393,8 @@ invaderst invaderst(
         .Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
         .Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
         .Trigger_WatchDogReset(Trigger_WatchDogReset),
-	.Trigger_Tone_Low(Trigger_Tone_Low),
-	.Trigger_Tone_High(Trigger_Tone_High),
+		  .Trigger_Tone_Low(Trigger_Tone_Low),
+		  .Trigger_Tone_High(Trigger_Tone_High),
 
         .PortWr(PortWr),
         .S(S),
@@ -1383,27 +1403,29 @@ invaderst invaderst(
 	.mod_vortex(mod==mod_vortex),
 	.Vortex_Col(Vortex_Col)
         );
-invaders_memory invaders_memory (
-        .Clock(clk_sys),
-        .RW_n(RWE_n),
-		  .CPU_RW_n(CPU_RW_n),
-        .Addr(AD),
-        .Ram_Addr(RAB),
-        .Ram_out(RDB),
-        .Ram_in(RWD),
-        .Rom_out(IB),
-	.color_prom_out(color_prom_out),
-	.color_prom_addr(color_prom_addr),
-	.dn_addr(ioctl_addr[15:0]),
-	.dn_data(ioctl_dout),
-	.dn_wr(ioctl_wr&ioctl_index==0),
-	.mod_vortex(mod==mod_vortex),
-	.Vortex_bit(Vortex_Col),
-	.mod_attackforce(mod==mod_attackforce),
-	.mod_cosmo(mod==mod_cosmo),
-	.mod_polaris(mod==mod_polaris),
-	.mod_lupin(mod==mod_lupin)
-        );
+		  
+	invaders_memory invaders_memory (
+			.Clock(clk_sys),
+			.RW_n(RWE_n),
+			.CPU_RW_n(CPU_RW_n),
+			.Addr(AD),
+			.Ram_Addr(RAB),
+			.Ram_out(RDB),
+			.Ram_in(RWD),
+			.Rom_out(IB),
+			.color_prom_out(color_prom_out),
+			.color_prom_addr(color_prom_addr),
+			.dn_addr(ioctl_addr[15:0]),
+			.dn_data(ioctl_dout),
+			.dn_wr(ioctl_wr&ioctl_index==0),
+			.Vortex_bit(Vortex_Col),
+			.mod_vortex(mod==mod_vortex),
+			.mod_attackforce(mod==mod_attackforce),
+			.mod_cosmo(mod==mod_cosmo),
+			.mod_polaris(mod==mod_polaris),
+			.mod_lupin(mod==mod_lupin),
+			.mod_indianbattle(mod==mod_indianbattle)
+	);
 
 invaders_audio invaders_audio (
         .Clk(clk_sys),
@@ -1430,49 +1452,70 @@ invaders_blank invaders_blank (
 
 
 
+// Background Image
 
 wire bg_download = ioctl_download && (ioctl_index == 2);
+reg  [16:0] max_bg;
 
 reg [7:0] ioctl_dout_r;
-always @(posedge clk_sys) if(ioctl_wr & ~ioctl_addr[0]) ioctl_dout_r <= ioctl_dout;
+reg [7:0] ioctl_dout_r2;
+reg [7:0] ioctl_dout_r3;
+
+always @(posedge clk_sys) 
+begin
+	if(ioctl_wr & ~ioctl_addr[1] & ~ioctl_addr[0]) ioctl_dout_r <= ioctl_dout;
+	if(ioctl_wr & ~ioctl_addr[1] &  ioctl_addr[0]) ioctl_dout_r2 <= ioctl_dout;
+	if(ioctl_wr &  ioctl_addr[1] & ~ioctl_addr[0]) ioctl_dout_r3 <= ioctl_dout;
+	if(bg_download) max_bg <= {ioctl_addr[17:2],1'd0};
+end
+
+spram #(
+	.addr_width_g(16),
+	.data_width_g(32)) 
+u_ram0(
+	.address(bg_download ? ioctl_addr[17:2] : pic_addr[16:1]),
+	.clken(1'b1),
+	.clock(clk_mem),
+	.data({ioctl_dout, ioctl_dout_r3, ioctl_dout_r2, ioctl_dout_r}),
+	.wren(bg_download & ioctl_wr & ioctl_addr[1] & ioctl_addr[0]),	// write every 4th byte 
+	.q(pic_data)
+	);
 
 wire [31:0] pic_data;
-sdram sdram
-(
-	.*,
 
-	.init(~pll_locked),
-	.clk(clk_mem),
-	.ch1_addr(bg_download ? ioctl_addr[24:1] : pic_addr),
-	.ch1_dout(pic_data),
-	.ch1_din({ioctl_dout, ioctl_dout_r}),
-	.ch1_req(bg_download ? (ioctl_wr & ioctl_addr[0]) : pic_req),
-	.ch1_rnw(~bg_download)
-);
-
-reg        pic_req;
-reg [24:1] pic_addr;
+//reg        pic_req;
+reg [16:0] pic_addr;
 reg  [7:0] bg_r,bg_g,bg_b,bg_a;
 always @(posedge clk_40) begin
 	reg old_vs;
 	reg use_bg = 0;
 	
-	if(bg_download && sdram_sz[2:0]) use_bg <= 1;
+	if(bg_download) use_bg <= 1;
 
-	pic_req <= 0;
+	//pic_req <= 0;
 
 	if(use_bg) begin
 		if(ce_pix) begin
 			old_vs <= VSync;
 			{bg_a,bg_b,bg_g,bg_r} <= pic_data;
 			if(~(hblank|vblank)) begin
-				pic_addr <= pic_addr + 2'd2;
-				pic_req <= 1;
+				if(ScreenFlip & ~landscape) begin
+					pic_addr <= pic_addr - 2'd2;
+				end
+				else begin
+					pic_addr <= pic_addr + 2'd2;
+				end;
+				//pic_req <= 1;
 			end
 			
 			if(~old_vs & VSync) begin
-				pic_addr <= 0;
-				pic_req <= 1;
+				if(ScreenFlip & ~landscape) begin
+					pic_addr <= max_bg;
+				end
+				else begin
+					pic_addr <= 0;
+				end;
+				//pic_req <= 1;
 			end
 		end
 	end
@@ -1513,49 +1556,33 @@ virtualgun virtualgun
 
 ////////////////////////////  Samples   ///////////////////////////////////
 
-wire wav_load = ioctl_download && (ioctl_index == 4);
+wire 			wav_load = ioctl_download && (ioctl_index == 4);
 reg  [27:0] wav_addr;
-wire  [7:0] wav_data;
+wire [31:0] wav_data;
 wire        wav_want_byte;
-wire wav_data_ready;
+wire 			wav_data_ready;
 wire [15:0] samples_left;
 wire [15:0] samples_right;
+reg   [7:0] ioctl_low;
 
-assign DDRAM_CLK = clk_mem;
-ddram ddram
-(
-	.*,
-	.addr(wav_load ? ioctl_addr : wav_addr),
-	.dout(wav_data),
-	.din(ioctl_dout),
-	.we(wav_wr),
-	.rd(wav_want_byte),
-	.ready(wav_data_ready)
-);
-
-
-//
-//  signals for DDRAM
-//
-// NOTE: the wav_wr (we) line doesn't want to stay high. It needs to be high to start, and then can't go high until wav_data_ready
-// we hold the ioctl_wait high (stop the data from HPS) until we get waV_data_ready
-
-reg wav_wr;
-always @(posedge clk_sys) begin
-	reg old_reset;
-
-	old_reset <= reset;
-	if(~old_reset && reset) ioctl_wait <= 0;
-
-	wav_wr <= 0;
-	if(ioctl_wr & wav_load) begin
-		ioctl_wait <= 1;
-		wav_wr <= 1;
-	end
-	else if(~wav_wr & ioctl_wait & wav_data_ready) begin
-		ioctl_wait <= 0;
-	end
+	// 16 bit write, 32 bit read 
+always @(posedge clk_sys) 
+begin
+	if(wav_load & ~ioctl_addr[0]) ioctl_low <= ioctl_dout;
 end
+
+	sdram sdram
+	(
+		.*,
+
+		.init(~pll_locked),
+		.clk(clk_mem),
+		.ch1_addr(wav_load ? ioctl_addr[24:1] : wav_addr[24:1]),
+		.ch1_dout(wav_data),
+		.ch1_din({ioctl_dout, ioctl_low}),
+		.ch1_req(wav_load ? (ioctl_wr & ioctl_addr[0]) : wav_want_byte),
+		.ch1_rnw(~wav_load)
+	);
 
 // Link to Samples module
 
@@ -1568,7 +1595,7 @@ samples samples
 	.wave_addr(wav_addr),        
 	.wave_read(wav_want_byte),   
 	.wave_data(wav_data),        
-	.wave_ready(wav_data_ready), 
+
 	.samples_ok(use_samples),
 
 	.dl_addr(ioctl_addr),
@@ -1610,7 +1637,7 @@ ToneGen ToneGen
 `ifdef USE_OVERLAY
 
 reg [3:0] C_R,C_G,C_B;
-reg [0:159] Line1,Line2;
+reg [159:0] Line1,Line2;
 
 ovo OVERLAY
 (
@@ -1630,6 +1657,14 @@ ovo OVERLAY
     .in0(Line1),
     .in1(Line2)
 );
+
+always @(posedge clk_sys) 
+begin
+	Line2[4:0] <= ScreenFlip ? 5'd1 : 5'd0;
+	Line2[9:5] <= software_flip ? 5'd1 : 5'd0;
+	Line2[14:10] <= landscape ? 5'd1 : 5'd0;
+	Line2[19:15] <= DoScreenFlip ? 5'd1 : 5'd0;
+end
 
 `endif
 
