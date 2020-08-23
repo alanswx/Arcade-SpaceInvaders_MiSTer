@@ -460,18 +460,19 @@ wire [7:0] GDB5;
 wire [7:0] GDB6;
 
 // Games - Completed
-localparam mod_seawolf       = 33;
 localparam mod_boothill      = 5;
+localparam mod_seawolf       = 33;
 
 // Games - Working
+localparam mod_spaceinvaders = 0;
+localparam mod_vortex        = 2;
+localparam mod_spacewalk     = 9;
+localparam mod_spaceinvaderscv = 10;
+localparam mod_ballbomb      = 16;
 localparam mod_clowns        = 19;			// P2 Controls / Flip
 localparam mod_cosmo         = 20;
-localparam mod_spacewalk     = 9;
-localparam mod_vortex        = 2;
 localparam mod_indianbattle  = 26;
 localparam mod_lupin         = 27;
-localparam mod_spaceinvaderscv = 10;
-localparam mod_spaceinvaders = 0;
 
 localparam mod_attackforce   = 15;
 localparam mod_polaris       = 30;
@@ -487,7 +488,6 @@ localparam mod_unknown1      = 11;
 localparam mod_unknown2      = 12;
 localparam mod_spaceinvadersii = 13;
 localparam mod_amazingmaze   = 14;
-localparam mod_ballbomb      = 16;
 localparam mod_bowler        = 17;
 localparam mod_checkmate     = 18;
 localparam mod_dogpatch      = 21;
@@ -904,10 +904,10 @@ always @(*) begin
 	 		 Trigger_Tone_Low       <= PortWr[5];
 		    Trigger_Tone_High      <= PortWr[6];
 			 Audio_Output           <= SoundCtrl3[3];
-
+		    software_flip          <= 0;
 			 GDB3 <= ShiftReverse ? SR: S;
-
         end
+		  
         mod_lunarrescue:
         begin
           landscape<=0;
@@ -1520,7 +1520,15 @@ always @(posedge clk_40) begin
 		end
 	end
 	else begin
-		{bg_a,bg_b,bg_g,bg_r} <= 0;
+		// Mix cloud background in
+		if (mod==mod_ballbomb & CBPixel==1'd1) begin
+			bg_b <= 255;
+			bg_g <= 255;
+			bg_r <= 255;
+		end
+		else begin
+			{bg_a,bg_b,bg_g,bg_r} <= 0;
+		end;
 	end
 end
 
@@ -1656,6 +1664,19 @@ ovo OVERLAY
 
     .in0(Line1),
     .in1(Line2)
+);
+
+// Clouds for Balloon Bomber
+
+reg CBPixel;
+
+clouds clouds 
+(
+	.pixel_clk(ce_pix),
+	.v(VCount),
+	.h(HCount),
+	.flip(DoScreenFlip),
+	.pixel(CBPixel)
 );
 
 always @(posedge clk_sys) 
