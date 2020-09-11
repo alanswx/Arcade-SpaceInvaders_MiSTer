@@ -76,7 +76,7 @@ entity invaderst is
 		SoundCtrl3      : out std_logic_vector(7 downto 0);
 		SoundCtrl5      : out std_logic_vector(7 downto 0);
 		Tone_Low        : out std_logic_vector(5 downto 0);
-		Tone_High       : out std_logic_vector(5 downto 0);
+		Tone_High       : out std_logic_vector(6 downto 0);
 		Rst_n_s         : out std_logic;
 		RWE_n           : out std_logic;
 		CPU_RW_n        : out std_logic; -- for colour ram decode		
@@ -100,6 +100,9 @@ entity invaderst is
 
 		HSync           : out std_logic;
 		VSync           : out std_logic;
+
+		VShift		    : in  std_logic_vector(3 downto 0);
+		HShift		    : in  std_logic_vector(3 downto 0);
 
 		-- PortWR triggers
 		Trigger_ShiftCount    : in std_logic;
@@ -162,6 +165,10 @@ architecture rtl of invaderst is
 		HBlank          : out std_logic;
 		HSync           : out std_logic;
 		VSync           : out std_logic;
+		
+		VShift		    : in  std_logic_vector(3 downto 0);
+		HShift		    : in  std_logic_vector(3 downto 0);
+
 	   mod_vortex      : in std_logic;
 		Vortex_Col      : in std_logic
 	);
@@ -222,44 +229,47 @@ begin
 
 	u_mw8080: mw8080
 		port map(
-                Rst_n => Rst_n_s_i,
-                Clk => Clk,
-                ENA => ENA,
-                RWE_n => RWE_n,
-                RDB => RDB,
-                IB => IB,
-                RAB => RAB,
-                Sounds => Sounds,
-                Ready => open,
-                GDB => GDB,
-                DB => DB,
-                AD => AD_i,
-                Status => open,
-                Systb => open,
-                Int => open,
-                Hold_n => '1',
-                IntE => open,
-                DBin_n => open,
-                Vait => open,
-                HldA => open,
-                Sample => Sample,
-                Wr => CPU_WR,
-                Video => Video,
-                color_prom_out  => color_prom_out,
-                color_prom_addr => color_prom_addr,
-                O_VIDEO_R => O_VIDEO_R,
-                O_VIDEO_G => O_VIDEO_G,
-                O_VIDEO_B => O_VIDEO_B,
-		Overlay => Overlay,
-		OverlayTest => OverlayTest,
-		ScreenFlip => ScreenFlip,
-		Overlay_Align => Overlay_Align,
-		VBlank => HBlank,
-		HBlank => VBlank,
-                HSync => HSync,
-                VSync => VSync,
-					 mod_vortex => mod_vortex,
-					 Vortex_Col => Vortex_Col);
+			Rst_n => Rst_n_s_i,
+			Clk => Clk,
+			ENA => ENA,
+			RWE_n => RWE_n,
+			RDB => RDB,
+			IB => IB,
+			RAB => RAB,
+			Sounds => Sounds,
+			Ready => open,
+			GDB => GDB,
+			DB => DB,
+			AD => AD_i,
+			Status => open,
+			Systb => open,
+			Int => open,
+			Hold_n => '1',
+			IntE => open,
+			DBin_n => open,
+			Vait => open,
+			HldA => open,
+			Sample => Sample,
+			Wr => CPU_WR,
+			Video => Video,
+			color_prom_out  => color_prom_out,
+			color_prom_addr => color_prom_addr,
+			O_VIDEO_R => O_VIDEO_R,
+			O_VIDEO_G => O_VIDEO_G,
+			O_VIDEO_B => O_VIDEO_B,
+			Overlay => Overlay,
+			OverlayTest => OverlayTest,
+			ScreenFlip => ScreenFlip,
+			Overlay_Align => Overlay_Align,
+			VBlank => VBlank,
+			HBlank => HBlank,
+			HSync => HSync,
+			VSync => VSync,
+		   VShift => VShift,
+		   HShift => HShift,
+			mod_vortex => mod_vortex,
+			Vortex_Col => Vortex_Col
+		);
 
 
         with (mod_vortex) select
@@ -316,7 +326,7 @@ begin
 				Tone_Low <= DB(5 downto 0);
 			end if;
 			if Trigger_Tone_High = '1' then
-				Tone_High <= DB(5 downto 0);
+				Tone_High <= DB(6 downto 0);
 			end if;
 			OldSample := Sample;
 		end if;

@@ -153,16 +153,18 @@ localparam CONF_STR = {
 	"H1H0O2,Orientation,Vert,Horz;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",  
 	"O6,Flip Screen (Vert only),No,Yes;",
+	"OGJ,CRT H-Sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
+	"OKN,CRT V-Sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
 	"-;",
 	"DIP;",
 	"-;",
 	"O8,Overlay,On,Off;",
 	"O9,Overlay Test,Off,On;",
 	"OA,Background Graphic,On,Off;",
-	"OB,Sound Debug,Off,On;",
+	"OB,Debug display,Off,On;",
 	"-;",
-	"H2OBC,Gun Control,Joy1,Joy2,Mouse,Disabled;",
-	"H3ODE,Crosshair,Small,Medium,Big,None;",
+	"H2OCD,Gun Control,Joy1,Joy2,Mouse,Disabled;",
+	"H3OEF,Crosshair,Small,Medium,Big,None;",
 	"-;",
 	"R0,Reset;",
 	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin;",
@@ -509,9 +511,9 @@ always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
  
 wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
 //wire [9:0] positive_joystick_y   =  joya[15] ? 8'd128+ $signed(joya[15:8]) : 10'b0;
-wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 10'b0;
-wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 10'b0;
-wire   [3:0] zap_throttle = positive_joystick_y[6:3] ;
+wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 8'd0;
+wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 8'd0;
+wire [3:0] zap_throttle = positive_joystick_y[6:3];
 
 /* controls for blue shark */
 wire [7:0] bluerange = { 1'b0, gun_x[7:1]+8'd8 };
@@ -560,7 +562,7 @@ reg vsync_r;
 //always @(posedge m_right or posedge m_left ) begin
 always @(posedge clk_sys) 
 begin
-    vsync_r          <= VSync;
+    vsync_r <= VSync;
     if (vsync_r ==0 && VSync== 1) 
     begin
        //if (clown_timer > 1) begin
@@ -742,7 +744,7 @@ wire [7:0] SR= { S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7]} ;
 
 // Midway Tone Generator data
 wire [5:0] Tone_Low;
-wire [5:0] Tone_High;
+wire [6:0] Tone_High; // Also used for Balloon Bomber
 
 always @(*) begin
 
@@ -1017,16 +1019,21 @@ always @(*) begin
             Trigger_WatchDogReset  <= PortWr[5];
 
 	end
+	
         mod_ballbomb:
-	begin
+			begin
             landscape<=0;
-	    WDEnabled <= 1'b0;
+				WDEnabled <= 1'b0;
             ccw<=1;
             color_rom_enabled<=1;
             GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
             GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
             GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
-	end
+				Audio_Output <= SoundCtrl3[5];
+				if (Trigger_AudioDeviceP2) software_flip <= SoundCtrl5[5] & sw[3][0];
+				Trigger_Tone_High <= PortWr[1]; // out 1 = music generator!				
+			end
+			
         mod_bowler:
 	begin
             landscape<=0;
@@ -1089,19 +1096,21 @@ always @(*) begin
 			end
 
 			mod_cosmo:
-	begin
-            landscape<=0;
-            ccw<=0;
-            color_rom_enabled<=1;
-            GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
-            GDB1 <= sw[1] | { 1'b0, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
-            GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
-        Trigger_ShiftCount     <= 1'b0;
-        Trigger_AudioDeviceP1  <= PortWr[3];
-        Trigger_ShiftData      <= 1'b0;
-        Trigger_AudioDeviceP2  <= PortWr[5];
-        Trigger_WatchDogReset  <= PortWr[6];
-	end
+			begin
+				landscape<=0;
+				ccw<=0;
+				color_rom_enabled<=1;
+				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+				GDB1 <= sw[1] | { 1'b0, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+				GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+				Trigger_ShiftCount     <= 1'b0;
+				Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_ShiftData      <= 1'b0;
+				Trigger_AudioDeviceP2  <= PortWr[5];
+				Trigger_WatchDogReset  <= PortWr[6];
+				software_flip   		  <= 1'd0;
+			end
+			
 	mod_dogpatch:
         begin
             landscape<=1;
@@ -1344,65 +1353,69 @@ wire Vortex_Col;
 wire DoScreenFlip = software_flip ? ~(ScreenFlip & ~landscape) : (ScreenFlip & ~landscape);
 
 invaderst invaderst(
-        .Rst_n(~(reset)),
-        .Clk(clk_sys),
-        .ENA(),
-		  
-        .GDB0(GDB0),
-        .GDB1(GDB1),
-        .GDB2(GDB2),
-        .GDB3(GDB3),
-        .GDB4(GDB4),
-        .GDB5(GDB5),
-        .GDB6(GDB6),
+		.Rst_n(~(reset)),
+		.Clk(clk_sys),
+		.ENA(),
 
-		  .WD_Enabled(WDEnabled),
+		.GDB0(GDB0),
+		.GDB1(GDB1),
+		.GDB2(GDB2),
+		.GDB3(GDB3),
+		.GDB4(GDB4),
+		.GDB5(GDB5),
+		.GDB6(GDB6),
 
-        .RDB(RDB),
-        .IB(IB),
-        .RWD(RWD),
-        .RAB(RAB),
-        .AD(AD),
-        .SoundCtrl3(SoundCtrl3),
-        .SoundCtrl5(SoundCtrl5),
-		  .Tone_Low(Tone_Low),
-		  .Tone_High(Tone_High),
-        .Rst_n_s(Rst_n_s),
-        .RWE_n(RWE_n),
-        .Video(Video),
-		  .CPU_RW_n(CPU_RW_n),
+		.WD_Enabled(WDEnabled),
 
-	     .color_prom_addr(color_prom_addr),
-	     .color_prom_out(color_prom_out),
-		  .ScreenFlip(DoScreenFlip),
-		  .Overlay_Align(Overlay4),
-		  
-        .O_VIDEO_R(r),
-        .O_VIDEO_G(g),
-        .O_VIDEO_B(b),
-        //.HBLANK(hblank),
-        //.VBLANK(vblank),
-        .Overlay(~status[8]),
-	     .OverlayTest(status[9]),
+		.RDB(RDB),
+		.IB(IB),
+		.RWD(RWD),
+		.RAB(RAB),
+		.AD(AD),
+		.SoundCtrl3(SoundCtrl3),
+		.SoundCtrl5(SoundCtrl5),
+		.Tone_Low(Tone_Low),
+		.Tone_High(Tone_High),
+		.Rst_n_s(Rst_n_s),
+		.RWE_n(RWE_n),
+		.Video(Video),
+		.CPU_RW_n(CPU_RW_n),
 
-        .HSync(HSync),
-        .VSync(VSync),
+		.color_prom_addr(color_prom_addr),
+		.color_prom_out(color_prom_out),
+		.ScreenFlip(DoScreenFlip),
+		.Overlay_Align(Overlay4),
 
-        .Trigger_ShiftCount(Trigger_ShiftCount),
-        .Trigger_ShiftData(Trigger_ShiftData),
-        .Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
-        .Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
-        .Trigger_WatchDogReset(Trigger_WatchDogReset),
-		  .Trigger_Tone_Low(Trigger_Tone_Low),
-		  .Trigger_Tone_High(Trigger_Tone_High),
+		.O_VIDEO_R(r),
+		.O_VIDEO_G(g),
+		.O_VIDEO_B(b),
+		
+		.HBLANK(hblank),
+		.VBLANK(vblank),
+		.HSync(HSync),
+		.VSync(VSync),
 
-        .PortWr(PortWr),
-        .S(S),
-        .ShiftReverse(ShiftReverse),
+		.HShift(status[19:16]),
+		.VShift(status[23:20]),
+		
+		.Overlay(~status[8]),
+		.OverlayTest(status[9]),
 
-	.mod_vortex(mod==mod_vortex),
-	.Vortex_Col(Vortex_Col)
-        );
+		.Trigger_ShiftCount(Trigger_ShiftCount),
+		.Trigger_ShiftData(Trigger_ShiftData),
+		.Trigger_AudioDeviceP1(Trigger_AudioDeviceP1),
+		.Trigger_AudioDeviceP2(Trigger_AudioDeviceP2),
+		.Trigger_WatchDogReset(Trigger_WatchDogReset),
+		.Trigger_Tone_Low(Trigger_Tone_Low),
+		.Trigger_Tone_High(Trigger_Tone_High),
+
+		.PortWr(PortWr),
+		.S(S),
+		.ShiftReverse(ShiftReverse),
+
+		.mod_vortex(mod==mod_vortex),
+		.Vortex_Col(Vortex_Col)		
+   );
 		  
 	invaders_memory invaders_memory (
 			.Clock(clk_sys),
@@ -1441,17 +1454,6 @@ zap_audio zap_audio (
         .Aud(zap_audio_data)
         );
 
-invaders_blank invaders_blank (
-        .CLK(clk_sys),
-        .Rst_n_s(Rst_n_s),
-        .HSync(HSync),
-        .VSync(VSync),
-        .O_HBLANK(hblank),
-        .O_VBLANK(vblank)
-	);
-
-
-
 // Background Image
 
 wire bg_download = ioctl_download && (ioctl_index == 2);
@@ -1482,22 +1484,22 @@ u_ram0(
 	);
 
 wire [31:0] pic_data;
+reg  [16:0] pic_addr;
+reg  [7:0]  bg_r,bg_g,bg_b,bg_a;
 
-//reg        pic_req;
-reg [16:0] pic_addr;
-reg  [7:0] bg_r,bg_g,bg_b,bg_a;
 always @(posedge clk_40) begin
-	reg old_vs;
 	reg use_bg = 0;
 	
 	if(bg_download) use_bg <= 1;
 
-	//pic_req <= 0;
-
 	if(use_bg) begin
 		if(ce_pix) begin
-			old_vs <= VSync;
-			{bg_a,bg_b,bg_g,bg_r} <= pic_data;
+			if (HCount < 4 || HCount > 247) begin
+				{bg_a,bg_b,bg_g,bg_r} <= 0;
+			end
+			else begin
+				{bg_a,bg_b,bg_g,bg_r} <= pic_data;
+			end;
 			if(~(hblank|vblank)) begin
 				if(ScreenFlip & ~landscape) begin
 					pic_addr <= pic_addr - 2'd2;
@@ -1505,23 +1507,22 @@ always @(posedge clk_40) begin
 				else begin
 					pic_addr <= pic_addr + 2'd2;
 				end;
-				//pic_req <= 1;
 			end
 			
-			if(~old_vs & VSync) begin
+			if (VCount == 11'd0 && HCount == 11'd0) begin
 				if(ScreenFlip & ~landscape) begin
 					pic_addr <= max_bg;
 				end
 				else begin
 					pic_addr <= 0;
 				end;
-				//pic_req <= 1;
-			end
+			end;
+			
 		end
 	end
 	else begin
 		// Mix cloud background in
-		if (mod==mod_ballbomb & CBPixel==1'd1) begin
+		if (mod==mod_ballbomb & BBPixel==1'd1) begin
 			bg_b <= 255;
 			bg_g <= 255;
 			bg_r <= 255;
@@ -1531,6 +1532,8 @@ always @(posedge clk_40) begin
 		end;
 	end
 end
+
+// Virtual Gun pointer
 
 wire [1:0] gun_mode = status[12:11];
 wire [1:0] gun_cross_size = status[14:13];
@@ -1573,7 +1576,7 @@ wire [15:0] samples_left;
 wire [15:0] samples_right;
 reg   [7:0] ioctl_low;
 
-	// 16 bit write, 32 bit read 
+// 16 bit write, 32 bit read 
 always @(posedge clk_sys) 
 begin
 	if(wav_load & ~ioctl_addr[0]) ioctl_low <= ioctl_dout;
@@ -1632,12 +1635,24 @@ ToneGen ToneGen
 (
 	 .Tone_enabled(Tone_Low[0]),
 	 .Tone_Low({Tone_Low[5:1],1'b0}),
-	 .Tone_High(Tone_High),
+	 .Tone_High(Tone_High[5:0]),
 	 
-	 .Tone_out(Tone_Out),
+	 .Tone_out(mod == mod_ballbomb ? BB_Tone_Out : Tone_Out),
 	 
 	.CLK_SYS(clk_sys),
 	.reset(reset)
+);
+
+// Balloon Bomber tune generator
+
+reg [15:0] BB_Tone_Out;
+
+BALLOON_MUSIC BALLOON_MUSIC
+(
+    .I_MUSIC_ON(Tone_High != 7'd127),
+	 .I_TONE({1'b1,Tone_High}),
+    .O_AUDIO(BB_Tone_Out),
+    .CLK(clk_10)
 );
 
 // Overlay!
@@ -1666,9 +1681,11 @@ ovo OVERLAY
     .in1(Line2)
 );
 
+`endif
+
 // Clouds for Balloon Bomber
 
-reg CBPixel;
+reg BBPixel;
 
 clouds clouds 
 (
@@ -1676,17 +1693,7 @@ clouds clouds
 	.v(VCount),
 	.h(HCount),
 	.flip(DoScreenFlip),
-	.pixel(CBPixel)
+	.pixel(BBPixel)
 );
-
-always @(posedge clk_sys) 
-begin
-	Line2[4:0] <= ScreenFlip ? 5'd1 : 5'd0;
-	Line2[9:5] <= software_flip ? 5'd1 : 5'd0;
-	Line2[14:10] <= landscape ? 5'd1 : 5'd0;
-	Line2[19:15] <= DoScreenFlip ? 5'd1 : 5'd0;
-end
-
-`endif
 
 endmodule

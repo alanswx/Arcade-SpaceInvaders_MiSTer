@@ -50,6 +50,8 @@
 --
 --      0300 : MikeJ tidyup for audio release
 --
+--      0400 : MiSTer version
+
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -81,23 +83,25 @@ entity mw8080 is
 		Wr              : out std_logic;
 		Video           : out std_logic;
 
-                color_prom_out  : in  std_logic_vector(7 downto 0);
-                color_prom_addr : out std_logic_vector(10 downto 0);
-                O_VIDEO_R       : out std_logic;
-                O_VIDEO_G       : out std_logic;
-                O_VIDEO_B       : out std_logic;
-                Overlay         : in std_logic;
-                OverlayTest     : in std_logic;
-					 ScreenFlip      : in std_logic;
-					 Overlay_Align   : in std_logic;
+		color_prom_out  : in  std_logic_vector(7 downto 0);
+		color_prom_addr : out std_logic_vector(10 downto 0);
+		O_VIDEO_R       : out std_logic;
+		O_VIDEO_G       : out std_logic;
+		O_VIDEO_B       : out std_logic;
+		Overlay         : in std_logic;
+		OverlayTest     : in std_logic;
+		ScreenFlip      : in std_logic;
+		Overlay_Align   : in std_logic;
 					 
 		VBlank          : out std_logic;
 		HBlank          : out std_logic;
 		HSync           : out std_logic;
 		VSync           : out std_logic;
+		VShift		    : in  std_logic_vector(3 downto 0);
+		HShift		    : in  std_logic_vector(3 downto 0);
 	   mod_vortex      : in std_logic;
 		Vortex_Col      : in std_logic
-		);
+	);
 
 end mw8080;
 
@@ -149,11 +153,12 @@ architecture struct of mw8080 is
 	signal CntE7        : unsigned(4 downto 0); -- Vertical counter 2
 	signal Shift        : std_logic_vector(7 downto 0);
 
-        signal HCnt            : std_logic_vector(11 downto 0);
-        signal VCnt            : std_logic_vector(11 downto 0);
-        signal HSync_t1        : std_logic;
-
 	signal LastVortexCol : std_logic_vector(2 downto 0);
+	
+	signal HSync_Start  :  std_logic_vector(8 downto 0);
+	signal HSync_End    :  std_logic_vector(8 downto 0);
+	signal VSync_Start  :  std_logic_vector(8 downto 0);
+	signal VSync_End    :  std_logic_vector(8 downto 0);
 
 begin
 	ENA <= ClkEnCnt(2);
@@ -402,94 +407,68 @@ begin
 		end if;
 	end process;
 
-	-- Sync
+	-- Mister Sync / Blank and Counters
+	
+	process (HShift, VShift, Rst_n)
+	begin
+		-- Defaults are centred on my CRT
+		HSync_Start <= std_logic_vector(469 + resize(signed(HShift),9));
+		HSync_End   <= std_logic_vector(485 + resize(signed(HShift),9));
+		VSync_Start <= std_logic_vector(484 + resize(signed(VShift),9));
+		VSync_End   <= std_logic_vector(488 + resize(signed(VShift),9));	
+	end process;
+	
 	process (Rst_n, Clk)
-        variable HStart : boolean;
-
+		variable TimeH, TimeV : std_logic_vector(8 downto 0);
 	begin
 		if Rst_n = '0' then
+
 			HSync <= '1';
 			VSync <= '1';
 			HBlank <='1';
 			VBlank <='1';
-          		HCnt <= (others => '0');
-          		VCnt <= (others => '0');
 
 		elsif Clk'event and Clk = '1' then
+		
 			if VidEn = '1' then
-
-          --HStart := (HSync_t1 = '0') and (HSync = '1');
-          --if HStart then
-          --      HCnt <= (others => '0');
-          --else
-          --      HCnt <= HCnt + "1";
-          --end if;
-
-          if (Vcnt = 32) then
-                  --vblank<='0';
-          end if;
-          if (Vcnt = 255) then
-                  --vblank<='1';
-          end if;
-          --if (HCnt = 538) then  -- 511
-          if (HCnt = 511) then  -- 511
-             --hblank<='1';
-          end if;
-          if (HCnt = 27) then  -- 27?
-             --hblank<='0';
-          end if;
-
-
-
-				if CntE5(4) = '1' and CntE5(1 downto 0) = "10" then
+			
+				-- Convert SI counters into single fields to make comparisons easier
+				
+				TimeH := std_logic_vector(CntE5(4 downto 0)) & std_logic_vector(CntD5(3 downto 0));
+				TimeV := std_logic_vector(CntE7(4 downto 0)) & std_logic_vector(CntE6(3 downto 0));
+				
+				-- Syncs
+				
+				if (TimeH = HSync_Start) then
 					HSync <= '0';
-                			HCnt <= (others => '0');
-					HStart := true;
-				else
+				elsif (TimeH = HSync_End) then
 					HSync <= '1';
-                			HCnt <= HCnt + "1";
-					HStart := false;
 				end if;
-				if CntE7(4) = '1' and CntE7(0) = '0' and CntE6(3 downto 2) = "11" then
+
+				if (TimeV = VSync_Start) then
 					VSync <= '0';
-                			VCnt <= (others => '0');
-				else
-					if HStart then
-                				VCnt <= VCnt + "1";
-					end if;
+				elsif (TimeV = VSync_End) then
 					VSync <= '1';
 				end if;
-				--VHcolor_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3 downto 0) & CntE5(3 downto 0) & CntD5(3));
-				--if CntE5(4) = '1' and CntE5(1 downto 0) = "10" then
-				--if (std_logic_vector( CntE5(4 downto 0) & CntD5(3 downto 0)) = 511) then
-				--if CntE5(4 downto 0) = "11111" and CntD5(3 downto 0) = "1111" then
-				--if CntE5(4 downto 0) = "00100" and CntD5(3 downto 0) = "1100" then
-				--if CntE5(3 downto 0) = "0000"  and CntD5(3) = "0"
-				if CntE5(4 downto 0) = "11110" and CntD5(3 downto 0) = "0101" then
-					HBlank<='0';
-				end if;
-				--if (std_logic_vector( CntE5(4 downto 0) & CntD5(3 downto 0)) = 0) then
-				--if CntE5(4 downto 0) = "00000" and CntD5(3 downto 0) = "0000" then
-				if CntE5(4 downto 0) = "11110" and CntD5(3 downto 0) = "0101" then
-					HBlank<='1';
-				end if;
-				--	color_prom_addr <= std_logic_vector('0' & CntE7(3 downto 0) & CntE6(3) & CntE5(3 downto 0) & CntD5(3));
 
-                                -- V:000011010 blank 0 
-				-- 111111111
-				--if CntE7(4) = '0' and CntE7(0) = '0' and CntE6(3 downto 2) = "11" then
-				if CntE7(4 downto 0) = "00001" and CntE6(3 downto 0) = "1010" then
-				--if (std_logic_vector( CntE7(3 downto 0) & CntE6(3 downto 0)) = 224) then
-					VBlank<='0';
+				-- Blanks
+				
+				if (TimeH = 5) then
+					HBlank <= '0';
+				elsif (TimeH = 457) then
+					HBlank <= '1';
 				end if;
-				-- V:111011010
-				if CntE7(4 downto 0) = "11101" and CntE6(3 downto 0) = "1010" then
-				--if (std_logic_vector( CntE7(3 downto 0) & CntE6(3 downto 0)) = 0) then
-				--if (std_logic_vector( CntE7(4 downto 0) & CntE6(3 downto 2)) = 0) then
-					VBlank<='1';
+
+				if (TimeV = 255) then
+					VBlank <= '1';
+				elsif (TimeV = 511) then
+					VBlank <= '0';
 				end if;
+				
 			end if;
+
 		end if;
+		
 	end process;
 
 end;
