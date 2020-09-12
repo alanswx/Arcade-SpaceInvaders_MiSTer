@@ -17,8 +17,7 @@ port(
 	 -- Access to samples
 	 wave_addr      : inout std_logic_vector(27 downto 0);
 	 wave_read      : out std_logic;
-	 wave_data      : in std_logic_vector(7 downto 0);
-	 wave_ready     : in std_logic;
+	 wave_data      : in std_logic_vector(31 downto 0);
 	 
 	 -- table loading
 	 dl_addr        : in  std_logic_vector(24 downto 0);
@@ -65,16 +64,12 @@ architecture struct of samples is
  signal next_ports     : std_logic_vector(15 downto 0); 
  
  -- Audio variables
--- signal audio_sum_l    : integer;
--- signal audio_sum_r    : integer;
  signal audio_sum_l    : signed(19 downto 0);
  signal audio_sum_r    : signed(19 downto 0);
  signal audio_l        : signed(19 downto 0);
  signal audio_r        : signed(19 downto 0);
- 
- signal max_cycle      : std_logic_vector(7 downto 0) := x"00";
- signal Over           : std_logic_vector(2 downto 0) := "000";
-begin
+
+ begin
 
 ----------------
 -- Table Load --
@@ -140,7 +135,6 @@ samples_ok <= table_loaded;
 
 -- wave player
 process (clock, reset, table_loaded)
-variable wave_addr_wk : std_logic_vector(23 downto 0); 
 begin
 	if table_loaded='1' then
 		if reset='1' then
@@ -152,7 +146,7 @@ begin
 			audio_out_R <= x"0000";
 			HEX1 <= (others=>'0');
 		else 
-			-- Use falling edge to interleave commands with DDRAM module
+			-- Use falling edge to interleave commands with SDRAM module
 			if falling_edge(clock) then
 			
 				-- make sure we don't miss any bits being set
@@ -162,7 +156,6 @@ begin
 					-- All Start play on 0 to 1 transition
 					if (last_ports(snd_id)='0' and this_ports(snd_id)='1') then
 						snd_addr_play(snd_id) <= wav_addr_start(snd_id);
-						max_cycle <= (others=>'0');
 					end if;
 				else
 					-- cut out when signal zero
@@ -218,6 +211,10 @@ begin
 					audio_out_R <= x"0000";
 				end if;
 
+				-- sdram read trigger (and auto refresh period)
+				if wav_clk_cnt(5 downto 0) = "000000" then wave_read <= '1';end if;
+				if wav_clk_cnt(5 downto 0) = "000100" then wave_read <= '0';end if;				
+				
 				-- select only useful cycles (0-15)
 				if wav_clk_cnt(10)='0' then 
 				
@@ -226,111 +223,42 @@ begin
 				
 						if snd_addr_play(snd_id) /= x"FFFFFF" then
 		
-							-------------------------------------------
-							-- Data read 8 or 16 bit, mono or stereo --
-							-------------------------------------------
+							---------------
+							-- Data read --
+							---------------
 							
-							--wave_read <= '0';
-							
-							-- set ddram addr for first byte and set read sequence in motion
+							-- set addr for first byte (but it reads 4 bytes anyway)
 							if wav_clk_cnt(5 downto 0) = "000000" then
 								wave_addr <= "0000" & snd_addr_play(snd_id);
-								wave_addr_wk := snd_addr_play(snd_id);
-								wave_read    <= '1';
-								wave_read_ct <= "001";
 							end if;
 						
-							if wave_read_ct /= "000" then
-							
-									case wave_read_ct is
-										when "001" => -- First byte returned ?
-											if wave_ready='1' then
-											
-												-- Debug longest time to get first data back
-												if to_integer(unsigned(wav_clk_cnt(5 downto 0))) > to_integer(unsigned(max_cycle)) then
-													max_cycle <= "00" & wav_clk_cnt(5 downto 0);
-												end if;
-											
-												wave_read <= '0';
-												
-												case wav_mode(snd_id)(5 downto 4) is
-												
-													when "00" => -- 8 bit mono
-														wave_left <= (not wave_data(7)) & wave_data(6 downto 0) & x"00";
-														wave_right <= (not wave_data(7)) & wave_data(6 downto 0) & x"00";
-														wave_read_ct <= "000";
-														
-													when "01" | "11" => -- 16 bit (mono or stereo)
-														wave_left <= x"00" & wave_data;
-														wave_addr_wk :=  wave_addr_wk + 1;
-														wave_read_ct <= "010";
-														
-													when "10" => -- 8 bit stereo
-														wave_left <= (not wave_data(7)) & wave_data(6 downto 0) & x"00";
-														wave_addr_wk :=  wave_addr_wk + 1;
-														wave_read_ct <= "100";
-														
-												end case;
-											
-											end if;
-												
-										when "010" => -- Read next byte
-											wave_read_ct <= "011";
-											wave_read <= '1';
-																						
-										when "011" => -- high byte of 16 bit sample
-											if wave_ready='1' then
-												wave_left(15 downto 8) <= wave_data;
-												wave_read <= '0';
-												
-												if wav_mode(snd_id)(5)='1' then
-													-- Stereo 
-													wave_addr_wk :=  wave_addr_wk + 1;
-													wave_read_ct <= "100";
-												else
-													-- Mono
-													wave_right <= wave_data & wave_left(7 downto 0);
-													wave_read_ct <= "000";
-												end if;
-											end if;
-
-										when "100" => -- Read next byte
-											wave_read_ct <= "101";
-											wave_read <= '1';											
-
-										when "101" => -- right channel 8 bit (or low byte of 16 bit) 8 bit is unsigned!
-											if wave_ready='1' then
-											
-												wave_read <= '0';
-											
-												if wav_mode(snd_id)(4)='1' then -- 16 bit Stereo
-													wave_right <= x"00" & wave_data;
-													wave_addr_wk :=  wave_addr_wk + 1;
-													wave_read_ct <= "110";
-												else
-													wave_right <= (not wave_data(7)) & wave_data(6 downto 0) & x"00";
-													wave_read_ct <= "000";										
-												end if;
-											
-											end if;
-
-										when "110" => -- Read next byte
-											wave_read_ct <= "111";
-											wave_read <= '1';											
-
-										when "111" =>
-											if wave_ready='1' then
-												wave_right(15 downto 8) <= wave_data;
-												wave_read_ct <= "000";
-												wave_read    <= '0';
+							if wav_clk_cnt(5 downto 0) = "111101" then
+									-- SDRAM bit : data returned, put into left / right accordingly
+									case wav_mode(snd_id)(5 downto 4) is
+									
+										when "00" => -- 8 bit mono
+											if wave_addr(0)='0' then
+												-- Low byte
+												wave_left <= (not wave_data(23)) & wave_data(22 downto 16) & x"00";
+												wave_right <= (not wave_data(23)) & wave_data(22 downto 16) & x"00";
+											else
+												-- high byte
+												wave_left <= (not wave_data(31)) & wave_data(30 downto 24) & x"00";
+												wave_right <= (not wave_data(31)) & wave_data(30 downto 24) & x"00";
 											end if;
 											
-										when others => null;
+										when "01" => -- 16 bit mono
+											wave_left <= wave_data(31 downto 16);											
 											
-									end case;							
-
-									wave_addr  <= "0000" & wave_addr_wk;
-															
+										when "10" => -- 8 bit stereo
+											wave_left <= (not wave_data(23)) & wave_data(22 downto 16) & x"00";
+											wave_right <= (not wave_data(31)) & wave_data(30 downto 24) & x"00";
+											
+										when "11" => -- 16 bit stereo
+											wave_left <= wave_data(31 downto 16);											
+											wave_right <= wave_data(15 downto 0);											
+											
+									end case;
 							end if;
 							
 							-- Data all read, add to output counters
@@ -346,8 +274,8 @@ begin
 									audio_sum_r <= audio_sum_r + to_integer(signed(wave_right));
 								end if;
 						
-								wave_left  <= x"0000";
-								wave_right <= x"0000";
+								--wave_left  <= x"0000";
+								--wave_right <= x"0000";
 
 								-- Increment address depending on frequency and size
 								if wav_mode(snd_id)(2)='1' or 
@@ -366,12 +294,6 @@ begin
 											snd_addr_play(snd_id) <= snd_addr_play(snd_id) + 4;
 								  end case;
 
-								  -- Debug, did we overrun ?
-								  if wave_read_ct /= "000" then
-									  Over <= wave_read_ct;
-									  wave_read_ct <= "000";
-								  end if;
-								  
 								end if;
 															
 							end if;
@@ -392,21 +314,16 @@ begin
 							
 							-- Debug info to overlay
 							HEX1(4 downto 0) <= "10000"; -- Space
-							HEX1(8 downto 5) <= last_ports(15 downto 12);
-							HEX1(13 downto 10) <= last_ports(11 downto 8);
-							HEX1(18 downto 15) <= last_ports(7 downto 4);
-							HEX1(23 downto 20) <= last_ports(3 downto 0);
+							HEX1(8 downto 5) <= wave_left(15 downto 12);
+							HEX1(13 downto 10) <= wave_left(11 downto 8);
+							HEX1(18 downto 15) <= wave_left(7 downto 4);
+							HEX1(23 downto 20) <= wave_left(3 downto 0);
 							HEX1(29 downto 25) <= "10000"; -- Space
-							HEX1(33 downto 30) <= this_ports(15 downto 12);
-							HEX1(38 downto 35) <= this_ports(11 downto 8);
-							HEX1(43 downto 40) <= this_ports(7 downto 4);
-							HEX1(48 downto 45) <= this_ports(3 downto 0);
+							HEX1(33 downto 30) <= wave_right(15 downto 12);
+							HEX1(38 downto 35) <= wave_right(11 downto 8);
+							HEX1(43 downto 40) <= wave_right(7 downto 4);
+							HEX1(48 downto 45) <= wave_right(3 downto 0);
 							HEX1(54 downto 50) <= "10000"; -- Space
-							HEX1(58 downto 55) <= "0" & Over;
-							HEX1(64 downto 60) <= "10000"; -- Space
-							HEX1(68 downto 65) <= max_cycle(7 downto 4);
-							HEX1(73 downto 70) <= max_cycle(3 downto 0);
-							HEX1(79 downto 75) <= "10000"; -- Space							
 							
 						end if; -- Playing
 
