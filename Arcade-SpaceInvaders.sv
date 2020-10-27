@@ -50,21 +50,6 @@ module emu
 	output        VGA_F1,
    output [1:0]  VGA_SL,
 
-	//Base video clock. Usually equals to CLK_SYS.
-	output        HDMI_CLK,
-
-	//Multiple resolutions are supported using different HDMI_CE rates.
-	//Must be based on CLK_VIDEO
-	output        HDMI_CE,
-
-	output  [7:0] HDMI_R,
-	output  [7:0] HDMI_G,
-	output  [7:0] HDMI_B,
-	output        HDMI_HS,
-	output        HDMI_VS,
-	output        HDMI_DE,   // = ~(VBlank | HBlank)
-	output  [1:0] HDMI_SL,   // scanlines fx
-
 	//Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
 	output  [7:0] VIDEO_ARX,
 	output  [7:0] VIDEO_ARY,
@@ -85,7 +70,18 @@ module emu
 	output [13:0] FB_STRIDE,
 	input         FB_VBL,
 	input         FB_LL,
+	output        FB_FORCE_BLANK,
 
+
+	// Palette control for 8bit modes.
+	// Ignored for other video modes.
+	output        FB_PAL_CLK,
+	output  [7:0] FB_PAL_ADDR,
+	output [23:0] FB_PAL_DOUT,
+	input  [23:0] FB_PAL_DIN,
+	output        FB_PAL_WR,
+
+	
 	output        LED_USER,  // 1 - ON, 0 - OFF.
 
 	// b[1]: 0 - LED status is system status OR'd with b[0]
@@ -94,12 +90,28 @@ module emu
 	output  [1:0] LED_POWER,
 	output  [1:0] LED_DISK,
 
+
+	// I/O board button press simulation (active high)
+	// b[1]: user button
+	// b[0]: osd button
+	output  [1:0] BUTTONS,	
+
    input         CLK_AUDIO, // 24.576 MHz
 	output [15:0] AUDIO_L,
 	output [15:0] AUDIO_R,
 	output        AUDIO_S,    // 1 - signed audio samples, 0 - unsigned
 	output  [1:0] AUDIO_MIX,  // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
 
+	//ADC
+	inout   [3:0] ADC_BUS,
+
+	//SD-SPI
+	output        SD_SCK,
+	output        SD_MOSI,
+	input         SD_MISO,
+	output        SD_CS,
+	input         SD_CD,
+	
 	//SDRAM interface with lower latency
 	output        SDRAM_CLK,
 	output        SDRAM_CKE,
@@ -126,21 +138,39 @@ module emu
 	output  [7:0] DDRAM_BE,
 	output        DDRAM_WE,
 	
+	input         UART_CTS,
+	output        UART_RTS,
+	input         UART_RXD,
+	output        UART_TXD,
+	output        UART_DTR,
+	input         UART_DSR,
+	
+	
 	// Open-drain User port.
 	// 0 - D+/RX
 	// 1 - D-/TX
 	// 2..6 - USR2..USR6
 	// Set USER_OUT to 1 to read from USER_IN.
 	input   [6:0] USER_IN,
-	output  [6:0] USER_OUT
+	output  [6:0] USER_OUT,
+	
+	
+	input         OSD_STATUS
+
 
 );
 
 assign VGA_F1    = 0;
 assign USER_OUT  = '1;
+assign ADC_BUS  = 'Z;
+assign {UART_RTS, UART_TXD, UART_DTR} = 0;
+assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
+assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
+
 assign LED_USER  = ioctl_download;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
+assign BUTTONS = 0;
 
 assign VIDEO_ARX = status[1] ? 8'd16 : (status[2] | landscape) ? 8'd4 : 8'd3;
 assign VIDEO_ARY = status[1] ? 8'd9  : (status[2] | landscape) ? 8'd3 : 8'd4;
@@ -391,7 +421,9 @@ wire vblank;
 //wire hs, vs;
 wire r,g,b;
 //wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
-wire no_rotate = status[2] | direct_video | landscape;
+//wire no_rotate = status[2] | direct_video | landscape;
+wire no_rotate = AllowRotate ? status[2] | direct_video | landscape : 1'd1;
+
 reg ce_pix;
 always @(posedge clk_40) begin
         reg [2:0] div;
@@ -439,6 +471,36 @@ screen_rotate screen_rotate
 		  .*,
 		  .rotate_ccw(ccw)
 );
+
+/*
+some weird problem with FB detecting the size correctly
+
+*/
+reg old_reset;
+reg [3:0] screencount;
+reg vsync_c;
+reg AllowRotate = 0;
+
+always @(posedge clk_sys)
+begin
+        old_reset <= reset;
+        if (old_reset == 1 && reset== 0)
+           screencount <= 0;
+    else
+           if (reset == 0) begin
+                        vsync_c <= VSync;
+                        if (vsync_c ==0 && VSync== 1)
+                                screencount <= screencount + 1;
+
+                        if (screencount == 10)
+                                AllowRotate <= 1;
+                end;
+end
+
+/*
+END hack to fix FB
+*/
+
 
 wire [7:0] audio;
 wire [7:0] inv_audio_data;
