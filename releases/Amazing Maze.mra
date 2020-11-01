@@ -1,22 +1,21 @@
 <misterromdescription>
 	<name>Amazing Maze</name>
-	<mameversion>0219</mameversion>
+	<mameversion>0226</mameversion>
 	<setname>maze</setname>
-	<mratimestamp>20200308233152</mratimestamp>
+	<mratimestamp>20201030010603</mratimestamp>
 	<year>1976</year>
 	<manufacturer>Midway</manufacturer>
 	<category>Maze</category>
 	<rbf>spaceinvaders</rbf>
+	<mameinfo parent="0" cpp="mw8080bw" input="maze"/>
+	<display type="raster" rotate="0"/>
 	<switches default="00,00">
 		<dip bits="5,6" name="Coinage" ids="1C_1C,2C_1C,1C_2C,2C_3C"/>
 		<dip bits="7"   name="2P Game Time" ids="4,6"/>
 		<dip bits="8"   name="Service" ids="Off,On"/>
 	</switches>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="1">
-		<part>0E</part>
-	</rom>
-	<rom index="0" zip="maze.zip" md5="4ec3ff8c535d2a35fba1c4e6c64d8eaa">
+	<rom index="0" zip="maze.zip" md5="none">
 		<part crc="f2860cff" name="maze.h"/>
 		<part crc="65fad839" name="maze.g"/>
 		<part repeat="4096">00</part>
@@ -154,5 +153,8 @@
 04040404040404040404040404040404
 04040404040404040404040404040404
 		</part>
+	</rom>
+	<rom index="1">
+		<part>0E</part>
 	</rom>
 </misterromdescription>

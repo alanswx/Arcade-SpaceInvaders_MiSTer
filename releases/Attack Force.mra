@@ -1,24 +1,20 @@
 <misterromdescription>
 	<name>Attack Force</name>
-	<mameversion>0219</mameversion>
+	<mameversion>0226</mameversion>
 	<setname>attackfc</setname>
-	<mratimestamp>20200308233423</mratimestamp>
+	<mratimestamp>20201030010603</mratimestamp>
 	<year>1979?</year>
 	<manufacturer>Electronic Games Systems</manufacturer>
 	<category>Army / Antiaircraft</category>
 	<rbf>spaceinvaders</rbf>
-	<switches default="00">
+	<mameinfo parent="0" cpp="8080bw" input="attackfc"/>
+	<display type="raster" rotate="0"/>
+	<switches default="00,00,00">
+		<dip bits="16"   name="Unused" ids="Off,On"/>
 	</switches>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-        <switches default="00,00,00">
-                <dip bits="16"   name="Unused" ids="Off,On"/>
-        </switches>
-
-	<rom index="1">
-		<part>0F</part>
-	</rom>
 	<rom index="0" zip="attackfc.zip" md5="none">
-                <part crc="c12e3386" name="30a.bin"/>
+		<part crc="c12e3386" name="30a.bin"/>
 		<part crc="6738dcb9" name="36a.bin"/>
 		<part crc="787a4658" name="31a.bin"/>
 		<part crc="ad6bfbbe" name="37a.bin"/>
@@ -160,5 +156,8 @@
 05050505050505050505050505050505
 05050505050505050505050505050505
 		</part>
+	</rom>
+	<rom index="1">
+		<part>0F</part>
 	</rom>
 </misterromdescription>

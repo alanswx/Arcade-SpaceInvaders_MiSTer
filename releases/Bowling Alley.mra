@@ -1,12 +1,14 @@
 <misterromdescription>
 	<name>Bowling Alley</name>
-	<mameversion>0219</mameversion>
+	<mameversion>0226</mameversion>
 	<setname>bowler</setname>
-	<mratimestamp>20200309000259</mratimestamp>
+	<mratimestamp>20201030010603</mratimestamp>
 	<year>1978</year>
 	<manufacturer>Midway</manufacturer>
 	<category>Sports / Bowling</category>
 	<rbf>spaceinvaders</rbf>
+	<mameinfo parent="0" cpp="mw8080bw" input="bowler"/>
+	<display type="raster" rotate="90"/>
 	<switches default="00,00">
 		<dip bits="0,1" name="Language" ids="English,French,German,German"/>
 		<dip bits="2"   name="Demo Sounds" ids="Off,On"/>
@@ -16,10 +18,7 @@
 		<dip bits="6"   name="Cabinet" ids="Upright,Cocktail(not working)"/>
 	</switches>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-	<rom index="1">
-		<part>11</part>
-	</rom>
-	<rom index="0" zip="bowler.zip" md5="149bde8460ee225d7637696124c9be92">
+	<rom index="0" zip="bowler.zip" md5="none">
 		<part crc="74c29b93" name="h.cpu"/>
 		<part crc="ca26d8b4" name="g.cpu"/>
 		<part crc="ba8a0bfa" name="f.cpu"/>
@@ -28,5 +27,8 @@
 		<part repeat="2048">00</part>
 		<part repeat="4096">00</part>
 		<part repeat="2048">FF</part>
+	</rom>
+	<rom index="1">
+		<part>11</part>
 	</rom>
 </misterromdescription>

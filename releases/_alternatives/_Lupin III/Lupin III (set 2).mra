@@ -1,0 +1,165 @@
+<misterromdescription>
+	<name>Lupin III (set 2)</name>
+	<mameversion>0226</mameversion>
+	<setname>lupin3a</setname>
+	<mratimestamp>20201030010603</mratimestamp>
+	<year>1980</year>
+	<manufacturer>Taito</manufacturer>
+	<category>Adventure / Cops</category>
+	<category>Maze</category>
+	<rbf>spaceinvaders</rbf>
+	<mameinfo parent="lupin3" cpp="8080bw" input="lupin3a"/>
+	<display type="raster" rotate="270"/>
+	<switches default="00,00,00">
+		<dip bits="16,17"   name="Lives" ids="3,4,5,6"/>
+		<dip bits="18"   name="Cabinet" ids="Upright,Cocktail"/>
+		<dip bits="19"   name="Bags to Collect" ids="8,2" />
+		<dip bits="23"   name="Invuln  (cheat)" ids="Off,On" />
+	</switches>
+	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<rom index="0" zip="lupin3.zip|lupin3a.zip" md5="none">
+		<part crc="68a7f47a" name="lp12.bin"/>
+		<part crc="cae9a17b" name="lp13.bin"/>
+		<part crc="3553b9e4" name="lp14.bin"/>
+		<part crc="acbeef64" name="lp15.bin"/>
+		<part crc="19fcdc54" name="lp16.bin"/>
+		<part crc="66289ab2" name="lp17.bin"/>
+		<part crc="2f07b4ba" name="lp18.bin"/>
+		<part repeat="2048">00</part>
+		<part>
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0b0b0e0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0b0b0e0b0b0b0b0b0b0e0b0b0b0b0b0e
+0b0b0b0b0b0b0b0b0b0b0b0f0f0f0f0f
+0b0b0e0b0b0b0b0b0b0e0b0b0b0b0b0e
+0b0b0b0b0b0b0b0b0b0b0b0b0b0f0f0f
+0d0d0e0b0b0e0e0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0f090b0b0b0b0f0f0f
+0d0d0e0b0b0e0e0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0e090b0b0f0f0f0f0f
+0d0d0e0b0b0b0b0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090e0e090b0b0b0b0f090f
+0d0d0e0b0b0b0b0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0e090b0b0b0b0f090f
+0d0d0e0a0a0e0e0b0b0e0b0b0e0b0b0b
+0b0b0b0b0b090f0e090b0b0f0f0f090f
+0a0a0e0a0a0e0e0b0b0b0b0b0e0b0b0b
+0b0b0b0b0b090f0e090b0b0b0b0f090f
+0a0a0e0a0a0e0e0b0b0b0b0b0e0b0b0d
+0d0d0d0b0b090f0e090b0b0b0b0f090f
+0a0a0b0b0b0b0e0b0b0e0b0b0e0b0b0d
+0f0b0d0b0b090f0e090b0b0f0f0f090f
+0a0a0b0b0b0b0e0b0b0e0b0b0e0b0b0d
+0f0b0d0b0b090f0e090b0b0b0b0f090f
+0a0a0b0b0b0b0e0b0b0e0b0b0e0b0b0d
+0f0b0d0b0b090f0f090b0b0b0b0f090f
+0f0f0b0b0b0b0e0b0b0e0b0b0b0b0b0d
+0f0b0d0b0b0b0b0b0b0b0b0f0f0f090f
+0f0f0b0b0b0b0e0b0b0e0b0b0b0b0b0d
+0f0b0d0b0b0b0b0b0b0b0b0f0f0f090f
+0f0f0b0b0b0b0e0b0b0e0b0b0e0b0b0d
+0f0b0d0b0b090f0f090b0b0b0b0f0e0f
+0f0f0b0b0b0b0e0b0b0e0b0b0e0b0b0d
+0f0b0d0b0b090f0a090b0b0b0b0f0e0f
+0f0f0b0b0b0b0e0b0b0e0b0b0e0b0b0d
+0f0b0d0b0b090a0a090b0b0f0f0f0e0f
+0f0f0e0a0a0e0e0b0b0b0b0b0e0b0b0d
+0d0d0d0b0b090f0a090b0b0b0b0f0e0f
+0d0d0e0a0a0e0e0b0b0b0b0b0e0b0b0b
+0b0b0b0b0b090f0a090b0b0b0b0f0e0f
+0d0d0e0a0a0e0e0b0b0e0b0b0e0b0b0b
+0b0b0b0b0b090f0a090b0b0f0f0f0e0f
+0d0d0e0b0b0b0b0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0a090b0b0b0b0f0e0f
+0d0d0e0b0b0b0b0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0a090b0b0b0b0f0f0f
+0d0d0e0b0b0e0e0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0a090b0b0f0f0f0f0f
+0d0d0e0b0b0e0e0b0b0e0b0b0e0b0b0e
+0b0b0e0b0b090f0f090b0b0b0b0f0f0f
+0f0f0e0b0b0b0b0b0b0e0b0b0b0b0b0e
+0b0b0b0b0b0b0b0b0b0b0b0b0b0f0f0f
+0f0f0e0b0b0b0b0b0b0e0b0b0b0b0b0e
+0b0b0b0b0b0b0b0b0b0b0b0f0f0f0f0f
+0f0f0e0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+		</part>
+		<part>
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f
+0c0c0c0c0c0c0c0c0c0b0b0b0b0b0b0b
+0b0b0f0f0f0f0f0f0b0b0b0e0e0e0e0e
+0c0c0c0b0c0c0c0c0c0b0b0b0b0e0e0a
+0a0a0f0f0f0f0f0f0b0b0b0e0e0e0e0e
+0c0c0c0b0c0c0c0e0a0b0b0b0b0e0e0a
+0a0a0f0f0f0f0f0f0b0b0b0e0e0e0e0e
+0c0c0c0b0b0b0c0e0a0b0b0b0b0d0d0b
+0b0b0f0f0f0f0f0b0b0b0b0e0e0e0e0e
+0c0c0c0b0b0b0c0e0a0b0b0b0b0d0d0b
+0b0b0b0b0b0b090b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0e0a0b0b0b0b0d0d0b
+0b0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0b0b0d0d0b
+0b090b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0b0b0d0d0b
+090b0b0b0e0e0e0e0a0a0a0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0b0b0d0d09
+0b0b0b0b0e0e0e0e0a0a0a0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0b0b0d0d0b
+0b0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0b0c0b0b0c0b0b0b0b0b0b09
+0b0b0b0b0b0b0b0b0b0b0b0e0e0e0e0e
+0c0c0c0c0b0c0b0b0c0b0b0b0b0b0b0b
+090b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0b0c0b0c0c0b0b0b0b0b0b0b
+0d090b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0b0b0b0b0b
+0d0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0d0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0d0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0b0b0c0c0c0b0b0f0f0b0b0b
+0d0b0b0b0e0e0e0a0a0a0b0e0e0e0e0e
+0c0c0c0b0b0b0c0c0c0b0b0f0f0b0b0b
+0d0b0b0b0e0e0e0a0a0a0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0d0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0b0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0b0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0b0c0c0c0c0b0b0f0f0b0b0b
+0b0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0b0c0c0c0b0c0c0b0b0f0f0b0b0b
+0b0b0b0b0e0e0e0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0b0b0b0b0e0e0a0a0a0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0b0b0b0b0e0e0a0a0a0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0e0e0a
+0a0a0b0b0b0b0b0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0e0e0a
+0a0a0b0b0b0b0b0b0b0b0b0e0e0e0e0e
+0c0c0c0c0c0c0c0c0c0b0b0f0f0b0b0b
+0b0b0b0b0b0b0b0b0b0b0b0e0e0e0e0e
+		</part>
+	</rom>
+	<rom index="1">
+		<part>1B</part>
+	</rom>
+</misterromdescription>

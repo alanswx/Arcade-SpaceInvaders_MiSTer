@@ -1,24 +1,22 @@
 <misterromdescription>
 	<name>Clowns (rev. 2)</name>
-	<mameversion>0219</mameversion>
+	<mameversion>0226</mameversion>
 	<setname>clowns</setname>
-	<mratimestamp>20200309001807</mratimestamp>
+	<mratimestamp>20201030010603</mratimestamp>
 	<year>1978</year>
 	<manufacturer>Midway</manufacturer>
 	<category>Platform / Circus</category>
 	<rbf>spaceinvaders</rbf>
+	<mameinfo parent="0" cpp="mw8080bw" input="clowns"/>
+	<display type="raster" rotate="0"/>
+	<switches default="00,00,00">
+		<dip bits="18,19" name="Bonus game"   ids="None,9000,11000,13000"/>
+		<dip bits="20"    name="Ballon reset" ids="Each Row,All Rows"/>
+		<dip bits="21"    name="Bonus life"   ids="3000,4000"/>
+		<dip bits="22"    name="Lives"	ids="3,4"/>
+		<dip bits="23"    name="Test mode"    ids="Off,On"/>
+	</switches>
 	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
-        <!-- <dip bits="16,17" name="Coinage"      ids="1C_1C,1C_2C,2C_2C,2C_1C"/> -->
-        <switches default="00,00,00">
-                <dip bits="18,19" name="Bonus game"   ids="None,9000,11000,13000"/>
-                <dip bits="20"    name="Ballon reset" ids="Each Row,All Rows"/>
-                <dip bits="21"    name="Bonus life"   ids="3000,4000"/>
-                <dip bits="22"    name="Lives"        ids="3,4"/>
-                <dip bits="23"    name="Test mode"    ids="Off,On"/>
-        </switches>
-	<rom index="1">
-		<part>13</part>
-	</rom>
 	<rom index="0" zip="clowns.zip" md5="none">
 		<part crc="ff4432eb" name="h2.cpu"/>
 		<part crc="676c934b" name="g2.cpu"/>
@@ -44,22 +42,22 @@
 07070707070707070707070707070707
 07070707070707070707070707070707
 07070707070707070707070707070707
+02020202020202020202020202020202
+02020202020202020202020202020202
+02020202020202020202020202020202
+02020202020202020202020202020202
+02020202020202020202020202020202
+02020202020202020202020202020202
+04040404040404040404040404040404
+04040404040404040404040404040404
+04040404040404040404040404040404
+04040404040404040404040404040404
+05050505050505050505050505050505
+05050505050505050505050505050505
+05050505050505050505050505050505
+05050505050505050505050505050505
 07070707070707070707070707070707
 07070707070707070707070707070707
-02020202020202020202020202020202
-02020202020202020202020202020202
-02020202020202020202020202020202
-02020202020202020202020202020202
-02020202020202020202020202020202
-02020202020202020202020202020202
-04040404040404040404040404040404
-04040404040404040404040404040404
-04040404040404040404040404040404
-04040404040404040404040404040404
-05050505050505050505050505050505
-05050505050505050505050505050505
-05050505050505050505050505050505
-05050505050505050505050505050505
 07070707070707070707070707070707
 07070707070707070707070707070707
 07070707070707070707070707070707
@@ -162,23 +160,26 @@
 07070707070707070707070707070707
 		</part>
 	</rom>
-    <rom index="3">
-         <!-- 1-bottom.wav -->
-         <!-- 2-middle.wav -->
-         <!-- 3-top.wav -->
-         <!-- 5-springboard.wav -->
-         <!-- 6-miss.wav -->
-        <PART>
-             12 31 000000 002B11
-             12 31 002B14 00588D
-             12 31 005890 008531
-             00 00 000000 000000
-             12 31 008534 00D0FF
-             12 31 00D100 012AC7
-        </PART>
-    </ROM>
-    <rom index="4">
-        <PART>
+	<rom index="1">
+		<part>13</part>
+	</rom>
+	<rom index="3">
+		<!-- 1-bottom.wav -->
+		<!-- 2-middle.wav -->
+		<!-- 3-top.wav -->
+		<!-- 5-springboard.wav -->
+		<!-- 6-miss.wav -->
+		<part>
+1231000000002B11
+1231002B1400588D
+1231005890008531
+0000000000000000
+123100853400D0FF
+123100D100012AC7
+		</part>
+	</rom>
+	<rom index="4">
+		<part>
 B80CDD12C210DB11EF10A11111118E11231181112F117A11341174113C117111
 3E116E1142116D1146116B1147116A114B116B114B1170114B11741146117F11
 3611AD11180F88099504A506820B180D7E07BC01500168080F0DD910C0121515
@@ -2570,6 +2571,6 @@ E900AA0011002300070120027D031B04BB04D8047804130428034402E400E3FF
 68FF20FFC0FE07FF3D005D005700D7006A019A016E01DC012802370243023E02
 1C02FE01B801CC01D6019B0158010D01B40053001C000D000C00130013001700
 25002E0025002E00
-        </PART>
-    </ROM>
+		</part>
+	</rom>
 </misterromdescription>
