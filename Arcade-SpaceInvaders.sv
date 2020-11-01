@@ -566,6 +566,7 @@ localparam mod_lagunaracer   = 32;
 localparam mod_yosakdon      = 34;
 localparam mod_spacechaser   = 35;
 localparam mod_steelworker   = 36;
+localparam mod_rollingcrash  = 37;
 
 reg [7:0] mod = 255;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -868,6 +869,8 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[2];
           Trigger_AudioDeviceP2  <= PortWr[6];
           Trigger_WatchDogReset  <= PortWr[4];
+          software_flip          <= 0;      
+
         end
         mod_vortex:
         begin
@@ -893,6 +896,8 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[6];
           Trigger_AudioDeviceP2  <= PortWr[7];
           Trigger_WatchDogReset  <= PortWr[4];
+ 			software_flip          <= 0;      
+
         end
         mod_lagunaracer:
 	begin
@@ -912,6 +917,8 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[3];
           Trigger_AudioDeviceP2  <= PortWr[5];
           Trigger_WatchDogReset  <= PortWr[7];
+			 software_flip          <= 0;
+
         end
 	mod_280zap:
 	begin
@@ -932,6 +939,8 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[3];
           Trigger_AudioDeviceP2  <= PortWr[5];
           Trigger_WatchDogReset  <= PortWr[7];
+			 software_flip          <= 0;
+
 
 	end
 
@@ -952,13 +961,15 @@ always @(*) begin
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];
           Trigger_WatchDogReset  <= PortWr[4];
+			 software_flip          <= 0;
+
         end
         mod_boothill:
         begin 
           // IN0
-          GDB0 <= sw[0] | { m_fire1a, 1'b0,1'b1,1'b0,m_right1,m_left1,m_down1,m_up1};
+          GDB0 <= sw[0] | { m_fire1a, 1'b0,1'b1,1'b0,m_left1,m_right1,m_up1,m_down1};
           // IN1
-          GDB1 <= sw[1] | { m_fire2a, 1'b0,1'b1,1'b0,m_right2,m_left2,m_down2,m_up2};
+          GDB1 <= sw[1] | { m_fire2a, 1'b0,1'b1,1'b0,m_left2,m_right2,m_up2,m_down2};
           // IN2
           GDB2 <= sw[2] | { m_start1, m_coin1,m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
           Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
@@ -968,7 +979,7 @@ always @(*) begin
 	 		 Trigger_Tone_Low       <= PortWr[5];
 		    Trigger_Tone_High      <= PortWr[6];
 			 Audio_Output           <= SoundCtrl3[3];
-		    software_flip          <= 0;
+          software_flip          <= 0;
 			 GDB3 <= ShiftReverse ? SR: S;
         end
 		  
@@ -987,6 +998,8 @@ always @(*) begin
           //GDB0 <= sw[0] | { 1'b0, 1'b0, 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
           GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+          software_flip          <= 0;      
+
         end
         mod_ozmawars:
         begin
@@ -998,6 +1011,8 @@ always @(*) begin
          // GDB0 <= sw[0] | ~{ 1'b0, m_right,m_left,m_fire_a,1'b0,1'b1, 1'b1,1'b1};
             GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
             GDB2 <= sw[2] | { m_start1, m_coin1,m_start2,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+				software_flip          <= 0;      
+
           end
         mod_spacelaser:
         begin
@@ -1024,6 +1039,8 @@ always @(*) begin
              Trigger_Tone_Low       <= PortWr[5];
              Trigger_Tone_High      <= PortWr[6];
 				 Overlay4               <= 1;
+  				software_flip          <= 0;      
+
         end
 		  
 			mod_spaceinvaderscv:
@@ -1035,8 +1052,19 @@ always @(*) begin
 				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
 				GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
 				GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
-			end
+				software_flip          <= 0;      
 
+			end
+			mod_rollingcrash:
+			begin
+				landscape<=0;
+				ccw<=1;
+				color_rom_enabled<=1;
+				if (Trigger_AudioDeviceP2) software_flip <= SoundCtrl5[5] & sw[3][0];
+				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
+				GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+				GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
+			end
         mod_unknown1:
         begin
         GDB0 <= 8'hFF;
@@ -1051,25 +1079,28 @@ always @(*) begin
         end
         mod_spaceinvadersii:
         begin
-	 landscape<=0;
-          ccw<=1;
-          color_rom_enabled<=1;
-          GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
-          //GDB0 <= sw[0] | { 1'b0, 1'b0, 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
-          GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
-          GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+				landscape<=0;
+				ccw<=1;
+				color_rom_enabled<=1;
+				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+				//GDB0 <= sw[0] | { 1'b0, 1'b0, 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
+				GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
+				GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+				software_flip          <= 0;      
+
         end
         mod_amazingmaze:
         begin
-	     WDEnabled <= 1'b0;
-             GDB0 <= sw[0] | { m_up2, m_down2, m_right2, m_left2, m_up1, m_down1, m_right1, m_left1} ;
-             GDB1 <= sw[1] | { 1'b0, 1'b0,1'b0,1'b0,m_coin1, 1'b0, m_start2, m_start1};
-             GDB2 <= 8'b0;
-        end
+				WDEnabled 		<= 1'b0;
+				GDB0 				<= sw[0] | { m_up2, m_down2, m_right2, m_left2, m_up1, m_down1, m_right1, m_left1} ;
+				GDB1 				<= sw[1] | { 1'b0, 1'b0,1'b0,1'b0,m_coin1, 1'b0, m_start2, m_start1};
+				GDB2 				<= 8'b0;
+				software_flip  <= 0;
+		 end
         mod_attackforce:
-	begin
+		  begin
             landscape<=1;
-	    WDEnabled <= 1'b0;
+            WDEnabled <= 1'b0;
             ccw<=1;
             GDB0 <= sw[0] | { ~m_coin1, 1'b1,1'b1,1'b1,1'b1,~m_fire_a, ~m_left,~m_right};
             GDB1 <= 8'b0;
@@ -1079,8 +1110,8 @@ always @(*) begin
             Trigger_ShiftData      <= PortWr[3];
             Trigger_AudioDeviceP2  <= PortWr[6];
             Trigger_WatchDogReset  <= PortWr[5];
-
-	end
+				software_flip  <= 0;
+        end
 	
         mod_ballbomb:
 			begin
@@ -1097,42 +1128,44 @@ always @(*) begin
 			end
 			
         mod_bowler:
-	begin
+		  begin
             landscape<=0;
-	// 0 - dips
-            GDB0 <= sw[0];
-	// 1 - controls
-	   GDB1 <= ~S;
-            //GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0,m_fire_b,m_start1, m_fire_a, m_coin1 };
-    	// 2, 3 trackball
-            GDB2 <= sw[2];
-            GDB3 <= ~SR;
-             Trigger_ShiftCount     <= PortWr[1];
-             //Trigger_AudioDeviceP1  <= PortWr[3];
-             Trigger_ShiftData      <= PortWr[2];
-             //Trigger_AudioDeviceP2  <= PortWr[6];
-             Trigger_WatchDogReset  <= PortWr[4];
-             //<= PortWr[5]; // bowler_audio_1_w 
-             //<= PortWr[6]; // bowler_audio_2_w
-             //<= PortWr[7]; // bowler_lights_1_w
-             //<= PortWr[8]; //
-             //<= PortWr[9]; //
-             //<= PortWr[A]; //
-             //<= PortWr[E]; //
-             //<= PortWr[F]; //
-	end
-        mod_checkmate:
-	begin
-	  WDEnabled <= 1'b0;
-          // IN0
-          GDB0 <= sw[0] | { m_right2,m_left2,m_down2,m_up2,m_right1,m_left1,m_down1,m_up1};
-          GDB1 <= sw[1] | { m_right4,m_left4,m_down4,m_up4,m_right3,m_left3,m_down3,m_up3};
-          GDB1 <= sw[1] ;
-          GDB2 <= sw[2]; // dips
-          GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,m_start4,m_start3,m_start2,m_start1};
-          //GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,1'b0,1'b0,m_start2,m_start1};
-          //<= PortWr[3]; //  checkmat_io_w
-	end
+            software_flip          <= 0;
+				// 0 - dips
+				GDB0 <= sw[0];
+				// 1 - controls
+				GDB1 <= ~S;
+				//GDB1 <= sw[1] | { 1'b0,1'b0,1'b0,1'b0,m_fire_b,m_start1, m_fire_a, m_coin1 };
+				// 2, 3 trackball
+				GDB2 <= sw[2];
+				GDB3 <= ~SR;
+				Trigger_ShiftCount     <= PortWr[1];
+				//Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_ShiftData      <= PortWr[2];
+				//Trigger_AudioDeviceP2  <= PortWr[6];
+				Trigger_WatchDogReset  <= PortWr[4];
+				//<= PortWr[5]; // bowler_audio_1_w 
+				//<= PortWr[6]; // bowler_audio_2_w
+				//<= PortWr[7]; // bowler_lights_1_w
+				//<= PortWr[8]; //
+				//<= PortWr[9]; //
+				//<= PortWr[A]; //
+				//<= PortWr[E]; //
+				//<= PortWr[F]; //
+			end
+			mod_checkmate:
+			begin
+				WDEnabled <= 1'b0;
+				// IN0
+				GDB0 <= sw[0] | { m_right2,m_left2,m_down2,m_up2,m_right1,m_left1,m_down1,m_up1};
+				GDB1 <= sw[1] | { m_right4,m_left4,m_down4,m_up4,m_right3,m_left3,m_down3,m_up3};
+				GDB1 <= sw[1] ;
+				GDB2 <= sw[2]; // dips
+				GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,m_start4,m_start3,m_start2,m_start1};
+				//GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,1'b0,1'b0,m_start2,m_start1};
+				//<= PortWr[3]; //  checkmat_io_w
+            software_flip          <= 0;
+			end
         mod_clowns:
 			begin
 				//GDB0 -- all FF
@@ -1175,52 +1208,65 @@ always @(*) begin
 			
 	mod_dogpatch:
         begin
-            landscape<=1;
-            ccw<=0;
-            color_rom_enabled<=1;
-            GDB0 <= sw[0] | { ~m_fire_b, dogpatch_y_2, 1'b1, ~m_start2, ~m_start1, ~m_coin1 };
-            GDB1 <= sw[1] | { ~m_fire_a, dogpatch_y, 1'b1, 1'b1, 1'b1 , 1'b1};
-            GDB2 <= sw[2];
-          Trigger_ShiftCount     <= PortWr[1];
-          Trigger_AudioDeviceP1  <= PortWr[3];
-          Trigger_ShiftData      <= PortWr[2];
-          Trigger_AudioDeviceP2  <= PortWr[7];
-          Trigger_WatchDogReset  <= PortWr[4];
-             //<= PortWr[5]; // tone_generator_low_w
-             //<= PortWr[6]; // tone_generator_hi_w
+				landscape<=1;
+				ccw<=0;
+				color_rom_enabled<=1;
+				GDB0 <= sw[0] | { ~m_fire_b, dogpatch_y_2, 1'b1, ~m_start2, ~m_start1, ~m_coin1 };
+				GDB1 <= sw[1] | { ~m_fire_a, dogpatch_y, 1'b1, 1'b1, 1'b1 , 1'b1};
+				GDB2 <= sw[2];
+				Trigger_ShiftCount     <= PortWr[1];
+				Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_ShiftData      <= PortWr[2];
+				Trigger_AudioDeviceP2  <= PortWr[7];
+				Trigger_WatchDogReset  <= PortWr[4];
+				 //<= PortWr[5]; // tone_generator_low_w
+				 //<= PortWr[6]; // tone_generator_hi_w
+				
+					// AJS -- will this work:
+				Trigger_Tone_Low       <= PortWr[5];
+		      Trigger_Tone_High      <= PortWr[6];
 
-	end
+				 
+				software_flip          <= 0;
+			end
 	mod_doubleplay:
         begin
-            landscape<=1;
-            ccw<=0;
-            color_rom_enabled<=1;
-            GDB0 <= sw[0] | { ~m_start1, joya[7:2], ~m_fire_a};
-            GDB1 <= sw[1] | { ~m_start2, joya[7:2], ~m_fire_a};
-            GDB2 <= sw[2] | { ~m_coin1, 7'b0 };
-          Trigger_ShiftCount     <= PortWr[1];
-          Trigger_AudioDeviceP1  <= PortWr[3];
-          Trigger_ShiftData      <= PortWr[2];
-          //Trigger_AudioDeviceP2  <= PortWr[7];
-          Trigger_WatchDogReset  <= PortWr[4];
-             //<= PortWr[5]; // tone_generator_low_w
-             //<= PortWr[6]; // tone_generator_hi_w
+				landscape<=1;
+				ccw<=0;
+				color_rom_enabled<=1;
+				GDB0 <= sw[0] | { ~m_start1, joya[7:2], ~m_fire_a};
+				GDB1 <= sw[1] | { ~m_start2, joya[7:2], ~m_fire_a};
+				GDB2 <= sw[2] | { ~m_coin1, 7'b0 };
+				Trigger_ShiftCount     <= PortWr[1];
+				Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_ShiftData      <= PortWr[2];
+				//Trigger_AudioDeviceP2  <= PortWr[7];
+				Trigger_WatchDogReset  <= PortWr[4];
+				//<= PortWr[5]; // tone_generator_low_w
+				//<= PortWr[6]; // tone_generator_hi_w
+				// AJS -- will this work:
+				Trigger_Tone_Low       <= PortWr[5];
+				Trigger_Tone_High      <= PortWr[6];
+				software_flip          <= 0;
 
 	end
         mod_guidedmissle:
         begin 
-          // IN0
-          GDB0 <= sw[0] | {~m_fire2a,~m_start1,1'b1,1'b1,~m_right2,~m_left2,1'b1,1'b1};
-          GDB1 <= sw[1] | {~m_fire1a,~m_start2,1'b1,1'b1,~m_right1,~m_left1,~m_coin1,1'b1};
-          // IN2
-          GDB2 <= sw[2];
-          Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
-          Trigger_AudioDeviceP1  <= PortWr[3];
-          Trigger_ShiftData      <= PortWr[2];
-          Trigger_WatchDogReset  <= PortWr[4];
-          //<= PortWr[5]; // tone_generator_low_w
-          //<= PortWr[6]; // tone_generator_hi_w
-	  GDB3 <= ShiftReverse ? SR: S;
+				// IN0
+				GDB0 <= sw[0] | {~m_fire2a,~m_start1,1'b1,1'b1,~m_right2,~m_left2,1'b1,1'b1};
+				GDB1 <= sw[1] | {~m_fire1a,~m_start2,1'b1,1'b1,~m_right1,~m_left1,~m_coin1,1'b1};
+				// IN2
+				GDB2 <= sw[2];
+				Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
+				Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_ShiftData      <= PortWr[2];
+				Trigger_WatchDogReset  <= PortWr[4];
+				//<= PortWr[5]; // tone_generator_low_w
+				//<= PortWr[6]; // tone_generator_hi_w
+				Trigger_Tone_Low       <= PortWr[5];
+				Trigger_Tone_High      <= PortWr[6];
+				GDB3 <= ShiftReverse ? SR: S;
+				software_flip          <= 0;
         end
         mod_claybust:
         begin 
@@ -1233,23 +1279,25 @@ always @(*) begin
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];
           Trigger_WatchDogReset  <= PortWr[4];
+          software_flip          <= 0;
         end
         mod_gunfight:
-	begin
-	  WDEnabled <= 1'b0;
-          // IN0
-          GDB0 <= sw[0] | { m_fire1a,~gunfight_y, m_right1,m_left1,m_down1,m_up1};
-          GDB1 <= sw[1] | { m_fire2a,~gunfight_y_2,m_right2,m_left2,m_down2,m_up2};
-          GDB2 <= sw[2] | { m_start1,m_coin1, 6'b0};
-          Trigger_ShiftCount     <= PortWr[2];
-          Trigger_AudioDeviceP1  <= PortWr[1];
-          Trigger_ShiftData      <= PortWr[4];
-          //Trigger_WatchDogReset  <= PortWr[4];
-	end
+			begin
+				WDEnabled <= 1'b0;
+				// IN0
+				GDB0 <= sw[0] | { m_fire1a,~gunfight_y, m_right1,m_left1,m_down1,m_up1};
+				GDB1 <= sw[1] | { m_fire2a,~gunfight_y_2,m_right2,m_left2,m_down2,m_up2};
+				GDB2 <= sw[2] | { m_start1,m_coin1, 6'b0};
+				Trigger_ShiftCount     <= PortWr[2];
+				Trigger_AudioDeviceP1  <= PortWr[1];
+				Trigger_ShiftData      <= PortWr[4];
+				//Trigger_WatchDogReset  <= PortWr[4];
+				software_flip          <= 0;
+			end
         mod_indianbattle:
         begin
           landscape<=0;
-	  ccw <= 1;
+			 ccw <= 1;
           color_rom_enabled<=1;
           GDB0 <= sw[0];
           GDB1 <= sw[1] | { 1'b1,m_right1,m_left1,m_fire1a, 1'b0,  m_start1,m_start2,~m_coin1};
@@ -1259,11 +1307,13 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[4];
           Trigger_AudioDeviceP2  <= PortWr[5];
           Trigger_WatchDogReset  <= PortWr[6];
+          software_flip          <= 0;      
+
         end
         mod_lupin:
         begin
           landscape<=0;
-	  ccw <= 1;
+          ccw <= 1;
           color_rom_enabled<=1;
           GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b0};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
@@ -1273,54 +1323,61 @@ always @(*) begin
           Trigger_ShiftData      <= PortWr[4];
           Trigger_AudioDeviceP2  <= PortWr[5];
           Trigger_WatchDogReset  <= PortWr[6];
+          software_flip          <= 0;      
+
         end
         mod_m4:
         begin 
-          landscape<=1;
-	  WDEnabled <= 1'b0;
-          // IN0
-          GDB0 <= sw[0] | { 1'b1, 1'b1,~m_fire2b,~m_fire2a,~m_down2,1'b1,~m_up2,1'b1};
-          GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire1b,~m_fire1a,~m_down1,~m_start1,~m_up1,~m_coin1};
-          GDB2 <= sw[2];
-          Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
-          Trigger_AudioDeviceP1  <= PortWr[3];
-          Trigger_ShiftData      <= PortWr[2];
-          Trigger_WatchDogReset  <= PortWr[4];
-          Trigger_AudioDeviceP2  <= PortWr[5];
-	  GDB3 <= ShiftReverse ? SR: S;
+				landscape<=1;
+				WDEnabled <= 1'b0;
+				// IN0
+				GDB0 <= sw[0] | { 1'b1, 1'b1,~m_fire2b,~m_fire2a,~m_down2,1'b1,~m_up2,1'b1};
+				GDB1 <= sw[1] | { 1'b1,~m_start2,~m_fire1b,~m_fire1a,~m_down1,~m_start1,~m_up1,~m_coin1};
+				GDB2 <= sw[2];
+				Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
+				Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_ShiftData      <= PortWr[2];
+				Trigger_WatchDogReset  <= PortWr[4];
+				Trigger_AudioDeviceP2  <= PortWr[5];
+				GDB3 <= ShiftReverse ? SR: S;
+            software_flip          <= 0;      
+
 
         end
         mod_phantom:
         begin
-          landscape<=1;
-	  GDB0 <= SR;
-          GDB1 <= sw[1] | { 1'b1,1'b1,~m_coin1,~m_fire1a,~m_right1,~m_left1,~m_down1,~m_up1};
-          GDB2 <= sw[2];
-          Trigger_ShiftCount     <= PortWr[1];
-          Trigger_ShiftData      <= PortWr[2];
-          Trigger_WatchDogReset  <= PortWr[4];
-          Trigger_AudioDeviceP1  <= PortWr[5];
-          Trigger_AudioDeviceP2  <= PortWr[6];
-        end
+				landscape<=1;
+				GDB0 <= SR;
+				GDB1 <= sw[1] | { 1'b1,1'b1,~m_coin1,~m_fire1a,~m_right1,~m_left1,~m_down1,~m_up1};
+				GDB2 <= sw[2];
+				Trigger_ShiftCount     <= PortWr[1];
+				Trigger_ShiftData      <= PortWr[2];
+				Trigger_WatchDogReset  <= PortWr[4];
+				Trigger_AudioDeviceP1  <= PortWr[5];
+				Trigger_AudioDeviceP2  <= PortWr[6];
+				software_flip          <= 0;      
+
+				end
         mod_polaris:
-	begin
-          landscape<=0;
-	  ccw<=1;
-          color_rom_enabled<=1;
-          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
-          GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
-          GDB2 <= sw[2];
+		  begin
+			landscape<=0;
+			ccw<=1;
+			color_rom_enabled<=1;
+			GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
+			GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
+			GDB2 <= sw[2];
 
-          Trigger_ShiftCount     <= PortWr[1];
-          Trigger_ShiftData      <= PortWr[3];
-          Trigger_WatchDogReset  <= PortWr[5];
-          Trigger_AudioDeviceP1  <= PortWr[2];
-          Trigger_AudioDeviceP2  <= PortWr[4];
-          //<= PortWr[6];
+			Trigger_ShiftCount     <= PortWr[1];
+			Trigger_ShiftData      <= PortWr[3];
+			Trigger_WatchDogReset  <= PortWr[5];
+			Trigger_AudioDeviceP1  <= PortWr[2];
+			Trigger_AudioDeviceP2  <= PortWr[4];
+			 //<= PortWr[6];
+         software_flip          <= 0;      
 
-	end
+		  end
         mod_desertgun:
-	begin
+	     begin
           gun_game <= 1;
           landscape <= 1;
           GDB0 <= SR;
@@ -1334,38 +1391,45 @@ always @(*) begin
           //<= PortWr[5]; // tone_generator_low_w
           //<= PortWr[6]; // tone_generator_hi_w
           Trigger_AudioDeviceP2  <= PortWr[7];
-	end
-	mod_seawolf:
-	begin
-	       gun_game <= 1;
-          landscape<=1;
-	  WDEnabled <= 1'b0;
-          ccw<=0;
-          GDB0 <= SR;
-	  // IN0
-          GDB1 <= sw[0] | { 2'b0, m_fire_a, seawolf_position};
-          GDB2 <= sw[1] | { 3'b0,1'b0 /*erase?*/, 2'b0,m_start1,m_coin1};
-          Trigger_ShiftData      <= PortWr[3];
-          Trigger_ShiftCount     <= PortWr[4];
-          //<= PortWr[5];
-          //<= PortWr[6];
-          //<= PortWr[4];
- 			 Trigger_AudioDeviceP1  <= PortWr[5];
-			 Trigger_AudioDeviceP2  <= 1'b0;
-       end
-        mod_yosakdon:
-	begin
-	  WDEnabled <= 1'b0;
-          landscape<=0;
-	  ccw<=1;
-          //GDB0 <= SR;
-	  // IN0
-          GDB1 <= sw[0] | { 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
-	  // IN1
-          GDB2 <= sw[1] | { 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0,1'b0,1'b0};
-	  Trigger_AudioDeviceP1  <= PortWr[3];
-          Trigger_AudioDeviceP2  <= PortWr[5];
-       end
+				Trigger_Tone_Low       <= PortWr[5];
+				Trigger_Tone_High      <= PortWr[6];
+				software_flip          <= 0;      
+	      end
+			mod_seawolf:
+			begin
+					gun_game <= 1;
+					landscape<=1;
+					WDEnabled <= 1'b0;
+					ccw<=0;
+					GDB0 <= SR;
+					// IN0
+					GDB1 <= sw[0] | { 2'b0, m_fire_a, seawolf_position};
+					GDB2 <= sw[1] | { 3'b0,1'b0 /*erase?*/, 2'b0,m_start1,m_coin1};
+					Trigger_ShiftData      <= PortWr[3];
+					Trigger_ShiftCount     <= PortWr[4];
+					//<= PortWr[5];
+					//<= PortWr[6];
+					//<= PortWr[4];
+					Trigger_AudioDeviceP1  <= PortWr[5];
+					Trigger_AudioDeviceP2  <= 1'b0;
+					software_flip          <= 0;      
+
+			end
+			mod_yosakdon:
+			begin
+				WDEnabled <= 1'b0;
+				landscape<=0;
+				ccw<=1;
+				//GDB0 <= SR;
+				// IN0
+				GDB1 <= sw[0] | { 1'b0, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, m_coin1 };
+				// IN1
+				GDB2 <= sw[1] | { 1'b0, m_right,m_left,m_fire_a,1'b0,1'b0,1'b0,1'b0};
+				Trigger_AudioDeviceP1  <= PortWr[3];
+				Trigger_AudioDeviceP2  <= PortWr[5];
+				software_flip          <= 0;      
+
+				end
        mod_spacechaser:
        begin
             landscape<=0;
@@ -1374,19 +1438,23 @@ always @(*) begin
             GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,  m_fire2a,  m_right2,m_down2,m_left2,m_up2};
             GDB1 <= sw[1] | { m_coin1,m_start1,m_start2,m_fire_a,m_right,m_down,m_left,m_up};
             GDB2 <= sw[2];
+				software_flip          <= 0;      
+
        end
        mod_steelworker:
        begin
-	  WDEnabled <= 1'b0;
-           GDB0 <= 0;
-	   GDB1 <= sw[1] |{ ~m_fire1b, m_right,m_left,m_fire1a,1'b0,m_start1,m_start2, ~m_coin1};
-	   GDB2 <= sw[2] |{ ~m_fire2b, m_right2, m_left2 , m_fire2a,1'b0,1'b0, 1'b0,1'b0} ;
-           Trigger_ShiftCount     <= PortWr[2];
-          //Trigger_AudioDeviceP1  <= PortWr[2];
-          Trigger_ShiftData      <= PortWr[4];
-          //Trigger_AudioDeviceP2  <= PortWr[5];
-          //Trigger_WatchDogReset  <= PortWr[7];
-       end
+				WDEnabled <= 1'b0;
+				GDB0 <= 0;
+				GDB1 <= sw[1] |{ ~m_fire1b, m_right,m_left,m_fire1a,1'b0,m_start1,m_start2, ~m_coin1};
+				GDB2 <= sw[2] |{ ~m_fire2b, m_right2, m_left2 , m_fire2a,1'b0,1'b0, 1'b0,1'b0} ;
+				Trigger_ShiftCount     <= PortWr[2];
+				//Trigger_AudioDeviceP1  <= PortWr[2];
+				Trigger_ShiftData      <= PortWr[4];
+				//Trigger_AudioDeviceP2  <= PortWr[5];
+				//Trigger_WatchDogReset  <= PortWr[7];
+				software_flip          <= 0;      
+
+				end
       endcase
 end
 
