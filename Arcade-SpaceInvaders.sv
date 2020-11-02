@@ -1752,7 +1752,7 @@ samples samples
 	.Hex1(Line1),
 `endif
 	
-	.audio_in(Tone_Out),
+	.audio_in(mod == mod_ballbomb ? BB_Tone_Out : Tone_Out),
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );
@@ -1767,7 +1767,7 @@ ToneGen ToneGen
 	 .Tone_Low({Tone_Low[5:1],1'b0}),
 	 .Tone_High(Tone_High[5:0]),
 	 
-	 .Tone_out(mod == mod_ballbomb ? BB_Tone_Out : Tone_Out),
+	 .Tone_out(Tone_Out),
 	 
 	.CLK_SYS(clk_sys),
 	.reset(reset)
