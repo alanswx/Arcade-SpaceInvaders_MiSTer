@@ -424,6 +424,9 @@ wire r,g,b;
 //wire no_rotate = status[2] | direct_video | landscape;
 wire no_rotate = AllowRotate ? status[2] | direct_video | landscape : 1'd1;
 
+reg Force_Red;
+reg [23:0] Background_Col;
+
 reg ce_pix;
 always @(posedge clk_40) begin
         reg [2:0] div;
@@ -436,18 +439,18 @@ wire fg = |{rr,gg,bb};
 
 `ifdef USE_OVERLAY
 	// mix in overlay!
-	wire [7:0]rr = {8{r}} | {C_R,C_R};
-	wire [7:0]gg = {8{g}} | {C_R,C_R};
-	wire [7:0]bb = {8{b}} | {C_R,C_R};
+	wire [7:0]rr = (Force_Red)? {8{r||g||b}} | {C_R,C_R} : {8{r}} | {C_R,C_R};
+	wire [7:0]gg = (Force_Red)? {C_R,C_R} : {8{g}} | {C_R,C_R};
+	wire [7:0]bb = (Force_Red)? {C_R,C_R} : {8{b}} | {C_R,C_R};
 `else
-	wire [7:0]rr = {8{r}};
-	wire [7:0]gg = {8{g}};
-	wire [7:0]bb = {8{b}};
+	wire [7:0]rr = (Force_Red)? {8{r||g||b}} : {8{r}};
+	wire [7:0]gg = (Force_Red)? {8'd0} : {8{g}};
+	wire [7:0]bb = (Force_Red)? {8'd0} : {8{b}};
 `endif
 
-// if graphics are turned off, just use the pixels. Otherwise if the
-// background is in effect - use it
-wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
+// if graphics are turned off, just use the pixels. Otherwise if the background is in effect - use it
+//wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
+wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? (fg ? {rr,gg,bb} : Background_Col) : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b} | Background_Col;
 
 arcade_video #(.WIDTH(260), .DW(24)) arcade_video
 (
@@ -824,6 +827,8 @@ always @(*) begin
         GDB3 					<= S;
 		  Audio_Output 		<= 1;  	 // Default = ON : won't do anything if no sample header loaded. 
 												 // some games control audio output via an output bit somewhere!
+		  Force_Red          <= 0;
+		  Background_Col     <= {8'd0,8'd0,8'd0}; // Black
 
 		  ScreenFlip         <= status[6];
 		  Overlay4           <= 0; 	 // Default aligned to characters
@@ -1124,7 +1129,9 @@ always @(*) begin
             GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
 				Audio_Output <= SoundCtrl3[5];
 				if (Trigger_AudioDeviceP2) software_flip <= SoundCtrl5[5] & sw[3][0];
-				Trigger_Tone_High <= PortWr[1]; // out 1 = music generator!				
+				Trigger_Tone_High <= PortWr[1]; // out 1 = music generator!
+				Force_Red <=  SoundCtrl3[2]; // Base hit - all red
+			   Background_Col     <= {8'd0,8'd0,8'd255}; // Blue
 			end
 			
         mod_bowler:
@@ -1752,7 +1759,7 @@ samples samples
 	.Hex1(Line1),
 `endif
 	
-	.audio_in(Tone_Out),
+	.audio_in(mod == mod_ballbomb ? BB_Tone_Out : Tone_Out),
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );
@@ -1767,7 +1774,7 @@ ToneGen ToneGen
 	 .Tone_Low({Tone_Low[5:1],1'b0}),
 	 .Tone_High(Tone_High[5:0]),
 	 
-	 .Tone_out(mod == mod_ballbomb ? BB_Tone_Out : Tone_Out),
+	 .Tone_out(Tone_Out),
 	 
 	.CLK_SYS(clk_sys),
 	.reset(reset)
