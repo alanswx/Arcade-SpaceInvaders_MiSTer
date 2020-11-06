@@ -435,7 +435,8 @@ always @(posedge clk_40) begin
 	ce_pix <= div == 0;
 end
 
-wire fg = |{rr,gg,bb};
+//wire fg = |{rr,gg,bb};
+wire fg;
 
 `ifdef USE_OVERLAY
 	// mix in overlay!
@@ -1367,22 +1368,35 @@ always @(*) begin
 				end
         mod_polaris:
 		  begin
-			landscape<=0;
-			ccw<=1;
-			color_rom_enabled<=1;
-			GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
-			GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
-			GDB2 <= sw[2];
+				landscape<=0;
+				ccw<=1;
+				color_rom_enabled<=1;
+				GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
+				GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
+				GDB2 <= sw[2];
 
-			Trigger_ShiftCount     <= PortWr[1];
-			Trigger_ShiftData      <= PortWr[3];
-			Trigger_WatchDogReset  <= PortWr[5];
-			Trigger_AudioDeviceP1  <= PortWr[2];
-			Trigger_AudioDeviceP2  <= PortWr[4];
-			 //<= PortWr[6];
-         software_flip          <= 0;      
+				Trigger_ShiftCount     <= PortWr[1];
+				Trigger_ShiftData      <= PortWr[3];
+				Trigger_WatchDogReset  <= PortWr[5];
+				Trigger_AudioDeviceP1  <= PortWr[2];
+				Trigger_AudioDeviceP2  <= PortWr[4];
+				 //<= PortWr[6];
+				 software_flip          <= 0;      
 
+				// Background colour split mid screen
+				if (VCount < 2) begin
+					Background_Col     <= {8'd0,8'd0,8'd0}; 			// Black
+				end
+				else begin
+					if (HCount < 127) begin // was 128
+						Background_Col     <= {8'd0,8'd0,8'd255}; 	// Blue
+					end
+					else begin
+						Background_Col     <= {8'd0,8'd255,8'd255}; 	// Cyan
+					end;
+				end;
 		  end
+		  
         mod_desertgun:
 	     begin
           gun_game <= 1;
@@ -1526,6 +1540,7 @@ invaderst invaderst(
 		.O_VIDEO_R(r),
 		.O_VIDEO_G(g),
 		.O_VIDEO_B(b),
+		.O_VIDEO_A(fg),
 		
 		.HBLANK(hblank),
 		.VBLANK(vblank),

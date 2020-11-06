@@ -88,6 +88,7 @@ entity mw8080 is
 		O_VIDEO_R       : out std_logic;
 		O_VIDEO_G       : out std_logic;
 		O_VIDEO_B       : out std_logic;
+		O_VIDEO_A       : out std_logic;
 		Overlay         : in std_logic;
 		OverlayTest     : in std_logic;
 		ScreenFlip      : in std_logic;
@@ -381,6 +382,7 @@ begin
 					Shift(7) <= '0';
 				end if;
 				Video <= Shift(0);
+				O_VIDEO_A <= Shift(0); -- Background or Foreground (1 = background)
 				if (Shift(0)='1') then
 				   if (Overlay = '1') then
 						if mod_vortex='1' then
