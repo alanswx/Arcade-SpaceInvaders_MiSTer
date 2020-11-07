@@ -20,7 +20,8 @@ module invaders_memory(
 	input            mod_cosmo,
 	input            mod_polaris,
 	input            mod_lupin,
-	input				  mod_indianbattle
+	input				  mod_indianbattle,
+	input				  mod_spacechaser
 );
 
 wire [7:0] color_prom_out_rom;
@@ -64,7 +65,7 @@ cpu_prog_rom2(
 	.q_b(rom2_data)
 );
 
-// Lupin, Polaris, xxx use colour ram but weirdly mapped from C000-DFFF
+// Lupin, Polaris use colour ram but weirdly mapped from C000-DFFF (so does space chaser, but it doesn't invert the output)
 wire ScatteredRam = (mod_lupin | mod_polaris);
 
 // 0 - RED, 1 - BLUE, 2 - GREEN
@@ -72,13 +73,13 @@ assign color_prom_out = (mod_cosmo | mod_indianbattle) ? {color_prom_out_rom[7:3
 
 // Cosmo can read/write Colour RAM (5C00-5FFF)
 // Scattered ram mapped from C000-DFFF
-wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~CPU_RW_n) : ScatteredRam ? (rom_addr[15:13]==3'b110 & ~CPU_RW_n):1'b0;
+wire color_ram_wr = mod_cosmo ? (rom_addr[15:10]==6'b010111 & ~CPU_RW_n) : (ScatteredRam | mod_spacechaser) ? (rom_addr[15:13]==3'b110 & ~CPU_RW_n):1'b0;
 
 wire [10:0] cosmo_addr = {1'b0,rom_addr[9:0]};
 wire [10:0] Scattered_addr = {1'd0,rom_addr[12:8],rom_addr[4:0]};
 
 wire [7:0]  color_ram_out;
-wire [10:0] color_ram_addr = ScatteredRam ? Scattered_addr : cosmo_addr;
+wire [10:0] color_ram_addr = (ScatteredRam | mod_spacechaser) ? Scattered_addr : cosmo_addr;
 
 dpram #(.addr_width_g(11),
 	.data_width_g(8))
@@ -100,7 +101,7 @@ always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
 
 	// Lupin, Polaris & others uses C000-DFFF - allow them to read back the color_ram (ScatteredRam)
 	if (rom_addr[15]==1'b1) begin
-	   if (ScatteredRam & rom_addr[14:13]==2'b10) begin
+	   if ((ScatteredRam | mod_spacechaser) & rom_addr[14:13]==2'b10) begin
 		 Rom_out = color_ram_out;
 	   end
 	end

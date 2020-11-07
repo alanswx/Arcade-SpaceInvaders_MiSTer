@@ -1459,9 +1459,10 @@ always @(*) begin
             GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,  m_fire2a,  m_right2,m_down2,m_left2,m_up2};
             GDB1 <= sw[1] | { m_coin1,m_start1,m_start2,m_fire_a,m_right,m_down,m_left,m_up};
             GDB2 <= sw[2];
-				software_flip          <= 0;      
-
+				software_flip <= 0;    
+				Background_Col <= {8'd0,8'd0,8'd255}; // Blue		
        end
+		 
        mod_steelworker:
        begin
 				WDEnabled <= 1'b0;
@@ -1589,7 +1590,8 @@ invaderst invaderst(
 			.mod_cosmo(mod==mod_cosmo),
 			.mod_polaris(mod==mod_polaris),
 			.mod_lupin(mod==mod_lupin),
-			.mod_indianbattle(mod==mod_indianbattle)
+			.mod_indianbattle(mod==mod_indianbattle),
+			.mod_spacechaser(mod==mod_spacechaser)
 	);
 
 invaders_audio invaders_audio (
