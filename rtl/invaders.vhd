@@ -90,6 +90,7 @@ entity invaderst is
 		O_VIDEO_R       : out std_logic;
 		O_VIDEO_G       : out std_logic;
 		O_VIDEO_B       : out std_logic;
+		O_VIDEO_A       : out std_logic;
 		
 		WD_Enabled      : in std_logic;
 		Overlay         : in std_logic;
@@ -156,6 +157,7 @@ architecture rtl of invaderst is
                 O_VIDEO_R       : out std_logic;
                 O_VIDEO_G       : out std_logic;
                 O_VIDEO_B       : out std_logic;
+					 O_VIDEO_A	     : out std_logic;
 		Overlay         : in std_logic;
 		OverlayTest     : in std_logic;
 		ScreenFlip      : in std_logic;
@@ -257,6 +259,7 @@ begin
 			O_VIDEO_R => O_VIDEO_R,
 			O_VIDEO_G => O_VIDEO_G,
 			O_VIDEO_B => O_VIDEO_B,
+			O_VIDEO_A => O_VIDEO_A,
 			Overlay => Overlay,
 			OverlayTest => OverlayTest,
 			ScreenFlip => ScreenFlip,

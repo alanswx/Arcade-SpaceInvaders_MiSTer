@@ -435,7 +435,8 @@ always @(posedge clk_40) begin
 	ce_pix <= div == 0;
 end
 
-wire fg = |{rr,gg,bb};
+//wire fg = |{rr,gg,bb};
+wire fg;
 
 `ifdef USE_OVERLAY
 	// mix in overlay!
@@ -539,7 +540,7 @@ localparam mod_ballbomb      = 16;
 localparam mod_clowns        = 19;			// P2 Controls / Flip
 localparam mod_cosmo         = 20;
 localparam mod_indianbattle  = 26;
-localparam mod_lupin         = 27;
+localparam mod_lupin         = 27; // Set 2 - uses colour ram
 
 localparam mod_attackforce   = 15;
 localparam mod_polaris       = 30;
@@ -570,6 +571,7 @@ localparam mod_yosakdon      = 34;
 localparam mod_spacechaser   = 35;
 localparam mod_steelworker   = 36;
 localparam mod_rollingcrash  = 37;
+localparam mod_lupin1        = 38; // Set 1 : uses colour prom rather than colour ram
 
 reg [7:0] mod = 255;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -1322,7 +1324,7 @@ always @(*) begin
           landscape<=0;
           ccw <= 1;
           color_rom_enabled<=1;
-          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b0};
+          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
           GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
           GDB2 <= sw[2];
           Trigger_ShiftCount     <= PortWr[2];
@@ -1331,8 +1333,24 @@ always @(*) begin
           Trigger_AudioDeviceP2  <= PortWr[5];
           Trigger_WatchDogReset  <= PortWr[6];
           software_flip          <= 0;      
-
         end
+		  
+		  mod_lupin1:
+		  begin 
+          landscape<=0;
+          ccw <= 1;
+          color_rom_enabled<=1;
+          GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b1,1'b1};
+          GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
+          GDB2 <= sw[2];
+          Trigger_ShiftCount     <= PortWr[2];
+          Trigger_AudioDeviceP1  <= PortWr[3];
+          Trigger_ShiftData      <= PortWr[4];
+          Trigger_AudioDeviceP2  <= PortWr[5];
+          Trigger_WatchDogReset  <= PortWr[6];
+          software_flip          <= 0;      
+		  end
+		  
         mod_m4:
         begin 
 				landscape<=1;
@@ -1367,22 +1385,35 @@ always @(*) begin
 				end
         mod_polaris:
 		  begin
-			landscape<=0;
-			ccw<=1;
-			color_rom_enabled<=1;
-			GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
-			GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
-			GDB2 <= sw[2];
+				landscape<=0;
+				ccw<=1;
+				color_rom_enabled<=1;
+				GDB0 <= sw[0] | { m_up2,m_left2,m_down2,m_right2,m_fire2a,1'b0,1'b0,1'b0};
+				GDB1 <= sw[1] | { m_up1,m_left1,m_down1,m_right1,m_fire1a,m_start1,m_start2,m_coin1};
+				GDB2 <= sw[2];
 
-			Trigger_ShiftCount     <= PortWr[1];
-			Trigger_ShiftData      <= PortWr[3];
-			Trigger_WatchDogReset  <= PortWr[5];
-			Trigger_AudioDeviceP1  <= PortWr[2];
-			Trigger_AudioDeviceP2  <= PortWr[4];
-			 //<= PortWr[6];
-         software_flip          <= 0;      
+				Trigger_ShiftCount     <= PortWr[1];
+				Trigger_ShiftData      <= PortWr[3];
+				Trigger_WatchDogReset  <= PortWr[5];
+				Trigger_AudioDeviceP1  <= PortWr[2];
+				Trigger_AudioDeviceP2  <= PortWr[4];
+				 //<= PortWr[6];
+				 software_flip          <= 0;      
 
+				// Background colour split mid screen
+				if (VCount < 2) begin
+					Background_Col     <= {8'd0,8'd0,8'd0}; 			// Black
+				end
+				else begin
+					if (HCount < 127) begin // was 128
+						Background_Col     <= {8'd0,8'd0,8'd255}; 	// Blue
+					end
+					else begin
+						Background_Col     <= {8'd0,8'd255,8'd255}; 	// Cyan
+					end;
+				end;
 		  end
+		  
         mod_desertgun:
 	     begin
           gun_game <= 1;
@@ -1445,9 +1476,10 @@ always @(*) begin
             GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,  m_fire2a,  m_right2,m_down2,m_left2,m_up2};
             GDB1 <= sw[1] | { m_coin1,m_start1,m_start2,m_fire_a,m_right,m_down,m_left,m_up};
             GDB2 <= sw[2];
-				software_flip          <= 0;      
-
+				software_flip <= 0;    
+				Background_Col <= {8'd0,8'd0,8'd255}; // Blue		
        end
+		 
        mod_steelworker:
        begin
 				WDEnabled <= 1'b0;
@@ -1526,6 +1558,7 @@ invaderst invaderst(
 		.O_VIDEO_R(r),
 		.O_VIDEO_G(g),
 		.O_VIDEO_B(b),
+		.O_VIDEO_A(fg),
 		
 		.HBLANK(hblank),
 		.VBLANK(vblank),
@@ -1574,7 +1607,8 @@ invaderst invaderst(
 			.mod_cosmo(mod==mod_cosmo),
 			.mod_polaris(mod==mod_polaris),
 			.mod_lupin(mod==mod_lupin),
-			.mod_indianbattle(mod==mod_indianbattle)
+			.mod_indianbattle(mod==mod_indianbattle),
+			.mod_spacechaser(mod==mod_spacechaser)
 	);
 
 invaders_audio invaders_audio (
