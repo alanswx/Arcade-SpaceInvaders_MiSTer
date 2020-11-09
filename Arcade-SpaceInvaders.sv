@@ -1692,13 +1692,14 @@ always @(posedge clk_40) begin
 		end
 	end
 	else begin
-		// Mix cloud background in
-		if (mod==mod_ballbomb & BBPixel==1'd1) begin
+		// Mix cloud background in (Balloon Bomber or Polaris)
+		if ((mod==mod_ballbomb & BBPixel==1'd1) || ((mod==mod_polaris & PolarisPixel==1'd1) && (VCount > 1))) begin
 			bg_b <= 255;
 			bg_g <= 255;
 			bg_r <= 255;
 		end
-		else begin
+		else 
+		begin
 			{bg_a,bg_b,bg_g,bg_r} <= 0;
 		end;
 	end
@@ -1866,5 +1867,19 @@ clouds clouds
 	.flip(DoScreenFlip),
 	.pixel(BBPixel)
 );
+
+// Cloud for Polaris
+
+reg PolarisPixel;
+
+cloud cloud
+(
+	.pixel_clk(ce_pix),
+	.v(VCount),
+	.h(HCount),
+	.flip(DoScreenFlip),
+	.pixel(PolarisPixel)
+);
+
 
 endmodule
