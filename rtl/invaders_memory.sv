@@ -95,7 +95,7 @@ video_rom(
 	.q_b(color_prom_out_rom)
 );
 	
-always @(rom_addr, rom_data, rom2_data, color_ram_out) begin
+always @(rom_addr, rom_data, rom2_data, color_ram_out, ScatteredRam, mod_spacechaser, mod_cosmo) begin
 	
 	Rom_out = 8'b00000000;
 
