@@ -19,16 +19,17 @@ end;
 architecture RTL of BALLOON_MUSIC is
 
 	-- global
-	signal AUDIO_CLK    : std_logic := '0';
+	signal AUDIO_EN     : std_logic := '0';
 	signal CLOCK_CNT    : integer := 0;
 	-- Music --
 	signal W_2CD_LDn    : std_logic := '0';
+	signal LAST_2CD_LDn : std_logic := '0';
 	signal W_2CD_Q      : std_logic_vector(7 downto 0) := (others => '0');
 	signal W_4E_Q       : std_logic_vector(2 downto 0) := (others => '0');
 	signal W_SDAT1      : std_logic_vector(7 downto 0) := (others => '0');
 	signal W_SDAT2      : std_logic_vector(7 downto 0) := (others => '0');
 	signal MUSIC_OUT    : std_logic_vector(7 downto 0) := (others => '0');
-
+	
 begin
 	--
 	-- Music runs from 31,948 hz clock
@@ -39,69 +40,81 @@ begin
 			-- 10 Mhz / 313 = 31948 Hz
 			if CLOCK_CNT=313 then
 				CLOCK_CNT <= 0;
-				AUDIO_CLK <= not AUDIO_CLK;
+				AUDIO_EN <= '1';
 			else
 				CLOCK_CNT <= CLOCK_CNT + 1;
+				AUDIO_EN <= '0';
 			end if;
 		end if;
 	end process;
 	
-	process (AUDIO_CLK)
+	process (CLK)
 	begin
-		if rising_edge(AUDIO_CLK) then  
-			if (W_2CD_LDn = '0') then
-				W_2CD_Q <= I_TONE;
-			else
-				W_2CD_Q <= W_2CD_Q + 1;
+		if rising_edge(CLK) then  
+			if (AUDIO_EN='1') then
+				if (W_2CD_LDn = '0') then
+					W_2CD_Q <= I_TONE;
+				else
+					W_2CD_Q <= W_2CD_Q + 1;
+				end if;
 			end if;
 		end if;
 	end process;
 	
-	process (AUDIO_CLK)
+	process (CLK)
 	begin
-		if rising_edge(AUDIO_CLK)  then
-			if (W_2CD_Q = x"ff") then
-				W_2CD_LDn <= '0' ;
-			else
-				W_2CD_LDn <= '1' ;
+		if rising_edge(CLK)  then
+			if (AUDIO_EN='1') then
+				if (W_2CD_Q = x"ff") then
+					W_2CD_LDn <= '0' ;
+				else
+					W_2CD_LDn <= '1' ;
+				end if;
 			end if;
 		end if;
 	end process;
 
-	process (W_2CD_LDn)
+	process (CLK)
 	begin
-		if falling_edge(W_2CD_LDn) then
-			if W_4E_Q = "100" then
-				-- Resets at 5
-				W_4E_Q <= "000";
-			else
-				W_4E_Q <= W_4E_Q + 1;
+		if rising_edge(CLK) then
+		
+			LAST_2CD_LDn <= W_2CD_LDn;
+			
+			-- Equivalent to Falling Edge W_2CD_LDn
+			if (LAST_2CD_LDn='1' and W_2CD_LDn='0') then
+				if W_4E_Q = "100" then
+					-- Resets at 5
+					W_4E_Q <= "000";
+				else
+					W_4E_Q <= W_4E_Q + 1;
+				end if;
 			end if;
 		end if;
 	end process;
 
-	process (AUDIO_CLK)
+	process (CLK)
 	begin
-		if rising_edge(AUDIO_CLK) then
-			if I_MUSIC_ON='1' then
-				MUSIC_OUT <= (W_SDAT1 + W_SDAT2);
-			else
-				MUSIC_OUT <= (others => '0');
-			end if;
+		if rising_edge(CLK) then
+			if (AUDIO_EN='1') then
+				if I_MUSIC_ON='1' then
+					MUSIC_OUT <= (W_SDAT1 + W_SDAT2);
+				else
+					MUSIC_OUT <= (others => '0');
+				end if;
 
-			if W_4E_Q(1)='1' then
-				W_SDAT1 <= x"2a";
-			else
-				W_SDAT1 <= (others => '0');
-			end if;
+				if W_4E_Q(1)='1' then
+					W_SDAT1 <= x"2a";
+				else
+					W_SDAT1 <= (others => '0');
+				end if;
 
-			if W_4E_Q(2)='1' then
-				W_SDAT2 <= x"69";
-			else
-				W_SDAT2 <= (others => '0');
+				if W_4E_Q(2)='1' then
+					W_SDAT2 <= x"69";
+				else
+					W_SDAT2 <= (others => '0');
+				end if;
 			end if;
-
-		end if;
+		end if;		
 	end process;
 
 	-- Ouput it
