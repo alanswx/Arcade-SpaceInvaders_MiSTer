@@ -38,7 +38,7 @@ begin
 	begin
 		if rising_edge(CLK) then
 			-- 10 Mhz / 313 = 31948 Hz
-			if CLOCK_CNT=313 then
+			if CLOCK_CNT=616 then
 				CLOCK_CNT <= 0;
 				AUDIO_EN <= '1';
 			else
