@@ -14,7 +14,8 @@ use ieee.numeric_std.all;
 
 entity clouds is
 port (
-	pixel_clk  	: in  std_logic;
+	clk			: in  std_logic;
+	pixel_en  	: in  std_logic;
 	v    			: in  std_logic_vector(11 downto 0); -- Vertical
 	h    			: in  std_logic_vector(11 downto 0); -- Horizontal
 	flip        : in  std_logic;
@@ -219,64 +220,65 @@ begin
 
 	-- Clouds bitmapped is drawn from vertical line 33 downwards and scrolls right to left at fixed speed 
 
-	doclouds : process(pixel_clk,h,v)
+	doclouds : process(clk,h,v)
 	  variable bx : unsigned(8 downto 0);
 	  variable by : integer;
 	  variable addr : integer;
 	begin
-		if rising_edge(pixel_clk) then
+		if rising_edge(clk) then
+			if (pixel_en='1') then
 
-			by := to_integer(unsigned(h));
+				by := to_integer(unsigned(h));
 
-			-- Increment cloud scroll when both set to 16 (random point on the screen)
-			if (by = 16 and v = "000000001000") then
-				scroll <= scroll + 1;
-			end if;
-			
-			-- Are we in cloud area, if so plot some pixels
-			if (flip = '1') then
-				-- Draw as is (which means flipped)
-				if (by > 32) and (by < 125) then
-					by := (by - 33) * 32;
-					bx := unsigned('0' & (not v(7 downto 0))) + ('0' & scroll(8 downto 1));
-					addr := by + to_integer(unsigned(bx(7 downto 3)));
-					
-					case bx(2 downto 0) is
-						when "000" => pixel <= lookup(addr)(7);
-						when "001" => pixel <= lookup(addr)(6);
-						when "010" => pixel <= lookup(addr)(5);
-						when "011" => pixel <= lookup(addr)(4);
-						when "100" => pixel <= lookup(addr)(3);
-						when "101" => pixel <= lookup(addr)(2);
-						when "110" => pixel <= lookup(addr)(1);
-						when "111" => pixel <= lookup(addr)(0);
-					end case;
-				else
-					pixel <= '0';
+				-- Increment cloud scroll when both set to 16 (random point on the screen)
+				if (by = 16 and v = "000000001000") then
+					scroll <= scroll + 1;
 				end if;
-			else
-				-- Draw flipped (which means normal)
-				by := 255 - by;
-				if (by > 32) and (by < 125) then
-					by := (by - 33) * 32;
-					bx := unsigned('0' & v(7 downto 0)) + ('0' & scroll(8 downto 1));
-					addr := by + to_integer(unsigned(bx(7 downto 3)));
-					
-					case bx(2 downto 0) is
-						when "000" => pixel <= lookup(addr)(7);
-						when "001" => pixel <= lookup(addr)(6);
-						when "010" => pixel <= lookup(addr)(5);
-						when "011" => pixel <= lookup(addr)(4);
-						when "100" => pixel <= lookup(addr)(3);
-						when "101" => pixel <= lookup(addr)(2);
-						when "110" => pixel <= lookup(addr)(1);
-						when "111" => pixel <= lookup(addr)(0);
-					end case;
+				
+				-- Are we in cloud area, if so plot some pixels
+				if (flip = '1') then
+					-- Draw as is (which means flipped)
+					if (by > 32) and (by < 125) then
+						by := (by - 33) * 32;
+						bx := unsigned('0' & (not v(7 downto 0))) + ('0' & scroll(8 downto 1));
+						addr := by + to_integer(unsigned(bx(7 downto 3)));
+						
+						case bx(2 downto 0) is
+							when "000" => pixel <= lookup(addr)(7);
+							when "001" => pixel <= lookup(addr)(6);
+							when "010" => pixel <= lookup(addr)(5);
+							when "011" => pixel <= lookup(addr)(4);
+							when "100" => pixel <= lookup(addr)(3);
+							when "101" => pixel <= lookup(addr)(2);
+							when "110" => pixel <= lookup(addr)(1);
+							when "111" => pixel <= lookup(addr)(0);
+						end case;
+					else
+						pixel <= '0';
+					end if;
 				else
-					pixel <= '0';
+					-- Draw flipped (which means normal)
+					by := 255 - by;
+					if (by > 32) and (by < 125) then
+						by := (by - 33) * 32;
+						bx := unsigned('0' & v(7 downto 0)) + ('0' & scroll(8 downto 1));
+						addr := by + to_integer(unsigned(bx(7 downto 3)));
+						
+						case bx(2 downto 0) is
+							when "000" => pixel <= lookup(addr)(7);
+							when "001" => pixel <= lookup(addr)(6);
+							when "010" => pixel <= lookup(addr)(5);
+							when "011" => pixel <= lookup(addr)(4);
+							when "100" => pixel <= lookup(addr)(3);
+							when "101" => pixel <= lookup(addr)(2);
+							when "110" => pixel <= lookup(addr)(1);
+							when "111" => pixel <= lookup(addr)(0);
+						end case;
+					else
+						pixel <= '0';
+					end if;
 				end if;
 			end if;
-
 		end if;
 	end process;
 

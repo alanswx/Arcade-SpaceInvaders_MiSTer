@@ -191,7 +191,9 @@ localparam CONF_STR = {
 	"O8,Overlay,On,Off;",
 	"O9,Overlay Test,Off,On;",
 	"OA,Background Graphic,On,Off;",
+`ifdef USE_OVERLAY
 	"OB,Debug display,Off,On;",
+`endif
 	"-;",
 	"H2OCD,Gun Control,Joy1,Joy2,Mouse,Disabled;",
 	"H3OEF,Crosshair,Small,Medium,Big,None;",
@@ -418,10 +420,7 @@ wire [15:0] joy = joy1 | joy2;
 
 wire hblank;
 wire vblank;
-//wire hs, vs;
 wire r,g,b;
-//wire no_rotate = 1'b1;//status[2] | direct_video | landscape;
-//wire no_rotate = status[2] | direct_video | landscape;
 wire no_rotate = AllowRotate ? status[2] | direct_video | landscape : 1'd1;
 
 reg Force_Red;
@@ -435,23 +434,22 @@ always @(posedge clk_40) begin
 	ce_pix <= div == 0;
 end
 
-//wire fg = |{rr,gg,bb};
 wire fg;
 
 `ifdef USE_OVERLAY
 	// mix in overlay!
+	wire og = |{C_R};
 	wire [7:0]rr = (Force_Red)? {8{r||g||b}} | {C_R,C_R} : {8{r}} | {C_R,C_R};
 	wire [7:0]gg = (Force_Red)? {C_R,C_R} : {8{g}} | {C_R,C_R};
 	wire [7:0]bb = (Force_Red)? {C_R,C_R} : {8{b}} | {C_R,C_R};
+	wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? ((fg || og) ? {rr,gg,bb} : Background_Col) : ((fg || og) && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b} | Background_Col;
 `else
+   // normal mix of foreground / background 
 	wire [7:0]rr = (Force_Red)? {8{r||g||b}} : {8{r}};
 	wire [7:0]gg = (Force_Red)? {8'd0} : {8{g}};
 	wire [7:0]bb = (Force_Red)? {8'd0} : {8{b}};
+	wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? (fg ? {rr,gg,bb} : Background_Col) : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b} | Background_Col;
 `endif
-
-// if graphics are turned off, just use the pixels. Otherwise if the background is in effect - use it
-//wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? {rr,gg,bb}  : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b};
-wire [23:0] rgbdata  = (gun_target & (~&gun_mode & gun_game)) ? {8'd255, 16'd0} : status[10]? (fg ? {rr,gg,bb} : Background_Col) : (fg && !bg_a) ? {rr,gg,bb} : {bg_r,bg_g,bg_b} | Background_Col;
 
 arcade_video #(.WIDTH(260), .DW(24)) arcade_video
 (
@@ -476,10 +474,7 @@ screen_rotate screen_rotate
 		  .rotate_ccw(ccw)
 );
 
-/*
-some weird problem with FB detecting the size correctly
-
-*/
+/* some weird problem with FB detecting the size correctly */
 reg old_reset;
 reg [3:0] screencount;
 reg vsync_c;
@@ -487,24 +482,20 @@ reg AllowRotate = 0;
 
 always @(posedge clk_sys)
 begin
-        old_reset <= reset;
-        if (old_reset == 1 && reset== 0)
-           screencount <= 0;
-    else
-           if (reset == 0) begin
-                        vsync_c <= VSync;
-                        if (vsync_c ==0 && VSync== 1)
-                                screencount <= screencount + 1;
+   old_reset <= reset;
+   if (old_reset == 1 && reset== 0)
+       screencount <= 0;
+   else
+		if (reset == 0) begin
+			vsync_c <= VSync;
+			if (vsync_c ==0 && VSync== 1)
+				  screencount <= screencount + 1;
 
-                        if (screencount == 10)
-                                AllowRotate <= 1;
-                end;
+			if (screencount == 10)
+				  AllowRotate <= 1;
+	end;
 end
-
-/*
-END hack to fix FB
-*/
-
+/* END hack to fix FB */
 
 wire [7:0] audio;
 wire [7:0] inv_audio_data;
@@ -1839,7 +1830,8 @@ ovo OVERLAY
     .i_r(4'd0),
     .i_g(4'd0),
     .i_b(4'd0),
-    .i_clk(ce_pix),
+    .i_clk(clk_40),
+	 .i_pix(ce_pix),
 	 
 	 .i_Hcount(HCount),
 	 .i_VCount(VCount),
@@ -1861,7 +1853,8 @@ reg BBPixel;
 
 clouds clouds 
 (
-	.pixel_clk(ce_pix),
+   .clk(clk_40),
+	.pixel_en(ce_pix),
 	.v(VCount),
 	.h(HCount),
 	.flip(DoScreenFlip),
@@ -1874,7 +1867,8 @@ reg PolarisPixel;
 
 cloud cloud
 (
-	.pixel_clk(ce_pix),
+   .clk(clk_40),
+	.pixel_en(ce_pix),
 	.v(VCount),
 	.h(HCount),
 	.flip(DoScreenFlip),

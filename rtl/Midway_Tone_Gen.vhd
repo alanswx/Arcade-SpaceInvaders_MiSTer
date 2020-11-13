@@ -21,7 +21,7 @@ end ToneGen;
 architecture struct of ToneGen is
 
  -- Clock dividers
- signal Tone_clk_cnt : std_logic_vector(4 downto 0); -- Main frequency = clock / 20
+ signal Tone_clk_cnt : std_logic_vector(5 downto 0); -- Main frequency = clock / 40
  signal Tone_Out_en  : std_logic := '0';
  
  signal Tone_count   : std_logic_vector(11 downto 0);
@@ -39,7 +39,7 @@ begin
 			Tone_clk_cnt <= (others=>'0');
 			Tone_Out_en  <= '0';
 		else
-			if Tone_clk_cnt = "10011" then
+			if Tone_clk_cnt = "100111" then
 				Tone_clk_cnt <= (others=>'0');
 				Tone_Out_en <= '1';
 			else

@@ -22,6 +22,7 @@ ENTITY ovo IS
 --    i_de  : IN  std_logic;
 --    i_en  : IN  std_logic;
     i_clk : IN  std_logic;
+	 i_pix : IN  std_logic;
 	 
 	 i_Hcount : IN  unsigned(8 DOWNTO 0);
 	 i_VCount : IN  unsigned(10 DOWNTO 0);
@@ -97,7 +98,7 @@ BEGIN
     VARIABLE char_v : unsigned(4 DOWNTO 0);
   BEGIN
     IF rising_edge(i_clk) THEN
-      --IF i_en='1' THEN
+      IF i_pix='1' THEN
         ----------------------------------
         -- Propagate VGA signals. 2 cycles delay
         t_r<=i_r;
@@ -176,7 +177,7 @@ BEGIN
             o_b<=rgb( 7 DOWNTO  0);
           END IF;
         END IF;
-      --END IF;
+      END IF;
     END IF;
   END PROCESS Megamix;
 END ARCHITECTURE rtl;
