@@ -499,11 +499,11 @@ end
 
 wire [7:0] audio;
 wire [7:0] inv_audio_data;
-wire [7:0] zap_audio_data;
+wire [15:0] zap_audio_data;
 wire use_samples;
 
-assign AUDIO_L = use_samples? samples_left  : (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
-assign AUDIO_R = use_samples? samples_right : (mod==mod_280zap)? {zap_audio_data,zap_audio_data}:{inv_audio_data,inv_audio_data};
+assign AUDIO_L = use_samples? samples_left  : (mod==mod_280zap)? zap_audio_data:{inv_audio_data,inv_audio_data};
+assign AUDIO_R = use_samples? samples_right : (mod==mod_280zap)? zap_audio_data:{inv_audio_data,inv_audio_data};
 assign AUDIO_S = use_samples; // signed for samples, unsigned for generated
 assign AUDIO_MIX = 2'd0;
 
@@ -1614,6 +1614,9 @@ zap_audio zap_audio (
         .S1(SoundCtrl3),
         .S2(SoundCtrl5),
         .Aud(zap_audio_data)
+`ifdef USE_OVERLAY
+	,.Hex1(Line2)
+`endif
         );
 
 // Background Image
