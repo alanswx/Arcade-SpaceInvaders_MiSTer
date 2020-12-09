@@ -1,7 +1,3 @@
-set_global_assignment -name VHDL_FILE rtl/zapsound/EngineSound.vhd
-set_global_assignment -name VHDL_FILE rtl/zapsound/screech.vhd
-set_global_assignment -name VHDL_FILE rtl/zapsound/sprint1_sound.vhd
-set_global_assignment -name VHDL_FILE rtl/zapsound/zap_audio.vhd
 set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv17_36.vhdl
 set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv18_35.vhdl
 set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv19_34.vhdl
@@ -27,5 +23,6 @@ set_global_assignment -name VHDL_FILE rtl/OVO.vhd
 set_global_assignment -name VHDL_FILE rtl/bb_clouds.vhd
 set_global_assignment -name VHDL_FILE rtl/bb_audio.vhd
 set_global_assignment -name VHDL_FILE rtl/polaris_cloud.vhd
+set_global_assignment -name VHDL_FILE rtl/zap_audio.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/virtualgun.sv
 set_global_assignment -name SYSTEMVERILOG_FILE Arcade-SpaceInvaders.sv
