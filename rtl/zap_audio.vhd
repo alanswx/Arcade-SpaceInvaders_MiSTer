@@ -1,27 +1,3 @@
-
--- Version : 0300
--- The latest version of this file can be found at:
---      http://www.fpgaarcade.com
--- minor tidy up by MikeJ
--------------------------------------------------------------------------------
--- Company:
--- Engineer:    PaulWalsh
---
--- Create Date:    08:45:29 11/04/05
--- Design Name:
--- Module Name:    Invaders Audio
--- Project Name:   Space Invaders
--- Target Device:
--- Tool versions:
--- Description:
---
--- Dependencies:
---
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
---
---------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.Numeric_Std.ALL;
@@ -59,32 +35,37 @@ end;
  --* bit 7= NC
 
  
---C18 and C19 capacitors, counters 15 bit from 0 (empty) to 28735 (full)
+-- This is a simplified integer mathmatic model that produces similar results to the real thing
 --
---Clocked from 10Mhz (various counters used to split it all up)
+-- C18 and C19 are capacitors with counters 15 bit range from 0 (empty) to 23250 (full)
 --
---C18 changes up/down to get to AcceleratorPedal (4 bits) * 1915
---    low gear add / subtract 1 every 174 cycles
---    high gear add / subtract 1 every 765 cycles
+-- Clocked from 10Mhz 
 --
---C19 changes up/down to get to C18
---    low gear add / subtract 1 every 7 cycles
---    high gear add / subtract 1 every 417 cycles
+-- C18 changes up/down to get to Accelerator setting (4 bits) * 1550
+--       charge add 1 every 945 (2.2 seconds empty to full)
+--			discharge subtract 1 every 215 cycles (0.5 seconds from full to empty)
 --
+--C19 - we use this to drive output in high gear
 --
+--    low gear 
+--			subtract 1 every 8 cycles (fast discharge)
+--
+--    high gear - timings from you tube!
+--       add 1 every 1462 cycles (3.4 seconds) 
+--       subtract 1 every 731 cycles (1.7 seconds)
+--			
 --oscillators all count from 0 to 127 and back down again, with a count derived from C19
 --
---OSC1 count = C19 / 64
---OSC2 count = C19 / 256
---OSC3 count = (OSC2 count) * 0.8
---                 or
---             (OSC2 count / 2) + (OSC2 count / 4) + (OSC2 count) / 16 (gives * 0.8125 but all bit manipulation)
+-- Low Gear
+--OSC1 count = Cap / 64
+--OSC2 count = Cap / 256
+--OSC3 count = (OSC2 count / 2) + (OSC2 count / 4) + (OSC2 count) / 16 (gives * 0.8125 but all bit manipulation)
 --
---OSC3 uses logarithm lookup table to scale OSC1 + OSC2 (bit shifted to give 15 bits)
+-- High Gear - as above, but using C19 as source
 --
---if enginenoise is turned off, C18 = C19 = 0 (and OSC 1,2 & 3 go to 0 as well)
+-- OSC3 implemented by base 2 logarithm mask lookup OSC1 + OSC2 (bit shifted to give 15 bits)
 --
---if gear is changed, then C19 = C18 / 2 (need to test this bit!) 
+--if enginenoise is turned off, C18 = C19 = 0
 
 architecture Behavioral of zap_audio is
 
@@ -115,12 +96,15 @@ architecture Behavioral of zap_audio is
 	signal Gear       : std_logic_vector(1 downto 0) := (others => '0');
 
 	-- Capacitors	
-	signal C18			: unsigned(14 downto 0) := (others => '0'); -- max 28735
-	signal C19			: unsigned(14 downto 0) := (others => '0'); -- max 28735
-	signal C18Count	: unsigned(9 downto 0) := (others => '0'); -- max 765
-	signal C19Count	: unsigned(8 downto 0) := (others => '0'); -- max 417
-	signal C18Target	: unsigned(9 downto 0) := (others => '0'); -- max 765
-	signal C19Target	: unsigned(8 downto 0) := (others => '0'); -- max 417
+	signal C18				: unsigned(14 downto 0) := (others => '0'); -- max 28735
+	signal C19				: unsigned(14 downto 0) := (others => '0'); -- max 28735
+	signal C18Count		: unsigned(9 downto 0) := (others => '0'); -- max 765
+	-- charge / discharge rates
+	signal C18TargetUp	: unsigned(9 downto 0) := to_unsigned(765,10);
+	signal C18TargetDn	: unsigned(9 downto 0) := to_unsigned(174,10);
+
+	signal C19Count		: unsigned(10 downto 0) := (others => '0'); -- max 417
+	--signal C19Target		: unsigned(8 downto 0) := (others => '0'); -- max 417
 
 	-- Oscillators
 	signal OSC1Out		: unsigned(6 downto 0) := (others => '0');
@@ -202,6 +186,7 @@ begin
 -- Mikes version
 
 Engine : process(clk)
+variable OSCIn : unsigned(14 downto 0);
 variable X : unsigned(10 downto 0);
 variable Rev : std_logic_vector(7 downto 0);
 variable Rev16 : std_logic_vector(15 downto 0);
@@ -211,20 +196,26 @@ begin
 		--Target <= to_unsigned(1915,11) * unsigned(S1(3 downto 0)); -- goes too high frequency around 85 mph on clock, max 105
 		Target <= to_unsigned(1550,11) * unsigned(S1(3 downto 0)); -- so rescale down to where it sounds OK ?
 
+		-- Feed for oscillators and target for C19
+		if (S1(5) = '1') then
+			OSCIn := C18;
+		else
+			OSCIn := C19;
+		end if;
+
 		-- Step amounts
 		if (Gear(1) /= S1(5) or Gear(0) /= S1(4)) then
 			Gear <= S1(5 downto 4);
 			
 			if (S1(5) = '1') then
 				-- Low Gear
-				C18Target <= to_unsigned(174,10);
-				C19Target <= to_unsigned(7,9);
+				C18TargetUp <= to_unsigned(945,10); -- 2.2 seconds to charge (765)
+				C18TargetDn <= to_unsigned(215,10); -- 0.5 seconds to discharge (174)
 			else
 				if S1(4)='1' then
 					-- High Gear
-					C18Target <= to_unsigned(765,10);
-					C19Target <= to_unsigned(417,9);
-					C19  <= '0' & C18(14 downto 1); -- Half of C18
+					C18TargetUp <= to_unsigned(945,10);
+					C18TargetDn <= to_unsigned(215,10);
 				end if;
 			end if;
 			
@@ -248,39 +239,47 @@ begin
 			
 		else
 
-			-- C18 Capacitor (tries to reach target)
-			if C18Count = C18Target then
+			-- C18 Capacitor (controlled by Target)
+			if Target > C18 and C18Count = C18TargetUp then
 				C18Count <= (others => '0');
-				if Target > C18 then
-					C18 <= C18 + 1;
-				end if;
-				if Target < C18 then
-					C18 <= C18 - 1;
-				end if;
+				C18 <= C18 + 1;
 			else
-				C18Count <= C18Count + 1;
+				if Target < C18  and C18Count = C18TargetDn then
+					C18Count <= (others => '0');
+					C18 <= C18 - 1;
+				else
+					C18Count <= C18Count + 1;
+				end if;
 			end if;
 
-			-- C19 Capacitor
-			if C19Count = C19Target then
-				C19Count <= (others => '0');
-				if C18 > C19 then
-					C19 <= C19 + 1;
-				end if;
-				if C18 < C19 then
+			if (S1(5) = '1') then
+				-- Low Gear, discharges C19
+				if C19Count = to_unsigned(8,10) and C19 /= 0 then
+					C19Count <= (others => '0');
 					C19 <= C19 - 1;
 				end if;
 			else
-				C19Count <= C19Count + 1;
+				-- High Gear, C19 wants to equal output over 3.1 seconds
+				-- really done by feedback, but simpler this way
+				if Target > C19 and C19Count = 1462 then
+					C19Count <= (others => '0');
+					C19 <= C19 + 1;
+				else
+					if Target < C19 and C19Count = 731 then
+						C19 <= C19 - 1;
+					else
+						C19Count <= C19Count + 1;
+					end if;
+				end if;
 			end if;
 		
-			--C19 <= C18; -- for the moment!
 		end if;
+
 		
 		-- Oscillators
 		if OSC1Count = OSC1Target then
 			OSC1Count <= (others => '0');
-			OSC1Target <= (to_unsigned(7631,13) - C19(14 downto 2));
+			OSC1Target <= (to_unsigned(7631,13) - OSCIn(14 downto 2));
 			--OSC1Target <= C19(14 downto 6); -- Next target
 			if OSC1Up='1' then
 				-- Counting up
@@ -303,7 +302,7 @@ begin
 
 		if OSC2Count = OSC2Target then
 			OSC2Count <= (others => '0');
-			OSC2Target <= (to_unsigned(1907,11) - C19(14 downto 4));
+			OSC2Target <= (to_unsigned(1907,11) - OSCIn(14 downto 4));
 			--OSC2Target <= C19(14 downto 8); -- Next target
 			if OSC2Up='1' then
 				-- Counting up
@@ -326,7 +325,7 @@ begin
 
 		if OSC3Count = OSC3Target then
 			OSC3Count <= (others => '0');
-			X := (to_unsigned(953,11) - C19(14 downto 5)); 		-- OSC2/2
+			X := (to_unsigned(953,11) - OSCIn(14 downto 5)); 		-- OSC2/2
 			OSC3Target <= X + X(9 downto 1) + X(9 downto 4); -- (OSC2 count / 2) + (OSC2 count / 4) + (OSC2 count) / 16
 			--OSC3Target <= '0' & C19(14 downto 9) + C19(14 downto 10) + C19(14 downto 12); 
 			IF S2(1)='1' then
