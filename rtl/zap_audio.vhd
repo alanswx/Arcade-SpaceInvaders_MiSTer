@@ -96,15 +96,14 @@ architecture Behavioral of zap_audio is
 	signal Gear       : std_logic_vector(1 downto 0) := (others => '0');
 
 	-- Capacitors	
-	signal C18				: unsigned(14 downto 0) := (others => '0'); -- max 28735
-	signal C19				: unsigned(14 downto 0) := (others => '0'); -- max 28735
-	signal C18Count		: unsigned(9 downto 0) := (others => '0'); -- max 765
+	signal C18				: unsigned(14 downto 0) := (others => '0');
+	signal C19				: unsigned(14 downto 0) := (others => '0');
+	signal C18Count		: unsigned(9 downto 0) := (others => '0');
 	-- charge / discharge rates
 	signal C18TargetUp	: unsigned(9 downto 0) := to_unsigned(765,10);
 	signal C18TargetDn	: unsigned(9 downto 0) := to_unsigned(174,10);
 
-	signal C19Count		: unsigned(10 downto 0) := (others => '0'); -- max 417
-	--signal C19Target		: unsigned(8 downto 0) := (others => '0'); -- max 417
+	signal C19Count		: unsigned(11 downto 0) := (others => '0');
 
 	-- Oscillators
 	signal OSC1Out		: unsigned(6 downto 0) := (others => '0');
@@ -196,11 +195,11 @@ begin
 		--Target <= to_unsigned(1915,11) * unsigned(S1(3 downto 0)); -- goes too high frequency around 85 mph on clock, max 105
 		Target <= to_unsigned(1550,11) * unsigned(S1(3 downto 0)); -- so rescale down to where it sounds OK ?
 
-		-- Feed for oscillators and target for C19
+		-- Feed for oscillators
 		if (S1(5) = '1') then
-			OSCIn := C18;
+			OSCIn := C18 + 1000;
 		else
-			OSCIn := C19;
+			OSCIn := C19 + 1500;
 		end if;
 
 		-- Step amounts
@@ -259,9 +258,9 @@ begin
 					C19 <= C19 - 1;
 				end if;
 			else
-				-- High Gear, C19 wants to equal output over 3.1 seconds
+				-- High Gear, C19 wants to equal output over 5 seconds (ish)
 				-- really done by feedback, but simpler this way
-				if Target > C19 and C19Count = 1462 then
+				if Target > C19 and C19Count = 2100 then -- 1462 then
 					C19Count <= (others => '0');
 					C19 <= C19 + 1;
 				else
