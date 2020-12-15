@@ -9,8 +9,7 @@ entity zap_audio is
 	  Clk : in  std_logic;
 	  S1  : in  std_logic_vector(5 downto 0);
 	  S2  : in  std_logic_vector(5 downto 0);
-	  Aud : out std_logic_vector(15 downto 0);
-  	  HEX1 : out std_logic_vector(159 downto 0)
+	  Aud : out std_logic_vector(15 downto 0)
 	  );
 end;
 
@@ -35,7 +34,7 @@ end;
  --* bit 7= NC
 
  
--- This is a simplified integer mathmatic model that produces similar results to the real thing
+-- This is a simplified integer mathmatic model that produces results in line with the real thing
 --
 -- C18 and C19 are capacitors with counters 15 bit range from 0 (empty) to 23250 (full)
 --
@@ -45,13 +44,13 @@ end;
 --       charge add 1 every 945 (2.2 seconds empty to full)
 --			discharge subtract 1 every 215 cycles (0.5 seconds from full to empty)
 --
---C19 - we use this to drive output in high gear
+--C19 - we use this to drive output in high gear 
 --
 --    low gear 
 --			subtract 1 every 8 cycles (fast discharge)
 --
---    high gear - timings from you tube!
---       add 1 every 1462 cycles (3.4 seconds) 
+--    high gear - timings from you tube
+--       add 1 every 1462 cycles (5 seconds) 
 --       subtract 1 every 731 cycles (1.7 seconds)
 --			
 --oscillators all count from 0 to 127 and back down again, with a count derived from C19
@@ -69,10 +68,8 @@ end;
 
 architecture Behavioral of zap_audio is
 
-	--type MASK is array(0 to  255) of unsigned(15 downto 0);
 	type MASK is array(NATURAL range <>) of std_logic_vector(15 downto 0);
 	
-	-- logarithmic masks (probabl only need 128)
 	constant lookup : MASK := (
 		X"0001",X"0003",X"0007",X"000F",X"001F",X"003F",X"007F",X"007F",X"007F",X"00FF",X"00FF",X"00FF",X"00FF",X"01FF",X"01FF",X"01FF",
 		X"01FF",X"01FF",X"01FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"03FF",X"07FF",X"07FF",
@@ -93,16 +90,11 @@ architecture Behavioral of zap_audio is
 
 	-- Signals
 	signal Target		: unsigned(14 downto 0) := (others => '0');
-	signal Gear       : std_logic_vector(1 downto 0) := (others => '0');
 
 	-- Capacitors	
 	signal C18				: unsigned(14 downto 0) := (others => '0');
 	signal C19				: unsigned(14 downto 0) := (others => '0');
 	signal C18Count		: unsigned(9 downto 0) := (others => '0');
-	-- charge / discharge rates
-	signal C18TargetUp	: unsigned(9 downto 0) := to_unsigned(765,10);
-	signal C18TargetDn	: unsigned(9 downto 0) := to_unsigned(174,10);
-
 	signal C19Count		: unsigned(11 downto 0) := (others => '0');
 
 	-- Oscillators
@@ -111,78 +103,17 @@ architecture Behavioral of zap_audio is
 	signal OSC3Out		: unsigned(6 downto 0) := (others => '0');
 	signal OSC1Count  : unsigned(12 downto 0) := (others => '0');
 	signal OSC2Count  : unsigned(10 downto 0) := (others => '0');
-	signal OSC3Count  : unsigned(10 downto 0) := (others => '0'); -- max 90
+	signal OSC3Count  : unsigned(10 downto 0) := (others => '0'); 
 	signal OSC1Up     : std_logic := '1';
 	signal OSC2Up     : std_logic := '1';
 	signal OSC3Up     : std_logic := '1';
-	signal OSC1Target : unsigned(12 downto 0) := (others => '0'); -- range 449 - 7183
-	signal OSC2Target : unsigned(10 downto 0) := (others => '0'); -- range 111 - 1907
-	signal OSC3Target : unsigned(10 downto 0) := (others => '0'); -- max 90
-
-
-  signal ClkDiv5      : std_logic:='0';
-  signal ClkDiv       : unsigned(10 downto 0) := (others => '0');
-  signal ClkDiv2      : std_logic_vector(7 downto 0) := (others => '0');
-  signal Clk7680_ena  : std_logic;
-  signal Clk480_ena   : std_logic;
-  signal Clk240_ena   : std_logic;
-  signal Clk60_ena    : std_logic;
-
-  signal s1_t1        : std_logic_vector(5 downto 0);
-  signal s2_t1        : std_logic_vector(5 downto 0);
-  signal tempsum      : std_logic_vector(7 downto 0);
-
-  signal vco_cnt      : std_logic_vector(3 downto 0);
-
-  signal TriDir1      : std_logic;
-  signal Fnum         : std_logic_vector(3 downto 0);
-  signal comp         : std_logic;
-
-  signal SS           : std_logic;
-
-  signal Excnt        : std_logic_vector(9 downto 0);
-  signal ExShift      : std_logic_vector(15 downto 0);
-  signal Ex           : std_logic_vector(2 downto 0);
-  signal Explo        : std_logic;
-
-
-
-  signal TrigSH       : std_logic;
-  signal SHCnt        : std_logic_vector(8 downto 0);
-  signal SH           : std_logic_vector(7 downto 0);
-  signal SauHit       : std_logic_vector(8 downto 0);
-  signal SHitTri      : std_logic_vector(5 downto 0);
-
-  signal TrigIH       : std_logic;
-  signal IHDir        : std_logic;
-  signal IHDir1       : std_logic;
-  signal IHCnt        : std_logic_vector(8 downto 0);
-  signal IH           : std_logic_vector(7 downto 0);
-  signal InHit        : std_logic_vector(8 downto 0);
-  signal IHitTri      : std_logic_vector(5 downto 0);
-
-
-  signal TrigMis      : std_logic;
-  signal MisShift     : std_logic_vector(15 downto 0);
-  signal MisCnt       : std_logic_vector(8 downto 0);
-  signal miscnt1      : unsigned(7 downto 0);
-  signal Mis          : std_logic_vector(2 downto 0);
-  signal Missile      : std_logic;
-
-  signal EnBG         : std_logic;
-  signal BGFnum       : std_logic_vector(7 downto 0);
-  signal BGCnum       : std_logic_vector(7 downto 0);
-  signal bg_cnt       : unsigned(7 downto 0);
-  signal BG           : std_logic;
-
-  signal TrigEx       : std_logic;
-  signal TrigEngine    : std_logic;
-  signal TrigScreech   : std_logic;
-  signal TrigAfterBlow : std_logic;
+	signal OSC1Target : unsigned(12 downto 0) := (others => '0'); 
+	signal OSC2Target : unsigned(10 downto 0) := (others => '0'); 
+	signal OSC3Target : unsigned(10 downto 0) := (others => '0'); 
+	
+	signal Engine_A   : std_logic_vector(15 downto 0);
 
 begin
-
--- Mikes version
 
 Engine : process(clk)
 variable OSCIn : unsigned(14 downto 0);
@@ -192,8 +123,7 @@ variable Rev16 : std_logic_vector(15 downto 0);
 begin
   if(rising_edge(Clk)) then
 		-- Where we want C18 to get to
-		--Target <= to_unsigned(1915,11) * unsigned(S1(3 downto 0)); -- goes too high frequency around 85 mph on clock, max 105
-		Target <= to_unsigned(1550,11) * unsigned(S1(3 downto 0)); -- so rescale down to where it sounds OK ?
+		Target <= to_unsigned(1550,11) * unsigned(S1(3 downto 0)); 
 
 		-- Feed for oscillators
 		if (S1(5) = '1') then
@@ -202,24 +132,6 @@ begin
 			OSCIn := C19 + 1500;
 		end if;
 
-		-- Step amounts
-		if (Gear(1) /= S1(5) or Gear(0) /= S1(4)) then
-			Gear <= S1(5 downto 4);
-			
-			if (S1(5) = '1') then
-				-- Low Gear
-				C18TargetUp <= to_unsigned(945,10); -- 2.2 seconds to charge (765)
-				C18TargetDn <= to_unsigned(215,10); -- 0.5 seconds to discharge (174)
-			else
-				if S1(4)='1' then
-					-- High Gear
-					C18TargetUp <= to_unsigned(945,10);
-					C18TargetDn <= to_unsigned(215,10);
-				end if;
-			end if;
-			
-		end if;
-		
 		if S2(1)='1' then -- Engine noise off
 		
 			C18Count <= (others => '0');
@@ -234,16 +146,16 @@ begin
 			OSC3Count <= (others => '0');
 			OSC3Target <= (others => '0'); 
 			
-			Aud <= (others => '0');
+			Engine_A <= (others => '0');
 			
 		else
 
 			-- C18 Capacitor (controlled by Target)
-			if Target > C18 and C18Count = C18TargetUp then
+			if Target > C18 and C18Count = 945 then
 				C18Count <= (others => '0');
 				C18 <= C18 + 1;
 			else
-				if Target < C18  and C18Count = C18TargetDn then
+				if Target < C18  and C18Count = 215 then
 					C18Count <= (others => '0');
 					C18 <= C18 - 1;
 				else
@@ -260,7 +172,7 @@ begin
 			else
 				-- High Gear, C19 wants to equal output over 5 seconds (ish)
 				-- really done by feedback, but simpler this way
-				if Target > C19 and C19Count = 2100 then -- 1462 then
+				if Target > C19 and C19Count = 2100 then
 					C19Count <= (others => '0');
 					C19 <= C19 + 1;
 				else
@@ -273,13 +185,11 @@ begin
 			end if;
 		
 		end if;
-
 		
 		-- Oscillators
 		if OSC1Count = OSC1Target then
 			OSC1Count <= (others => '0');
 			OSC1Target <= (to_unsigned(7631,13) - OSCIn(14 downto 2));
-			--OSC1Target <= C19(14 downto 6); -- Next target
 			if OSC1Up='1' then
 				-- Counting up
 				if OSC1Out = 127 then
@@ -302,7 +212,6 @@ begin
 		if OSC2Count = OSC2Target then
 			OSC2Count <= (others => '0');
 			OSC2Target <= (to_unsigned(1907,11) - OSCIn(14 downto 4));
-			--OSC2Target <= C19(14 downto 8); -- Next target
 			if OSC2Up='1' then
 				-- Counting up
 				if OSC2Out = 127 then
@@ -324,11 +233,9 @@ begin
 
 		if OSC3Count = OSC3Target then
 			OSC3Count <= (others => '0');
-			X := (to_unsigned(953,11) - OSCIn(14 downto 5)); 		-- OSC2/2
+			X := (to_unsigned(953,11) - OSCIn(14 downto 5)); -- OSC2/2
 			OSC3Target <= X + X(9 downto 1) + X(9 downto 4); -- (OSC2 count / 2) + (OSC2 count / 4) + (OSC2 count) / 16
-			--OSC3Target <= '0' & C19(14 downto 9) + C19(14 downto 10) + C19(14 downto 12); 
 			IF S2(1)='1' then
-			--if OSC3Target=1488 then
 				OSC3Out <= (others => '0');
 			else
 				if OSC3Up='1' then
@@ -356,103 +263,16 @@ begin
 		Rev16(15) := '0';																				-- extend to 16 bits 
 		Rev16(14 downto 7) := Rev(7 downto 0);
 		Rev16(6 downto 0) := Rev(7 downto 1); 									
-		Aud <= Rev16 and lookup(to_integer(unsigned(OSC3Out(6 downto 0) & '0')));	-- Mask volume according to OSC3
+		Engine_A <= Rev16 and lookup(to_integer(unsigned(OSC3Out(6 downto 0) & '0')));	-- Mask volume according to OSC3
 		
-									-- Debug info to overlay
-		HEX1(4 downto 0) <= "10000"; -- Space
-		HEX1(8 downto 5) <= "0000";
-		HEX1(12 downto 10) <= std_logic_vector(OSC3Target(10 downto 8));
-		HEX1(18 downto 15) <= std_logic_vector(OSC3Target(7 downto 4));
-		HEX1(23 downto 20) <= std_logic_vector(OSC3Target(3 downto 0));
-		HEX1(29 downto 25) <= "10000"; -- Space
-		HEX1(32 downto 30) <= std_logic_vector(C19(14 downto 12));
-		HEX1(38 downto 35) <= std_logic_vector(C19(11 downto 8));
-		HEX1(43 downto 40) <= std_logic_vector(C19(7 downto 4));
-		HEX1(48 downto 45) <= std_logic_vector(C19(3 downto 0));
-		HEX1(54 downto 50) <= "10000"; -- Space
 	end if;
 end process;
 
-
-
-
-
-
-
-
-
-
-
--- Original code (may keep some of it)
-
-
-  
---***********************Explosion*****************************
-
--- Implement a Pseudo Random Noise Generator
---	p_explosion_pseudo : process
---	begin
---	  wait until rising_edge(Clk);
---	  if (Clk480_ena = '1') then
---		if (ExShift = x"0000") then
---		  ExShift <= "0000000010101001";
---		else
---		  ExShift(0) <= Exshift(14) xor ExShift(15);
---		  ExShift(15 downto 1)  <= ExShift (14 downto 0);
---		end if;
---	  end if;
---	end process;
---	Explo <= ExShift(0);
---
---	p_explosion_adsr : process
---	begin
---	  wait until rising_edge(Clk);
---	  if (Clk480_ena = '1') then
---		if (TrigEx = '1') then
---		  ExCnt <= "1000000000";
---		  Ex <= "100";
---		elsif (ExCnt(9) = '1') then
---		  ExCnt <= ExCnt + "1";
---		  if ExCnt(8 downto 0) = '0' & x"64" then -- 100
---			Ex <= "010";
---		  elsif ExCnt(8 downto 0) = '0' & x"c8" then -- 200
---			Ex <= "001";
---		  elsif ExCnt(8 downto 0) = '1' & x"2c" then -- 300
---			Ex <= "000";
---		  end if;
---		end if;
---	  end if;
---	end process;
---
----- Implement the trigger for The Explosion Sound
---	p_explosion_trig : process
---	begin
---	  wait until rising_edge(Clk);
---	  if (S1(0) = '1') and (s1_t1(0) = '0') then -- rising_edge
---		TrigEx <= '1';
---	  elsif (Clk480_ena = '1') then
---		TrigEx <= '0';
---	  end if;
---	end process;
---
---	p_screech_trig : process
---	begin
---	  wait until rising_edge(Clk);
---	  if (S1(2) = '1') and (s1_t1(2) = '0') then -- rising_edge
---		TrigScreech <= '1';
---	  elsif (Clk480_ena = '1') then
---		TrigScreech <= '0';
---	  end if;
---	end process;
---	
---	p_afterblow_trig : process
---	begin
---	  wait until rising_edge(Clk);
---	  if (S1(3) = '1') and (s1_t1(3) = '0') then -- rising_edge
---		TrigAfterBlow <= '1';
---	  elsif (Clk480_ena = '1') then
---		TrigAfterBlow <= '0';
---	  end if;
---	end process;
+MixSound : process(clk)
+begin
+   if(rising_edge(Clk)) then
+		Aud <= Engine_A;
+	end if;
+end process;
 
 end Behavioral;
