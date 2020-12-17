@@ -502,8 +502,10 @@ wire [7:0] inv_audio_data;
 wire [15:0] zap_audio_data;
 wire use_samples;
 
-assign AUDIO_L = use_samples? samples_left  : (mod==mod_280zap)? zap_audio_data:{inv_audio_data,inv_audio_data};
-assign AUDIO_R = use_samples? samples_right : (mod==mod_280zap)? zap_audio_data:{inv_audio_data,inv_audio_data};
+//assign AUDIO_L = use_samples? samples_left  : (mod==mod_280zap)? zap_audio_data:{inv_audio_data,inv_audio_data};
+//assign AUDIO_R = use_samples? samples_right : (mod==mod_280zap)? zap_audio_data:{inv_audio_data,inv_audio_data};
+assign AUDIO_L = use_samples? samples_left  : {inv_audio_data,inv_audio_data};
+assign AUDIO_R = use_samples? samples_right : {inv_audio_data,inv_audio_data};
 assign AUDIO_S = use_samples; // signed for samples, unsigned for generated
 assign AUDIO_MIX = 2'd0;
 
@@ -1609,14 +1611,12 @@ invaders_audio invaders_audio (
         .Aud(inv_audio_data)
         );
 
+// 280z engine noise
 zap_audio zap_audio (
         .Clk(clk_sys),
         .S1(SoundCtrl3),
         .S2(SoundCtrl5),
         .Aud(zap_audio_data)
-`ifdef USE_OVERLAY
-	,.Hex1(Line2)
-`endif
         );
 
 // Background Image
@@ -1788,7 +1788,7 @@ samples samples
 	.Hex1(Line1),
 `endif
 	
-	.audio_in(mod == mod_ballbomb ? BB_Tone_Out : Tone_Out),
+	.audio_in(mod == mod_ballbomb ? BB_Tone_Out : (mod == mod_280zap)? zap_audio_data : Tone_Out),
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );
