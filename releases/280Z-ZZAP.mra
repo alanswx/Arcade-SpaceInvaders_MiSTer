@@ -16,7 +16,8 @@
 		<dip bits="20,21"   name="Extended Time At" ids="2.5,2.0,None,None"/>
 		<dip bits="22,23"   name="Language" ids="English,German,French,Spanish"/>
 	</switches>
-	<buttons names="Gear,Acc,-,-,Start 1P,Start 2P,Coin" default="A,B,Start,Select,R"/>
+	<buttons names="Gear,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+
 	<rom index="0" zip="280zzzap.zip" md5="none">
 		<part crc="1fa86e1c" name="zzzaph"/>
 		<part crc="9639bc6b" name="zzzapg"/>
