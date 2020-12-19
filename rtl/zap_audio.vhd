@@ -110,8 +110,6 @@ architecture Behavioral of zap_audio is
 	signal OSC1Target : unsigned(12 downto 0) := (others => '0'); 
 	signal OSC2Target : unsigned(10 downto 0) := (others => '0'); 
 	signal OSC3Target : unsigned(10 downto 0) := (others => '0'); 
-	
-	signal Engine_A   : std_logic_vector(15 downto 0);
 
 begin
 
@@ -146,7 +144,7 @@ begin
 			OSC3Count <= (others => '0');
 			OSC3Target <= (others => '0'); 
 			
-			Engine_A <= (others => '0');
+			Aud <= (others => '0');
 			
 		else
 
@@ -263,15 +261,8 @@ begin
 		Rev16(15) := '0';																				-- extend to 16 bits 
 		Rev16(14 downto 7) := Rev(7 downto 0);
 		Rev16(6 downto 0) := Rev(7 downto 1); 									
-		Engine_A <= Rev16 and lookup(to_integer(unsigned(OSC3Out(6 downto 0) & '0')));	-- Mask volume according to OSC3
+		Aud <= Rev16 and lookup(to_integer(unsigned(OSC3Out(6 downto 0) & '0')));	-- Mask volume according to OSC3
 		
-	end if;
-end process;
-
-MixSound : process(clk)
-begin
-   if(rising_edge(Clk)) then
-		Aud <= Engine_A;
 	end if;
 end process;
 
