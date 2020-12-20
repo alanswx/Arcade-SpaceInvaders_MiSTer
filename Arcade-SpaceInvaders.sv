@@ -570,10 +570,10 @@ reg [7:0] mod = 255;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
 
  
-wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
+//wire [9:0] center_joystick_y   =  8'd127 + joya[15:8];
 //wire [9:0] positive_joystick_y   =  joya[15] ? 8'd128+ $signed(joya[15:8]) : 10'b0;
 wire [7:0] positive_joystick_y   =  joya[15] ? ~joya[15:8] : 8'd0;
-wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 8'd0;
+//wire [7:0] positive_joystick_y_2   =  joya2[15] ? ~joya2[15:8] : 8'd0;
 wire [3:0] zap_throttle = positive_joystick_y[6:3];
 
 /* controls for blue shark */
@@ -785,7 +785,7 @@ wire ShiftReverse;		// Uses shifter that does both directions
 wire Audio_Output;		// Audio output control
 wire ScreenFlip;			// Flip the screen 180 degrees
 wire Overlay4;          // Overlay aligned to 4 pixels (otherwise 8)
-reg  software_flip = 0; // Flip the screen when software says to 
+reg  software_flip;     // Flip the screen when software says to 
 
 // Trigger addresses - set addresses where these registers are written to
 wire Trigger_ShiftCount;
@@ -810,7 +810,7 @@ wire [6:0] Tone_High; // Also used for Balloon Bomber
 always @(*) begin
 
 			// Defaults - games in case statement change these as needed
-		
+        software_flip      <= 0;      
         gun_game  			<= 0;
         landscape 			<= 1;
         ccw						<= 0;
@@ -820,6 +820,7 @@ always @(*) begin
         GDB1 					<= 8'hFF;
         GDB2 					<= 8'hFF;
         GDB3 					<= S;
+		  GDB6               <= 8'hFF;
 		  Audio_Output 		<= 1;  	 // Default = ON : won't do anything if no sample header loaded. 
 												 // some games control audio output via an output bit somewhere!
 		  Force_Red          <= 0;
@@ -1487,6 +1488,17 @@ always @(*) begin
 				software_flip          <= 0;      
 
 				end
+			default:
+				begin
+				 landscape	<=0;
+				 ccw			<=1;
+
+				 GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
+				 GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
+				 GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+				end
+			
+				
       endcase
 end
 
@@ -1788,7 +1800,7 @@ samples samples
 	.Hex1(Line1),
 `endif
 	
-	.audio_in(mod == mod_ballbomb ? BB_Tone_Out : (mod == mod_280zap)? zap_audio_data : Tone_Out),
+	.audio_in(mod == mod_ballbomb ? BB_Tone_Out : (mod == mod_280zap || mod == mod_lagunaracer)? zap_audio_data : Tone_Out),
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );

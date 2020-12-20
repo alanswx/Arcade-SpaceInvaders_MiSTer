@@ -128,7 +128,7 @@ always @(rom_addr, rom_data, rom2_data, color_ram_out, ScatteredRam, mod_spacech
 end
 
 // For Vortex - Read next screen byte (picked up in real hardware in latch to load shifter)
-wire [15:0] VortexAddr = Ram_Addr + 1;
+wire [15:0] VortexAddr = Ram_Addr + 1'b1;
 wire [7:0]  VortexColour;
 
 assign Vortex_bit = VortexColour[0];
