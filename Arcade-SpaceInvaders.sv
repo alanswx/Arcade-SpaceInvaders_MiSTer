@@ -651,6 +651,11 @@ wire [2:0] dogpatch_y;
 wire [2:0] dogpatch_y_2;
 wire [2:0] gunfight_y;
 wire [2:0] gunfight_y_2;
+
+wire [2:0] boothill_y;
+wire [2:0] boothill_y_2;
+
+
 reg [5:0] dogpatch_timer= 0;
 always @(posedge clk_sys) 
 begin
@@ -685,7 +690,7 @@ begin
 	begin
           dogpatch_timer <= dogpatch_timer +1;
 	end
-        case (dogpatch_y_count) 
+    case (dogpatch_y_count) 
 		3'b000: dogpatch_y <= 3'h7;
 		3'b001: dogpatch_y <= 3'h6;
 		3'b010: dogpatch_y <= 3'h4;
@@ -695,7 +700,7 @@ begin
 		3'b110: dogpatch_y <= 3'h2;
 		3'b111: dogpatch_y <= 3'h2; // ?
 	endcase
-        case (dogpatch_y_2_count) 
+    case (dogpatch_y_2_count) 
 		3'b000: dogpatch_y_2 <= 3'h7;
 		3'b001: dogpatch_y_2 <= 3'h6;
 		3'b010: dogpatch_y_2 <= 3'h4;
@@ -705,7 +710,7 @@ begin
 		3'b110: dogpatch_y_2 <= 3'h2;
 		3'b111: dogpatch_y_2 <= 3'h2; // ?
 	endcase
-        case (gunfight_y_count) 
+    case (gunfight_y_count) 
 		3'b000: gunfight_y <= 3'h6;
 		3'b001: gunfight_y <= 3'h2;
 		3'b010: gunfight_y <= 3'h0;
@@ -715,7 +720,7 @@ begin
 		3'b110: gunfight_y <= 3'h3;
 		3'b111: gunfight_y <= 3'h3; //?
 	endcase
-        case (gunfight_y_count_2) 
+   case (gunfight_y_count_2) 
 		3'b000: gunfight_y_2 <= 3'h6;
 		3'b001: gunfight_y_2 <= 3'h2;
 		3'b010: gunfight_y_2 <= 3'h0;
@@ -725,6 +730,29 @@ begin
 		3'b110: gunfight_y_2 <= 3'h3;
 		3'b111: gunfight_y_2 <= 3'h3; //?
 	endcase
+	
+	case (gunfight_y_count)
+		3'b000: boothill_y <= 3'h0;
+		3'b001: boothill_y <= 3'h4;
+		3'b010: boothill_y <= 3'h6;
+		3'b011: boothill_y <= 3'h7;
+		3'b100: boothill_y <= 3'h3;
+		3'b101: boothill_y <= 3'h1;
+		3'b110: boothill_y <= 3'h5;
+		3'b111: boothill_y <= 3'h5; //?
+	endcase
+	case (gunfight_y_count_2)
+		3'b000: boothill_y_2 <= 3'h0;
+		3'b001: boothill_y_2 <= 3'h4;
+		3'b010: boothill_y_2 <= 3'h6;
+		3'b011: boothill_y_2 <= 3'h7;
+		3'b100: boothill_y_2 <= 3'h3;
+		3'b101: boothill_y_2 <= 3'h1;
+		3'b110: boothill_y_2 <= 3'h5;
+		3'b111: boothill_y_2 <= 3'h5; //?
+	endcase
+
+	
     end
 end
 
@@ -968,11 +996,11 @@ always @(*) begin
         mod_boothill:
         begin 
           // IN0
-          GDB0 <= sw[0] | { m_fire1a, 1'b0,1'b1,1'b0,m_left1,m_right1,m_up1,m_down1};
+          GDB0 <= sw[0] | { ~m_fire2a,boothill_y_2,~m_right2,~m_left2,~m_down2,~m_up2};
           // IN1
-          GDB1 <= sw[1] | { m_fire2a, 1'b0,1'b1,1'b0,m_left2,m_right2,m_up2,m_down2};
+          GDB1 <= sw[1] | { ~m_fire1a, boothill_y,~m_right1,~m_left1,~m_down1,~m_up1};
           // IN2
-          GDB2 <= sw[2] | { m_start1, m_coin1,m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
+          GDB2 <= sw[2] | { ~m_start2, ~m_coin1,~m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
           Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];

@@ -9,7 +9,7 @@
 	<rbf>spaceinvaders</rbf>
 	<mameinfo parent="0" cpp="mw8080bw" input="boothill"/>
 	<display type="raster" rotate="0"/>
-	<buttons names="Fire,-,-,-,Start 1P,Start 2P,Coin" default="A,Start,Select,R"/>
+	<buttons names="Fire,GunUp,GunDown,-,Start 1P,Start 2P,Coin" default="A,X,Y,Start,Select,R"/>
 	<rom index="0" zip="boothill.zip" md5="none">
 		<part crc="1615d077" name="romh.cpu"/>
 		<part crc="65a90420" name="romg.cpu"/>
