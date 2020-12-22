@@ -1,7 +1,4 @@
-set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv17_36.vhdl
-set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv18_35.vhdl
-set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv19_34.vhdl
-set_global_assignment -name VHDL_FILE rtl/roms_sicv/cv20_33.vhdl
+
 set_global_assignment -name VHDL_FILE rtl/T80/T8080se.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80_Reg.vhd
 set_global_assignment -name VHDL_FILE rtl/T80/T80_Pack.vhd
@@ -26,3 +23,4 @@ set_global_assignment -name VHDL_FILE rtl/polaris_cloud.vhd
 set_global_assignment -name VHDL_FILE rtl/zap_audio.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/virtualgun.sv
 set_global_assignment -name SYSTEMVERILOG_FILE Arcade-SpaceInvaders.sv
+set_global_assignment -name SDC_FILE   Arcade-SpaceInvaders.out.sdc

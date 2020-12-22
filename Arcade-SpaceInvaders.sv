@@ -512,6 +512,19 @@ assign AUDIO_MIX = 2'd0;
 wire reset;
 assign reset = (RESET | status[0] | buttons[1] | ioctl_download);
 
+  logic [1:0] reset_sys_pipe;
+  logic       reset_sys;
+  logic [1:0] reset_mem_pipe;
+  logic       reset_mem;
+
+  always @(posedge clk_sys) begin
+    reset_sys <= reset_sys_pipe[1];
+    reset_sys_pipe <= reset_sys_pipe << 1 | reset;
+  end
+  always @(posedge clk_mem) begin
+    reset_mem <= reset_mem_pipe[1];
+    reset_mem_pipe <= reset_mem_pipe << 1 | reset;
+  end
 wire [7:0] GDB0;
 wire [7:0] GDB1;
 wire [7:0] GDB2;
@@ -1555,7 +1568,7 @@ wire Vortex_Col;
 wire DoScreenFlip = software_flip ? ~(ScreenFlip & ~landscape) : (ScreenFlip & ~landscape);
 
 invaderst invaderst(
-		.Rst_n(~(reset)),
+		.Rst_n(~(reset_sys)),
 		.Clk(clk_sys),
 		.ENA(),
 
@@ -1806,7 +1819,7 @@ end
 samples samples
 (
 	.audio_enabled(Audio_Output),
-	.audio_port_0(SoundCtrl3),
+   .audio_port_0(mod_lupin ? LupinPort : SoundCtrl3),
 	.audio_port_1(SoundCtrl5),
 
 	.wave_addr(wav_addr),        
@@ -1822,7 +1835,7 @@ samples samples
 	
 	.CLK_SYS(clk_sys),
 	.clock(clk_mem),
-	.reset(reset),
+	.reset(reset_mem),
 	
 `ifdef USE_OVERLAY
 	.Hex1(Line1),
@@ -1832,7 +1845,25 @@ samples samples
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );
+// Sound changes for Lupin 3
 
+reg [7:0] LupinPort;
+reg LastStep = 0;
+reg LastBit;
+
+always @(posedge clk_sys)
+begin
+        LastBit <= SoundCtrl3[0];
+        // on falling bit, change step
+        if(LastBit && ~SoundCtrl3[0]) LastStep <= ~LastStep;           
+        // set fake output accordingly
+        if (SoundCtrl3[0]) begin
+                LupinPort <= {LastStep,~LastStep,SoundCtrl3[5:0]};
+        end
+        else begin
+                LupinPort <= {2'd0,SoundCtrl3[5:0]};
+        end;
+end
 // Tone Generator
 
 reg [15:0] Tone_Out;
@@ -1846,7 +1877,7 @@ ToneGen ToneGen
 	 .Tone_out(Tone_Out),
 	 
 	.CLK_SYS(clk_sys),
-	.reset(reset)
+	.reset(reset_sys)
 );
 
 // Balloon Bomber tune generator
