@@ -147,9 +147,6 @@ assign VGA_F1    = 0;
 assign VGA_SCALER= 0;
 
 assign USER_OUT  = '1;
-assign ADC_BUS  = 'Z;
-assign {UART_RTS, UART_TXD, UART_DTR} = 0;
-assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
 assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
 assign LED_USER  = ioctl_download;
@@ -430,7 +427,6 @@ wire use_samples;
 assign AUDIO_L = use_samples? samples_left  : {inv_audio_data,inv_audio_data};
 assign AUDIO_R = use_samples? samples_right : {inv_audio_data,inv_audio_data};
 assign AUDIO_S = use_samples; // signed for samples, unsigned for generated
-assign AUDIO_MIX = 2'd0;
 
 wire reset;
 assign reset = (RESET | status[0] | buttons[1] | ioctl_download);
@@ -1744,7 +1740,7 @@ end
 samples samples
 (
 	.audio_enabled(Audio_Output),
-   .audio_port_0(mod_lupin ? LupinPort : SoundCtrl3),
+	.audio_port_0(mod_amazingmaze ? MazeTrigger : mod_lupin ? LupinPort :SoundCtrl3),
 	.audio_port_1(SoundCtrl5),
 
 	.wave_addr(wav_addr),        
@@ -1770,6 +1766,20 @@ samples samples
 	.audio_out_L(samples_left),
 	.audio_out_R(samples_right)
 );
+
+
+// Music for Amazing Maze
+reg [7:0] MazeTrigger;
+
+MAZE_MUSIC MAZE_MUSIC
+(
+     .I_JOYSTICK({m_up1 || m_up2,m_down1 || m_down2,m_left1 ||
+m_left2,m_right1 || m_right2}),
+         .I_COIN(m_coin1),
+     .O_TRIGGER(MazeTrigger),
+     .CLK(clk_sys)
+);
+
 // Sound changes for Lupin 3
 
 reg [7:0] LupinPort;
