@@ -40,6 +40,10 @@ module emu
 	//Multiple resolutions are supported using different VGA_CE rates.
 	//Must be based on CLK_VIDEO
 	output        CE_PIXEL, // VGA_CE,
+	
+	//Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
+	output [11:0] VIDEO_ARX,
+	output [11:0] VIDEO_ARY,
 
 	output  [7:0] VGA_R,
 	output  [7:0] VGA_G,
@@ -48,11 +52,9 @@ module emu
 	output        VGA_VS,
 	output        VGA_DE,    // = ~(VBlank | HBlank)
 	output        VGA_F1,
-   output [1:0]  VGA_SL,
+    output [1:0]  VGA_SL,
+	output        VGA_SCALER, // Force VGA scaler
 
-	//Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
-	output  [7:0] VIDEO_ARX,
-	output  [7:0] VIDEO_ARY,
 
 	// Use framebuffer from DDRAM (USE_FB=1 in qsf)
 	// FB_FORMAT:
@@ -100,17 +102,7 @@ module emu
 	output [15:0] AUDIO_L,
 	output [15:0] AUDIO_R,
 	output        AUDIO_S,    // 1 - signed audio samples, 0 - unsigned
-	output  [1:0] AUDIO_MIX,  // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
 
-	//ADC
-	inout   [3:0] ADC_BUS,
-
-	//SD-SPI
-	output        SD_SCK,
-	output        SD_MOSI,
-	input         SD_MISO,
-	output        SD_CS,
-	input         SD_CD,
 	
 	//SDRAM interface with lower latency
 	output        SDRAM_CLK,
@@ -137,13 +129,7 @@ module emu
 	output [63:0] DDRAM_DIN,
 	output  [7:0] DDRAM_BE,
 	output        DDRAM_WE,
-	
-	input         UART_CTS,
-	output        UART_RTS,
-	input         UART_RXD,
-	output        UART_TXD,
-	output        UART_DTR,
-	input         UART_DSR,
+
 	
 	
 	// Open-drain User port.
@@ -152,15 +138,14 @@ module emu
 	// 2..6 - USR2..USR6
 	// Set USER_OUT to 1 to read from USER_IN.
 	input   [6:0] USER_IN,
-	output  [6:0] USER_OUT,
+	output  [6:0] USER_OUT
 	
 	
-	input         OSD_STATUS
-
-
 );
 
 assign VGA_F1    = 0;
+assign VGA_SCALER= 0;
+
 assign USER_OUT  = '1;
 assign ADC_BUS  = 'Z;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
@@ -172,14 +157,17 @@ assign LED_DISK  = 0;
 assign LED_POWER = 0;
 assign BUTTONS = 0;
 
-assign VIDEO_ARX = status[1] ? 8'd16 : (status[2] | landscape) ? 8'd4 : 8'd3;
-assign VIDEO_ARY = status[1] ? 8'd9  : (status[2] | landscape) ? 8'd3 : 8'd4;
+wire [1:0] ar = status[26:25];
+
+assign VIDEO_ARX = (!ar) ? ((status[2] | landscape) ? 8'd4 : 8'd3) : (ar - 1'd1);
+assign VIDEO_ARY = (!ar) ? ((status[2] | landscape) ? 8'd3 : 8'd4) : 12'd0;
+
 
 `include "build_id.v" 
 localparam CONF_STR = {
 	"A.INVADERS;;",
 	"-;",
-	"H0O1,Aspect Ratio,Original,Wide;", 
+	"H0OPQ,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"H1H0O2,Orientation,Vert,Horz;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",  
 	"O6,Flip Screen (Vert only),No,Yes;",
