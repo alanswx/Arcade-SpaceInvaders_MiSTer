@@ -239,7 +239,6 @@ reg	[7:0] machine_info;
 
 
 
-wire [10:0] ps2_key;
 wire [24:0] ps2_mouse;
 
 wire [15:0] joy1, joy2, joy3, joy4;
@@ -279,95 +278,31 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
    .joystick_3(joy4),
    .joystick_analog_0(joya),
    .joystick_analog_1(joya2),
-   .ps2_key(ps2_key),
 	.ps2_mouse(ps2_mouse)
 );
 
-wire       pressed = ps2_key[9];
-wire [8:0] code    = ps2_key[8:0];
-always @(posedge clk_sys) begin
-	reg old_state;
-	old_state <= ps2_key[10];
-	
-	if(old_state != ps2_key[10]) begin
-		casex(code)
-			'h75: btn_up            <= pressed; // up
-			'h72: btn_down          <= pressed; // down
-			'h6B: btn_left          <= pressed; // left
-			'h74: btn_right         <= pressed; // right
-			'h76: btn_coin1         <= pressed; // ESC
-			'h05: btn_start1        <= pressed; // F1
-			'h06: btn_start2        <= pressed; // F2
-			'h14: btn_fireA         <= pressed; // lctrl
-			'h11: btn_fireB         <= pressed; // lalt
-			'h29: btn_fireC         <= pressed; // Space
-			'h12: btn_fireD         <= pressed; // l-shift
 
-			// JPAC/IPAC/MAME Style Codes
-			'h16: btn_start1        <= pressed; // 1
-			'h1E: btn_start2        <= pressed; // 2
-                        'h26: btn_start3        <= pressed; // 3
-			'h25: btn_start4        <= pressed; // 4
+wire m_start1  = joy[8];
+wire m_start2  = joy[9];
+wire m_coin1   = joy[10];
 
-			'h2E: btn_coin1         <= pressed; // 5
-			'h36: btn_coin2         <= pressed; // 6
-			'h2D: btn_up2           <= pressed; // R
-			'h2B: btn_down2         <= pressed; // F
-			'h23: btn_left2         <= pressed; // D
-			'h34: btn_right2        <= pressed; // G
-			'h1C: btn_fire2A        <= pressed; // A
-			'h1B: btn_fire2B        <= pressed; // S
-			'h21: btn_fire2C        <= pressed; // Q
-			'h1D: btn_fire2D        <= pressed; // W
-		endcase
-	end
-end
+wire m_right1  = joy1[0];
+wire m_left1   = joy1[1];
+wire m_down1   = joy1[2];
+wire m_up1     = joy1[3];
+wire m_fire1a  = joy1[4] | ps2_mouse[0];
+wire m_fire1b  = joy1[5] | ps2_mouse[1];
+wire m_fire1c  = joy1[6] | ps2_mouse[2];
+wire m_fire1d  = joy1[7];
 
-
-reg btn_left   = 0;
-reg btn_right  = 0;
-reg btn_down   = 0;
-reg btn_up     = 0;
-reg btn_fireA  = 0;
-reg btn_fireB  = 0;
-reg btn_fireC  = 0;
-reg btn_fireD  = 0;
-reg btn_coin1  = 0;
-reg btn_coin2  = 0;
-reg btn_start1 = 0;
-reg btn_start2 = 0;
-reg btn_start3 = 0;
-reg btn_start4 = 0;
-reg btn_up2    = 0;
-reg btn_down2  = 0;
-reg btn_left2  = 0;
-reg btn_right2 = 0;
-reg btn_fire2A = 0;
-reg btn_fire2B = 0;
-reg btn_fire2C = 0;
-reg btn_fire2D = 0;
-
-wire m_start1  = btn_start1 | joy[8];
-wire m_start2  = btn_start2 | joy[9];
-wire m_coin1   = btn_coin1  | btn_coin2 | joy[10];
-
-wire m_right1  = btn_right  | joy1[0];
-wire m_left1   = btn_left   | joy1[1];
-wire m_down1   = btn_down   | joy1[2];
-wire m_up1     = btn_up     | joy1[3];
-wire m_fire1a  = btn_fireA  | joy1[4] | ps2_mouse[0];
-wire m_fire1b  = btn_fireB  | joy1[5] | ps2_mouse[1];
-wire m_fire1c  = btn_fireC  | joy1[6] | ps2_mouse[2];
-wire m_fire1d  = btn_fireD  | joy1[7];
-
-wire m_right2  = btn_right2 | joy2[0];
-wire m_left2   = btn_left2  | joy2[1];
-wire m_down2   = btn_down2  | joy2[2];
-wire m_up2     = btn_up2    | joy2[3];
-wire m_fire2a  = btn_fire2A | joy2[4];
-wire m_fire2b  = btn_fire2B | joy2[5];
-wire m_fire2c  = btn_fire2C | joy2[6];
-wire m_fire2d  = btn_fire2D | joy2[7];
+wire m_right2  = joy2[0];
+wire m_left2   = joy2[1];
+wire m_down2   = joy2[2];
+wire m_up2     = joy2[3];
+wire m_fire2a  = joy2[4];
+wire m_fire2b  = joy2[5];
+wire m_fire2c  = joy2[6];
+wire m_fire2d  = joy2[7];
 
 wire m_right   = m_right1 | m_right2;
 wire m_left    = m_left1  | m_left2; 
@@ -379,7 +314,7 @@ wire m_fire_c  = m_fire1c | m_fire2c;
 wire m_fire_d  = m_fire1d | m_fire2d;
 
 wire m_coin3   = joy3[10];
-wire m_start3  = joy3[8] | btn_start3;
+wire m_start3  = joy3[8];
 wire m_left3   = joy3[1];
 wire m_right3  = joy3[0];
 wire m_up3     = joy3[3];
@@ -392,7 +327,7 @@ wire m_fire3d  = joy3[7];
 */
 
 wire m_coin4   = joy4[10];
-wire m_start4  = joy4[8] | btn_start4;
+wire m_start4  = joy4[8];
 wire m_left4   = joy4[1];
 wire m_right4  = joy4[0];
 wire m_up4     = joy4[3];
@@ -489,7 +424,7 @@ begin
 		if (reset == 0) begin
 			vsync_c <= VSync;
 			if (vsync_c ==0 && VSync== 1)
-				  screencount <= screencount + 1;
+				  screencount <= screencount + 1'b1;
 
 			if (screencount == 10)
 				  AllowRotate <= 1;
@@ -656,6 +591,8 @@ end
 /*0x07, 0x06, 0x04, 0x05, 0x01, 0x00, 0x02*/
 /* gunfight */
 /*0x06, 0x02, 0x00, 0x04, 0x05, 0x01, 0x03*/
+/* boothill */
+/* 	0x00, 0x04, 0x06, 0x07, 0x03, 0x01, 0x05 */
 reg [2:0] dogpatch_y_count= 0;
 reg [2:0] dogpatch_y_2_count= 0;
 reg [2:0] gunfight_y_count= 0;
@@ -677,31 +614,31 @@ begin
 	if (dogpatch_timer == 8'd5) 
 	begin
           if (m_up&& dogpatch_y_count< 7)
-            dogpatch_y_count<= dogpatch_y_count+1;
+            dogpatch_y_count<= dogpatch_y_count+1'b1;
           else if (m_down&& dogpatch_y_count > 0)
-            dogpatch_y_count<= dogpatch_y_count-1;
+            dogpatch_y_count<= dogpatch_y_count-1'b1;
 
           if (m_up2&& dogpatch_y_2_count< 7)
-            dogpatch_y_2_count<= dogpatch_y_2_count+1;
+            dogpatch_y_2_count<= dogpatch_y_2_count+1'b1;
           else if (m_down2&& dogpatch_y_2_count > 0)
-            dogpatch_y_2_count<= dogpatch_y_2_count-1;
+            dogpatch_y_2_count<= dogpatch_y_2_count-1'b1;
 
           if (m_fire1b&& gunfight_y_count< 7)
-            gunfight_y_count<= gunfight_y_count+1;
+            gunfight_y_count<= gunfight_y_count+1'b1;
           else if (m_fire1c&& gunfight_y_count > 0)
-            gunfight_y_count<= gunfight_y_count-1;
+            gunfight_y_count<= gunfight_y_count-1'b1;
 
           if (m_fire2b&& gunfight_y_count_2< 7)
-            gunfight_y_count_2<= gunfight_y_count_2+1;
+            gunfight_y_count_2<= gunfight_y_count_2+1'b1;
           else if (m_fire2c&& gunfight_y_count_2 > 0)
-            gunfight_y_count_2<= gunfight_y_count_2-1;
+            gunfight_y_count_2<= gunfight_y_count_2-1'b1;
 
 
           dogpatch_timer <= 0;
         end
 	else 
 	begin
-          dogpatch_timer <= dogpatch_timer +1;
+          dogpatch_timer <= dogpatch_timer +1'b1;
 	end
     case (dogpatch_y_count) 
 		3'b000: dogpatch_y <= 3'h7;
