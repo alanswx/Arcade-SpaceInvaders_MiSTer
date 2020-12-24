@@ -20,7 +20,7 @@ MiST and MiSTer Port:
 
 ### Color Overlay
 
-The Midway games often shipped with a plastic color overlay to add color to the games. The Taito boards had color overlay hardware. This included two roms (one for each direction of cocktail games) that added color in a fixed position on the screen. The Taito rom was pretty much a digital version of the plastic overlay. Inclueded is a python script that converts the MAME .lay files into Taito color overlay rom format. All games that had plastic overlays now have color roms included.
+The Midway games often shipped with a plastic color overlay to add color to the games. The Taito boards had color overlay hardware. This included two roms (one for each direction of cocktail games) that added color in a fixed position on the screen. The Taito rom was a digital version of the plastic overlay. Included is a python script that converts the MAME .lay files into Taito color overlay rom format. All games that had plastic overlays now have color roms included.
 
 ### Graphic Overlays
 
