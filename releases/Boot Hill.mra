@@ -9,6 +9,11 @@
 	<rbf>spaceinvaders</rbf>
 	<mameinfo parent="0" cpp="mw8080bw" input="boothill"/>
 	<display type="raster" rotate="0"/>
+	<switches default="00,00,00">
+		<dip bits="16,17"   name="Coinage" ids="1C_1C,1C_2C,2C_1C,2C_2C"/>
+		<dip bits="18,19"   name="Game Time" ids="60sec,70sec,80sec,90sec"/>
+		<dip bits="20"      name="Service" ids="Off,On"/>
+	</switches>
 	<buttons names="Fire,GunUp,GunDown,-,Start 1P,Start 2P,Coin" default="A,X,Y,Start,Select,R"/>
 	<rom index="0" zip="boothill.zip" md5="none">
 		<part crc="1615d077" name="romh.cpu"/>

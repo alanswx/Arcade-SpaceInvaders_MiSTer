@@ -497,6 +497,7 @@ localparam mod_spacechaser   = 35;
 localparam mod_steelworker   = 36;
 localparam mod_rollingcrash  = 37;
 localparam mod_lupin1        = 38; // Set 1 : uses colour prom rather than colour ram
+localparam mod_spaceinvaders2= 39; 
 
 reg [7:0] mod = 255;
 always @(posedge clk_sys) if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -809,9 +810,17 @@ always @(*) begin
 
 				 GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
 				 GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
-				 GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
+				 GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b0, 1'b0 };
 				end
-			
+			mod_spaceinvaders2: // invad2ct
+			begin
+				 landscape	<=0;
+				 ccw			<=0;
+
+				 GDB0 <= sw[0] | { 1'b1, 1'b0,1'b0,1'b0,1'b1,1'b1, 1'b1,1'b1};
+				 GDB1 <= sw[1] | { 1'b1, m_left1,m_right1,m_fire1a,1'b1,m_start1, m_start2, m_coin1 };
+				 GDB2 <= sw[2] | { 1'b0, m_right2,m_left2,m_fire2a,1'b0,1'b0, 1'b0, 1'b0 };
+			end
 			mod_shuffleboard:
         begin
           landscape<=0;
@@ -865,16 +874,9 @@ always @(*) begin
         mod_lagunaracer:
 	begin
  	  landscape<=0;
-	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, fire_toggle, zap_throttle};
-           //GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-           GDB1 <= 8'd127-joya[7:0];
-           GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
-	  // IN0
-          //GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
-	  // IN1
-          //GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-	  // IN2
-          //GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+			GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, fire_toggle, zap_throttle};
+         GDB1 <= 8'd127-joya[7:0];
+         GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
           Trigger_ShiftCount     <= PortWr[4];
           Trigger_AudioDeviceP1  <= PortWr[2];
           Trigger_ShiftData      <= PortWr[3];
@@ -886,17 +888,9 @@ always @(*) begin
 	mod_280zap:
 	begin
  	  landscape<=1;
-	   //GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, m_fire_a, m_fire_b,1'b0,1'b0,1'b0/*(joya[11:8]*/};
-	   GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, fire_toggle, zap_throttle};
-           //GDB1 <= sw[1] | { 1'b0, 1'b1, 1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-           GDB1 <= 8'd127-joya[7:0];
-           GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
-	  // IN0
-          //GDB0 <= sw[0] | { m_start1, m_coin1,1'b1,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
-	  // IN1
-          //GDB1 <= sw[1] | { 1'b0, 1'b1,1'b1,1'b1,1'b1,1'b1, 1'b1, 1'b1 };
-	  // IN2
-          //GDB2 <= sw[2] | { 1'b1, 1'b1,1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
+	       GDB0 <= sw[0] | { ~m_start1, ~m_coin1, 1'b1, fire_toggle, zap_throttle};
+          GDB1 <= 8'd127-joya[7:0];
+          GDB2 <= sw[2] | { 1'b0, 1'b0, 1'b0,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
           Trigger_ShiftCount     <= PortWr[4];
           Trigger_AudioDeviceP1  <= PortWr[2];
           Trigger_ShiftData      <= PortWr[3];
@@ -911,14 +905,7 @@ always @(*) begin
         begin
 		    gun_game <= 1;
           GDB0 <= SR;
-	  // IN0
-          //GDB1 <= 8'd127-joya[7:0];
-          //GDB1 <= { 8'b01000010};
-        //  GDB1 <= { 8'd63 + joya[7:1]};
-
-          //GDB1 <= (blue_control[8:1]+8'd8) ;
           GDB1 <= blue_shark_x;
-	  // IN1
           GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b1,1'b1,1'b1,m_coin1 ,~m_fire_a};
           Trigger_ShiftCount     <= PortWr[1];
           Trigger_AudioDeviceP1  <= PortWr[3];
@@ -934,7 +921,7 @@ always @(*) begin
           // IN1
           GDB1 <= sw[1] | { ~m_fire1a, boothill_y,~m_right1,~m_left1,~m_down1,~m_up1};
           // IN2
-          GDB2 <= sw[2] | { ~m_start2, ~m_coin1,~m_start1,1'b0,1'b1,1'b1, 1'b0, 1'b1 };
+          GDB2 <= sw[2] | { ~m_start2, ~m_coin1,~m_start1,1'b0,1'b0,1'b0, 1'b0, 1'b0 };
           Trigger_ShiftCount     <= PortWr[1]; // IS THIS WEIRD?
           Trigger_AudioDeviceP1  <= PortWr[3];
           Trigger_ShiftData      <= PortWr[2];
@@ -957,7 +944,7 @@ always @(*) begin
           //GDB0 <= sw[0] | { 1'b1, m_right,m_left,m_fire_a,1'b1,1'b0, 1'b0,1'b0};
           //GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b1,m_start1, m_start2, m_coin1 };
           //GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
-          GDB0 <= sw[0] | { 1'b1, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+          GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
           //GDB0 <= sw[0] | { 1'b0, 1'b0, 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
           GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
           GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
@@ -1045,7 +1032,7 @@ always @(*) begin
 				landscape<=0;
 				ccw<=1;
 				color_rom_enabled<=1;
-				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+				GDB0 <= sw[0] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
 				//GDB0 <= sw[0] | { 1'b0, 1'b0, 1'b0, m_right,m_left,m_fire_a,1'b1,1'b1, 1'b1,1'b1};
 				GDB1 <= sw[1] | { 1'b1, m_right,m_left,m_fire_a,1'b0,m_start1, m_start2, ~m_coin1 };
 				GDB2 <= sw[2] | { 1'b1, m_right,m_left,m_fire_a,1'b0,1'b0, 1'b1, 1'b1 };
@@ -1124,7 +1111,6 @@ always @(*) begin
 				// IN0
 				GDB0 <= sw[0] | { m_right2,m_left2,m_down2,m_up2,m_right1,m_left1,m_down1,m_up1};
 				GDB1 <= sw[1] | { m_right4,m_left4,m_down4,m_up4,m_right3,m_left3,m_down3,m_up3};
-				GDB1 <= sw[1] ;
 				GDB2 <= sw[2]; // dips
 				GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,m_start4,m_start3,m_start2,m_start1};
 				//GDB3 <= sw[3] | { m_coin1, 1'b0,1'b0,1'b0,1'b0,1'b0,m_start2,m_start1};
@@ -1137,11 +1123,10 @@ always @(*) begin
 				//
 				landscape<=1;
 				// IN0
-				//GDB0 <= sw[0] | 8'b0;
+				// 2 player is broken - they are multiplexed
 				GDB0 <= ~(8'd127-joya[7:0]);
-				//GDB0 <= clown_y;
 				GDB1 <= sw[1] | { 1'b1,~m_coin1,~m_start1,~m_start2,1'b1,1'b1,1'b1,1'b1};
-				GDB2 <= sw[2] | { m_up, 1'b0,1'b0,1'b0,1'b0,1'b1, 1'b0,1'b0};
+				GDB2 <= sw[2] | { 1'b0, 1'b0,1'b0,1'b0,1'b0,1'b0, 1'b0,1'b0};
 				GDB3 <= S;
 
 				Trigger_ShiftCount     <= PortWr[1];
